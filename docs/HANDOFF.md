@@ -293,6 +293,18 @@ games, each its own folder mounted as C: and started there:
   length in the low nibble + 3, the distance in 12 bits). A scratch
   script with that reading unpacks all 244 TPWM files of ISLE\ to
   their header's length, each ending at the file's end.
+- `tools/tpwmfiles.py` (the first format tool): parses each TPWM file
+  of the three games (600) into its items and writes it back identical,
+  unpacks it (`--out DIR`), and packs the unpacked bytes again. Two
+  packers are seen, both greedy with the longest match (3..18 bytes,
+  up to FFFh back): ISLE's and DESERT's take the farthest of equal
+  matches and measure one byte past the end (00, in 6 files 01..03:
+  whatever the packer's buffer held, presumably; the tool tries all
+  256); MOON's takes the nearest and never copies from position 0; in
+  31 of MOON's files the last copy runs past the end, its length and
+  distance from bytes there that are not known. All 600 files are
+  reproduced that way (449 ISLE's packer, 120 MOON's, 31 MOON's but
+  the last item). About 20 s for all.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -312,9 +324,10 @@ games, each its own folder mounted as C: and started there:
    BB.IFF, TITEL.IFF, LIB\char24.LIB, TITEL.TXT, TITEL.PND. (The shot
    asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
-3. A tool for each data format (`tools/NAMEfiles.py`), starting with
-   the TPWM unpacking (known, above; many files are packed, the palettes
-   too), then the palettes, `.IFF`/`.LBM` pictures and `.LIB` libraries.
+3. A tool for each data format (`tools/NAMEfiles.py`): TPWM is done
+   (`tpwmfiles.py --out build/unpacked` gives the unpacked files); next
+   the palettes (768 bytes unpacked), `.IFF`/`.LBM` pictures and `.LIB`
+   libraries, reading the unpacked files.
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.
 5. Later: the AdLib sound refined (`-oplwav` against the game in GOG's

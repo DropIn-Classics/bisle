@@ -28,6 +28,8 @@ Python 3 with `capstone` (`pip install capstone`).
 ## Layout
 
 - `src/*.hints`: what is known about each program.
+- `tools/NAMEfiles.py`: a tool for each data format (`tpwmfiles.py`: the
+  packed files).
 - `port/`: the implementation in C (its README says how far it is).
 - `docs/HANDOFF.md`: state, what was learned, what is next.
 - `AGENTS.md`: the rules for working on this; `PROVENANCE.md`: where the
