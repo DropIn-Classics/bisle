@@ -36,7 +36,7 @@ games, each its own folder mounted as C: and started there:
 | `DESERT/DESERT.EX2` | data disk 1's game: BATTLE.EXE's code byte for byte, the same relocations; 3 bytes of far data differ (F2789, F27EE), the file ends before the stack |
 | `MOON/MOON.EXE` | data disk 2's game (Borland C++ with other encodings than BATTLE.EXE's, linked by TLINK 5.0, 4585 relocations, 96 code segments as BATTLE.EXE but sized and laid out otherwise; names `MAPINFO.DAT`, `MAP02.DAT`, `MAP04.DAT`, `HQ.PAL`, `TOT.PAL`, `END.PAL`/`.SND` besides BATTLE.EXE's files) |
 | `MAP/NN.PMP`, `.SHP`, `.FIN`, `.COM` | per map; the `.COM` files are no programs: they begin with `TPWM` (a packed file, presumably) |
-| `LIB/*.LIB`, `LIB/*.DAT` | graphics libraries by their names (units, parts, patterns, fonts, cursor); not looked at |
+| `LIB/*.LIB`, `LIB/*.DAT` | graphics libraries: sprites of units, terrain, cursor, frame, fonts, fight scenes (`tools/libfiles.py`); a `.DAT` gives the order of a library's entries |
 | `*.IFF`, `*.LBM`, `*.PAL`, `NN.PAL` | pictures and palettes by their names; not looked at |
 | `*.SND`, `*.PND`, `*.FXX`, `*.PXX` | sound or animation data by their names; not looked at |
 | `*.DAT`, `*.TXT` | tables and texts (`UNIT.DAT`, `CODES.DAT`, `GAME.TXT`, ...); not looked at |
@@ -321,6 +321,25 @@ games, each its own folder mounted as C: and started there:
   colour 64, the windows for the maps (a run, `-vram`). The runner's
   PNGs take a 6-bit value v as (v << 2) | (v >> 4), the tools' as
   (v * 255 + 31) / 63: they differ by 1 at some values.
+- `tools/libfiles.py`: the 40 libraries (LIB\*.LIB, all packed as
+  files): a long (the directory's offset), the entries, a directory of
+  12-byte records (name, offset). An entry: a label, the transparent
+  value, the kind 'P' (two 4-bit pixels a byte) or 'U' (a byte a
+  pixel), x and y offsets, width, height, the pixels plane by plane
+  (unchained 256 colours). Drawn with a colour base added
+  (T2470:0008 `draw_entry`, T2506:000A `draw_unit24` for the 24x24
+  units, T24B5:000E `store_part` for the terrain; read from the code).
+  In a run to the first map the video memory held UNIT.LIB's sprites as
+  the tool decodes them, base 20h for player 1 and 30h for player 2,
+  PART.LIB's terrain (base 0), a cursor, RAND.LIB's frame (base 40h,
+  the colour 64 of the map's frame); in a MOON run its units of width
+  14 as 24 pixels. The loader (T0CEB:0008 `load_lib`) sorts unit, part
+  and bigunit by NAME.DAT (8-byte names); BIGUNIT.DAT names MAA, which
+  the library lacks. MOON's BIGUNIT and FIGHT pack each entry on its
+  own (MOON's packer), MOON.EXE unpacks them before drawing (T261E:0008).
+  All 40 written back identical, the packed entries too. ISLE's UNITB,
+  BIGUNITB, 00 and 01.LIB have entries of another kind (not decoded)
+  that no program names: left over, presumably.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -340,10 +359,10 @@ games, each its own folder mounted as C: and started there:
    BB.IFF, TITEL.IFF, LIB\char24.LIB, TITEL.TXT, TITEL.PND. (The shot
    asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
-3. A tool for each data format (`tools/NAMEfiles.py`): TPWM and the
-   palettes and the pictures are done (`tpwmfiles.py --out
-   build/unpacked` gives the unpacked files); next the `.LIB`
-   libraries (units, parts, fonts, cursor).
+3. A tool for each data format (`tools/NAMEfiles.py`): TPWM, the
+   palettes, the pictures and the libraries are done (`tpwmfiles.py
+   --out build/unpacked` gives the unpacked files); next the maps
+   (`MAP\NN.PMP`, `.SHP`, `.FIN`) or the tables (`UNIT.DAT`, ...).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.
 5. Later: the AdLib sound refined (`-oplwav` against the game in GOG's
@@ -385,23 +404,27 @@ For the port (behaviour):
    the .Axx/.FX/.PX formats, end_credits (T25A6:0655) and ab.fx.
 7. Sound: where sound_init's mode comes from, whether the music uses
    the OPL's rhythm mode.
+8. The libraries' colour bases and palettes where not seen (BIGUNIT,
+   FIGHT, the fonts; libfiles.py draws them at base 0 in 00.PAL), and
+   what happens with BIGUNIT's missing MAA and in MOON without .DAT
+   files.
 
 For understanding the programs:
 
-8. make_path's first argument; the OR of DATA:0368 in file_open;
+9. make_path's first argument; the OR of DATA:0368 in file_open;
    T2695:02BB's message (DATA:0C88, "insert the disk", presumably);
    load_picture for pictures larger than 360x240 (T2550:02E5).
-9. The record T0708 fills with far pointers to routines; CODE:2296's
-   formatter (presumably).
-10. The far data segments' classes (which are BSS); the zeros after the
+10. The record T0708 fills with far pointers to routines (+56 is
+    draw_entry); CODE:2296's formatter (presumably).
+11. The far data segments' classes (which are BSS); the zeros after the
     stack in BATTLE.EXE and the intros (ZEROS).
-11. What BATTLE.EXE, DESERT.EX2 and MOON.EXE do with the string
+12. What BATTLE.EXE, DESERT.EX2 and MOON.EXE do with the string
     BIDISK.VGA besides check_vga_disk; what DESERT.EXE (the starter)
     does.
 
 Hardly:
 
-12. Why the runner did not write the shot asked for at 20 s (Next,
+13. Why the runner did not write the shot asked for at 20 s (Next,
     item 2).
-13. In which order the TPWM packer saw the files (the byte past the end
+14. In which order the TPWM packer saw the files (the byte past the end
     in six files; the bytes past the end in 31 of MOON's).

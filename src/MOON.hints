@@ -218,6 +218,14 @@ ptr T070B:114A CODE   ; +5E CODE:20B0
 ptr T070B:1159 T0DA1  ; +62 T0DA1:05F2
 ptr T070B:1168 CODE   ; +66 CODE:1C14
 
+; T261E:0008 (x, y, entry far, far ?, base, buffer far): a library entry
+; that begins with TPWM (MOON's BIGUNIT.LIB and FIGHT.LIB pack each entry;
+; tools/libfiles.py) is unpacked into the buffer by T27D5:0008 (source
+; far, target far; 0 back when it was one, read from the code) and drawn
+; from there with T25B6:0008, another drawn as it is (not run).
+name T261E:0008 draw_entry_unpacked
+name T27D5:0008 unpack_mem
+
 ; ==== carried over from BATTLE.hints by tools/xfer.py; check, then keep or edit
 ; BATTLE.EXE: the game (Battle Isle), Borland C++ 1991, large model;
 ; started by BI.EXE after the intro.
@@ -511,6 +519,41 @@ name T2696:0006 load_picture
 name T2696:00DA iff_find_chunks
 name T2696:01A8 draw_pbm
 name T2696:022E draw_ilbm
+; the graphics libraries (LIB\*.LIB; tools/libfiles.py has the format):
+; F27EE:0A1D holds records of 14h bytes, a name (0Ah bytes: unit, part,
+; cursor, patt, shop, bigunit, rand, bum, fight, char24, exp), +0Ah the
+; length loaded (a long), +0Eh a far pointer to the list of far pointers
+; to the entries, +12h their count (as T0CEB:0008 fills them).
+; T0CEB:0008 (path far, buffer far, work far, record far, flag): loads the
+; file with T2624:0006 (its length back), sorts the directory by NAME.DAT
+; when flag is 1 (unit, part, bigunit; T0CEB:0368 loads the .DAT and
+; copies the directory's records in its order), puts 12 zero bytes after
+; the file and replaces the directory with far pointers to the entries up
+; to a record of offset 0. -1 when the load fails (then fatal_error(2)).
+name T0D67:0003 load_lib
+name T0D67:0248 sort_lib
+; T2470:0008 (x, y, entry far, far ?, base): draws an entry: kind 'P' (+9)
+; with T23DE:000A (two 4-bit pixels a byte), else T23FD:000A (a byte a
+; pixel), both plane by plane from the plane of x, +0Ah/+0Ch added to x/y,
+; the transparent value +8 not drawn, the base added to the rest; the far
+; argument, when not 0, goes to T2515:0008 with the rectangle first (the
+; background saved, presumably; not read). T258F:0002 gives the columns
+; of each plane for a width. T0708's record of far pointers has it at +56.
+; T2506:000A (x, y, base, entry far): a 'P' entry of 24x24 at x (a
+; multiple of 4, presumably), the units (UNIT.LIB, base 20h for player 1
+; and 30h for player 2 at the first map: a run, -vram, the sprites found
+; in video memory as tools/libfiles.py decodes them).
+; T24B5:000E (entry far): copies a 'U' entry of 24x24 as it is into video
+; memory at DATA:0358 (in each plane 24 rows of 6 bytes at that address;
+; DATA:0358 then moves 90h on),
+; for copies through the latches, presumably (PART.LIB's terrain was
+; found on the screen as decoded, base 0).
+name T25B6:0008 draw_entry
+name T2524:000A draw_entry_p
+name T2543:000A draw_entry_u
+name T26D5:0002 plane_widths
+name T264C:000A draw_unit24
+name T25FB:000E store_part
 ; T0D36:1592 (n): puts back the interrupt handlers (T2354:056F, 005E),
 ; prints message n of F273B (1 not enough memory, 2 cannot load file,
 ; 3 internal) and exits with -1 (read from the code, not run)
