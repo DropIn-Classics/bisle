@@ -352,3 +352,56 @@ games, each its own folder mounted as C: and started there:
    music uses the rhythm mode (register BDh bit 5) is not looked into.
    MOON.EXE's and the intros' last library gaps only if a run reaches
    them.
+
+## Open questions
+
+What the notes above and the hints mark as "not looked into", "not
+checked" or "presumably", in one place. They were left because each step
+had another aim, not because they do not matter: before the port takes
+over a routine, its questions here are answered against runs of the
+original. The first group matters for the port, the second for
+understanding the programs, the third hardly.
+
+For the port (behaviour):
+
+1. The game's state flags: F27EE:250C (bits 1, 2, 4, 8, 40h, 80h, 100h,
+   200h, 400h, 1000h beside the known 10h, 20h, 2000h, 4000h), F27EE:250E
+   (bit 1 set against the computer, presumably; bit 2) and F27EE:243E
+   bit 2 (which player the computer is, presumably). BATTLE.hints at
+   play_anim.
+2. A real end of a map: what a won map does besides what the pokes
+   showed (after_map, T15AC:0007; the map record's +8 bit 0 for the last
+   map; the STATS.IFF screen after a lost battle, which routine).
+3. The clock: what timer_add's (T2354:0713) period counts, how often
+   the main loop runs, why the title menu takes keys only from about
+   30 s.
+4. The palette level: where set_palette's level comes from, the fades
+   (steps of 4 to 252, presumably), where the animations' 6-bit
+   palettes are set.
+5. Saving and the high scores: where save_game writes (save_file or its
+   own), where the name "00" comes from, the .HI file (28h bytes, named
+   by F27EE:251B, the map's number in the game's order, presumably).
+6. The animations: play_anim's names from ANIM\anim.fx (presumably),
+   the .Axx/.FX/.PX formats, end_credits (T25A6:0655) and ab.fx.
+7. Sound: where sound_init's mode comes from, whether the music uses
+   the OPL's rhythm mode.
+
+For understanding the programs:
+
+8. make_path's first argument; the OR of DATA:0368 in file_open;
+   T2695:02BB's message (DATA:0C88, "insert the disk", presumably);
+   load_picture for pictures larger than 360x240 (T2550:02E5).
+9. The record T0708 fills with far pointers to routines; CODE:2296's
+   formatter (presumably).
+10. The far data segments' classes (which are BSS); the zeros after the
+    stack in BATTLE.EXE and the intros (ZEROS).
+11. What BATTLE.EXE, DESERT.EX2 and MOON.EXE do with the string
+    BIDISK.VGA besides check_vga_disk; what DESERT.EXE (the starter)
+    does.
+
+Hardly:
+
+12. Why the runner did not write the shot asked for at 20 s (Next,
+    item 2).
+13. In which order the TPWM packer saw the files (the byte past the end
+    in six files; the bytes past the end in 31 of MOON's).
