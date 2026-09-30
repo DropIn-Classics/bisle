@@ -2,7 +2,7 @@
 
 State of 2026-09-30: stage 1 for the launcher, the main program and the
 two data disks' games; BATTLE.EXE's and BI.EXE's code reached to 97% and
-96%, DESERT.EX2's as BATTLE.EXE's, MOON.EXE's to 73%.
+96%, DESERT.EX2's as BATTLE.EXE's, MOON.EXE's to 98%.
 `src/BI.hints`, `src/BATTLE.hints`, `src/DESERT.hints` and
 `src/MOON.hints` rebuild their programs byte for byte
 (`doskit/tools/check.py`: all ok). Nothing is understood yet
@@ -171,6 +171,20 @@ games, each its own folder mounted as C: and started there:
   record, 12 raw lines of CODE: MOON's library differs, its CODE is
   39B0h bytes, BATTLE's 4080h). The 50 carried raw lines are not needed
   with MOON's encodings, but harmless.
+- MOON.EXE from 73% to 98% (161105 of 164647 code bytes as
+  instructions): 36 compiled switches found by their bytes (`D1 E3 2E
+  FF A7`, SHL BX,1 / JMP CS:[BX+table], the CMP BX,N-1 before giving N;
+  a scratch script, not a tool), 2 of them carried already; T237F's
+  table runs 4 bytes into T238E's frame, so T238E has `start=4` (the
+  build was 16 bytes long without it, as BATTLE's T2248). The startup
+  table is at DATA:1508 (two near routines, CODE:20F5 and CODE:2CE5);
+  CODE:1C5D is the routine that does nothing (DATA:1226/122A/122E).
+  T1867:034E is a far routine nothing calls and BATTLE.EXE does not
+  have (a `code` hint). T2579:019D..0346 is data in the code segment
+  (a table of 43h records of 6 bytes from 01A7, read through CS).
+  What is left is mostly the library in CODE (1.7 KB). A run (space at
+  14 s, enter at 33 s, 90 s) reaches MOON's first map with BATTLE.EXE's
+  keys; gaps.py with its -cover: 0 gaps ran.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -191,10 +205,10 @@ games, each its own folder mounted as C: and started there:
    BB.IFF, TITEL.IFF, LIB\char24.LIB, TITEL.TXT, TITEL.PND. (The shot
    asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
-3. MOON.EXE from 73% on: the 56 hints not carried, found again in
-   MOON's own code (gaps.py on src/MOON.hints; the switch tables by
-   their `CMP BX,N-1 / JA / SHL BX,1 / JMP CS:[BX+table]`), as MOON.hints'
-   own lines; whether DATA is 2EAE; then the INTRO programs on their
+3. MOON.EXE: the other hints not carried (T0708's record of far
+   pointers to routines, BATTLE's CODE raw lines) found again in MOON's
+   own code where they matter; whether DATA is 2EAE (a run's DS would
+   tell); the library's last 1.7 KB. Then the INTRO programs on their
    own.
 4. A tool for each data format (`tools/NAMEfiles.py`), starting with
    the palettes, `.IFF`/`.LBM` pictures and `.LIB` libraries.

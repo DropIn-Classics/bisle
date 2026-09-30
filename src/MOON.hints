@@ -42,7 +42,7 @@ segment T2084 2084 CODE prefix=T2084_
 segment T2250 2250 CODE start=C prefix=T2250_
 segment T22D3 22D3 CODE start=2 prefix=T22D3_
 segment T237F 237F CODE start=7 prefix=T237F_
-segment T238E 238E CODE prefix=T238E_
+segment T238E 238E CODE start=4 prefix=T238E_
 segment T249A 249A CODE prefix=T249A_
 segment T2522 2522 CODE start=A prefix=T2522_
 segment T2524 2524 CODE start=A prefix=T2524_
@@ -154,6 +154,59 @@ raw T03EB:308E   ; jmp 0x310b
 raw T0F3E:0D89   ; jmp 0xe08
 raw T12BF:02C0   ; add dx, 0xd
 raw T2084:0807   ; jmp 0x887
+
+; compiled switches: CMP BX,N-1 / JA default / SHL BX,1 / JMP CS:[BX+table]
+; with a table of N near offsets in the code segment, found by the bytes
+; of SHL BX,1 / JMP CS:[BX+d16] (D1 E3 2E FF A7) in the whole program and
+; the CMP before each; the two tables carried from BATTLE.hints below
+; (T2250:062B, T238E:1043) are not repeated here
+words CODE:0820 12 CODE        ; from CODE:07E4 (18)
+words CODE:11BE 7 CODE         ; from CODE:10EC
+words CODE:2694 18 CODE        ; from CODE:22E3 (24)
+words T03EB:25BE D T03EB       ; from T03EB:1054 (13)
+words T0DA1:0316 7 T0DA1       ; from T0DA1:0267
+words T12F0:0F51 5 T12F0       ; from T12F0:0B30
+words T12F0:18A8 5 T12F0       ; from T12F0:163F
+words T18B8:0A00 D T18B8       ; from T18B8:0554 (13)
+words T18B8:0A1A C T18B8       ; from T18B8:025E (12)
+words T18B8:0A32 9 T18B8       ; from T18B8:0087
+words T18B8:1854 6 T18B8       ; from T18B8:0AE0
+words T1A3E:0380 7 T1A3E       ; from T1A3E:019D
+words T1A3E:06CE 8 T1A3E       ; from T1A3E:04CB
+words T1A3E:08E0 6 T1A3E       ; from T1A3E:0726
+words T1A3E:0A1B 5 T1A3E       ; from T1A3E:0937
+words T1A3E:0D6D D T1A3E       ; from T1A3E:0A70 (13)
+words T1A3E:0FA9 7 T1A3E       ; from T1A3E:0DCE
+words T1A3E:127D 8 T1A3E       ; from T1A3E:0FFE
+words T1A3E:1457 6 T1A3E       ; from T1A3E:133B
+words T1C22:0B9D 8 T1C22       ; from T1C22:0817
+words T1D2C:2C56 B T1D2C       ; from T1D2C:25F2 (11)
+words T1D2C:2C6C C T1D2C       ; from T1D2C:162D (12)
+words T1D2C:2C84 5 T1D2C       ; from T1D2C:12C5
+words T1D2C:2C8E 6 T1D2C       ; from T1D2C:0E5A
+words T1D2C:2C9A 6 T1D2C       ; from T1D2C:09B3
+words T1D2C:2CA6 5 T1D2C       ; from T1D2C:05E9
+words T1D2C:2CB0 5 T1D2C       ; from T1D2C:0210
+words T1D2C:2CBA 4 T1D2C       ; from T1D2C:0194
+words T1D2C:2CC2 D T1D2C       ; from T1D2C:00C5 (13)
+words T1FF9:06CA 8 T1FF9       ; from T1FF9:00AE
+words T2084:07BB 6 T2084       ; from T2084:0608
+words T2084:09C3 6 T2084       ; from T2084:091E
+words T2250:061D 7 T2250       ; from T2250:00C7
+words T237F:00E6 7 T237F       ; from T237F:00A1
+
+; the startup code's table of routines it calls before the program
+; (CODE:01E0 with SI = 1508h, DI = 1514h; records of 6 bytes: a type, 0
+; for a near routine, a priority and the pointer): two near routines,
+; CODE:20F5 and CODE:2CE5 (BATTLE.EXE has three; not run)
+words DATA:150A 2 CODE stride=6
+; DATA:1226, 122A and 122E are far pointers to this routine, which does
+; nothing (PUSH DS, DS = DATA, POP DS, RETF), as BATTLE.EXE's CODE:1D7F
+code CODE:1C5D
+; a far routine nothing calls (no CALL, no far pointer found by
+; ptrscan.py): PUSH BP ... RETF, returns a number clamped to 0..63h (a
+; percentage, presumably; not checked). BATTLE.EXE has no such bytes
+code T1867:034E
 
 ; ==== carried over from BATTLE.hints by tools/xfer.py; check, then keep or edit
 ; BATTLE.EXE: the game (Battle Isle), Borland C++ 1991, large model;
