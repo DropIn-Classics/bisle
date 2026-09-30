@@ -1,0 +1,367 @@
+; MOON.EXE: the game of Battle Isle's second data disk (Borland C++, large
+; model, 4585 relocations): the same engine as BATTLE.EXE, presumably,
+; its modules sized and laid out somewhat otherwise; the hints below the
+; marker are BATTLE.hints' carried over by doskit/tools/xfer.py.
+; Hints for doskit/tools/disasm.py; numbers are hex.
+
+exe MOON/MOON.EXE
+
+; the segments, from the relocations and the header (SS:SP = 3021:0080;
+; the file ends with the stack); DS holds DGROUP (DATA, 2EAE, as a guess
+; from BATTLE.EXE's layout: its last frame). The code segments T....
+; begin where the one before ends (start=, the lowest offset below 10h a
+; far CALL/JMP enters each by; 0 where none does); F.... far data as in
+; BATTLE.EXE (the class a guess)
+segment CODE  0000 CODE
+segment T039B 039B CODE start=7 prefix=T039B_
+segment T03EB 03EB CODE start=6 prefix=T03EB_
+segment T070B 070B CODE start=A prefix=T070B_
+segment T0BDE 0BDE CODE start=E prefix=T0BDE_
+segment T0C0E 0C0E CODE start=C prefix=T0C0E_
+segment T0D67 0D67 CODE start=3 prefix=T0D67_
+segment T0DA1 0DA1 CODE start=1 prefix=T0DA1_
+segment T0F3E 0F3E CODE start=E prefix=T0F3E_
+segment T1151 1151 CODE start=3 prefix=T1151_
+segment T12BF 12BF CODE start=F prefix=T12BF_
+segment T12F0 12F0 CODE start=4 prefix=T12F0_
+segment T148F 148F CODE start=E prefix=T148F_
+segment T154F 154F CODE start=8 prefix=T154F_
+segment T1682 1682 CODE start=B prefix=T1682_
+segment T1724 1724 CODE start=E prefix=T1724_
+segment T1775 1775 CODE start=C prefix=T1775_
+segment T1800 1800 CODE start=A prefix=T1800_
+segment T1867 1867 CODE start=5 prefix=T1867_
+segment T18B8 18B8 CODE start=A prefix=T18B8_
+segment T1A3E 1A3E CODE prefix=T1A3E_
+segment T1BCB 1BCB CODE start=1 prefix=T1BCB_
+segment T1C22 1C22 CODE start=9 prefix=T1C22_
+segment T1D2C 1D2C CODE start=A prefix=T1D2C_
+segment T1FF9 1FF9 CODE start=C prefix=T1FF9_
+segment T2066 2066 CODE start=A prefix=T2066_
+segment T2084 2084 CODE prefix=T2084_
+segment T2250 2250 CODE start=C prefix=T2250_
+segment T22D3 22D3 CODE start=2 prefix=T22D3_
+segment T237F 237F CODE start=7 prefix=T237F_
+segment T238E 238E CODE prefix=T238E_
+segment T249A 249A CODE prefix=T249A_
+segment T2522 2522 CODE start=A prefix=T2522_
+segment T2524 2524 CODE start=A prefix=T2524_
+segment T2543 2543 CODE start=A prefix=T2543_
+segment T2579 2579 CODE start=6 prefix=T2579_
+segment T25AD 25AD CODE start=6 prefix=T25AD_
+segment T25B6 25B6 CODE start=8 prefix=T25B6_
+segment T25B8 25B8 CODE start=8 prefix=T25B8_
+segment T25BB 25BB CODE start=6 prefix=T25BB_
+segment T25BF 25BF CODE start=A prefix=T25BF_
+segment T25C3 25C3 CODE start=4 prefix=T25C3_
+segment T25C8 25C8 CODE start=4 prefix=T25C8_
+segment T25CB 25CB CODE start=1 prefix=T25CB_
+segment T25EE 25EE CODE start=8 prefix=T25EE_
+segment T25FB 25FB CODE start=E prefix=T25FB_
+segment T2600 2600 CODE start=8 prefix=T2600_
+segment T260B 260B CODE prefix=T260B_
+segment T2618 2618 CODE prefix=T2618_
+segment T2619 2619 CODE prefix=T2619_
+segment T261E 261E CODE start=8 prefix=T261E_
+segment T2625 2625 CODE start=2 prefix=T2625_
+segment T2649 2649 CODE start=6 prefix=T2649_
+segment T264C 264C CODE start=A prefix=T264C_
+segment T265B 265B CODE start=8 prefix=T265B_
+segment T2665 2665 CODE start=E prefix=T2665_
+segment T266B 266B CODE start=A prefix=T266B_
+segment T267C 267C CODE start=4 prefix=T267C_
+segment T2681 2681 CODE start=2 prefix=T2681_
+segment T2682 2682 CODE start=E prefix=T2682_
+segment T2684 2684 CODE start=A prefix=T2684_
+segment T2687 2687 CODE start=4 prefix=T2687_
+segment T2696 2696 CODE start=6 prefix=T2696_
+segment T26D5 26D5 CODE start=2 prefix=T26D5_
+segment T26D6 26D6 CODE start=A prefix=T26D6_
+segment T26D8 26D8 CODE start=2 prefix=T26D8_
+segment T26D9 26D9 CODE start=6 prefix=T26D9_
+segment T26E5 26E5 CODE start=4 prefix=T26E5_
+segment T26EC 26EC CODE start=E prefix=T26EC_
+segment T26F2 26F2 CODE start=2 prefix=T26F2_
+segment T26F5 26F5 CODE start=2 prefix=T26F5_
+segment T26F8 26F8 CODE prefix=T26F8_
+segment T26FB 26FB CODE start=E prefix=T26FB_
+segment T26FE 26FE CODE start=8 prefix=T26FE_
+segment T2711 2711 CODE start=4 prefix=T2711_
+segment T271E 271E CODE start=A prefix=T271E_
+segment T2726 2726 CODE start=A prefix=T2726_
+segment T2732 2732 CODE start=8 prefix=T2732_
+segment T2744 2744 CODE start=4 prefix=T2744_
+segment T2750 2750 CODE start=8 prefix=T2750_
+segment T2757 2757 CODE start=4 prefix=T2757_
+segment T275E 275E CODE prefix=T275E_
+segment T2763 2763 CODE start=E prefix=T2763_
+segment T2768 2768 CODE start=E prefix=T2768_
+segment T27A6 27A6 CODE start=4 prefix=T27A6_
+segment T27B2 27B2 CODE start=2 prefix=T27B2_
+segment T27BA 27BA CODE start=1 prefix=T27BA_
+segment T27BE 27BE CODE start=9 prefix=T27BE_
+segment T27D2 27D2 CODE start=4 prefix=T27D2_
+segment T27D5 27D5 CODE start=8 prefix=T27D5_
+segment T27EC 27EC CODE start=2 prefix=T27EC_
+segment T27EE 27EE CODE start=8 prefix=T27EE_
+segment T27F1 27F1 CODE start=2 prefix=T27F1_
+segment T27F4 27F4 CODE start=4 prefix=T27F4_
+segment T27F7 27F7 CODE start=4 prefix=T27F7_
+segment T27FC 27FC CODE start=8 prefix=T27FC_
+segment F280A 280A FAR_DATA prefix=F280A_
+segment F280C 280C FAR_DATA prefix=F280C_
+segment F2824 2824 FAR_DATA prefix=F2824_
+segment F2825 2825 FAR_DATA prefix=F2825_
+segment F2850 2850 FAR_DATA prefix=F2850_
+segment F2899 2899 FAR_DATA prefix=F2899_
+segment F28F3 28F3 FAR_DATA prefix=F28F3_
+segment F28F7 28F7 FAR_DATA prefix=F28F7_
+segment F28F9 28F9 FAR_DATA prefix=F28F9_
+segment F2902 2902 FAR_DATA prefix=F2902_
+segment F2D2D 2D2D FAR_DATA prefix=F2D2D_
+segment F2E56 2E56 FAR_DATA prefix=F2E56_
+segment F2E59 2E59 FAR_DATA prefix=F2E59_
+segment F2E5A 2E5A FAR_DATA prefix=F2E5A_
+segment F2E5B 2E5B FAR_DATA prefix=F2E5B_
+segment F2E82 2E82 FAR_DATA prefix=F2E82_
+segment F2E89 2E89 FAR_DATA prefix=F2E89_
+segment F2E8A 2E8A FAR_DATA prefix=F2E8A_
+segment F2E9D 2E9D FAR_DATA prefix=F2E9D_
+segment F2EAB 2EAB FAR_DATA prefix=F2EAB_
+segment F2EAD 2EAD FAR_DATA prefix=F2EAD_
+segment DATA  2EAE DATA
+segment STACK 3021 STACK stack size=80
+
+; the header as TLINK writes it, its relocations in its order
+linker tlink 50 header=original
+relocorder original
+
+; the code generator's encodings: AND/OR with a small constant in the
+; byte form and XCHG AX,reg in one byte (as TASM writes them; unlike
+; BATTLE.EXE's compiler), TEST r,r as in BATTLE.EXE (not checked)
+asm test_form=rm_reg
+
+; single instructions encoded otherwise than the asm line says (build.py's
+; list): AND with a small constant in the word form in CODE (compiled
+; library code, presumably), ADD in the word form, and jumps at the edge
+; of the short range sized otherwise than TASM's estimate
+raw CODE:0783   ; and word ptr [bp + 0xa], 3
+raw CODE:0DBA   ; and dx, 0
+raw CODE:0DC2   ; and word ptr [bp - 4], 0x7f
+raw CODE:0DC7   ; and word ptr [bp - 2], 0
+raw CODE:0DE2   ; and bx, 0x7f
+raw T03EB:308E   ; jmp 0x310b
+raw T0F3E:0D89   ; jmp 0xe08
+raw T12BF:02C0   ; add dx, 0xd
+raw T2084:0807   ; jmp 0x887
+
+; ==== carried over from BATTLE.hints by tools/xfer.py; check, then keep or edit
+; BATTLE.EXE: the game (Battle Isle), Borland C++ 1991, large model;
+; started by BI.EXE after the intro.
+; Hints for doskit/tools/disasm.py; numbers are hex.
+; the segments, from the relocations and the header (SS:SP = 2F32:0080);
+; DS holds DGROUP (DATA, 2D8D: the startup code loads it). A module's code
+; segment T.... begins where the one before ends (start=, first guessed
+; from the lowest offset a far CALL/JMP enters it by; T2248's from the end
+; of T223C's switch table at T223C:00B6, 7 words to 2248:0004)
+; zeros after the stack (SP = 0080h, the file goes on for 220h bytes; what
+; they are is not known yet)
+; the header as TLINK writes it, its relocations in its order
+; how the compiler encoded what has two encodings: AND and OR with a
+; small constant in the word form (81h), XCHG AX,reg as 87h /r, TEST r,r
+; with the first register in r/m (counted over the reached code; the
+; library's assembly modules differ, their instructions are raw below)
+; the library's assembly modules: the byte form of AND/OR, XCHG AX,reg in
+; one byte, XOR r,r in the r/m,reg form (see asm above)
+raw CODE:0052 ; and bx, 0xfff0
+raw CODE:028F ; xor ah, ah
+; (not mapped) raw CODE:300D   ; xchg dx, ax
+raw CODE:1FD2 ; xchg cx, ax
+raw CODE:1FD7 ; xchg cx, ax
+; (not mapped) raw CODE:31D1   ; xchg bx, ax
+; (not mapped) raw CODE:31DF   ; xchg cx, ax
+; (not mapped) raw CODE:31E4   ; xchg si, ax
+; (not mapped) raw CODE:3219   ; xchg bp, ax
+; (not mapped) raw CODE:321B   ; xchg di, ax
+; (not mapped) raw CODE:3222   ; xchg si, ax
+; (not mapped) raw CODE:3223   ; xchg dx, ax
+raw CODE:3774 ; xchg cx, ax
+raw CODE:22F0 ; or word ptr [bp - 2], 1
+raw CODE:22FB ; or word ptr [bp - 2], 2
+raw CODE:2311 ; and word ptr [bp - 2], 0xffdf
+raw CODE:2317 ; or word ptr [bp - 2], 0x20
+raw CODE:232B ; or word ptr [bp - 2], 8
+raw CODE:234B ; or word ptr [bp - 2], 2
+raw CODE:2371 ; xchg dx, ax
+raw CODE:23AF ; or word ptr [bp - 2], 0x10
+raw CODE:23BB ; and word ptr [bp - 2], 0xffef
+raw CODE:2421 ; or word ptr [bp - 2], 4
+raw CODE:247D ; and word ptr [bp - 2], 0xfffb
+raw CODE:25A0 ; or word ptr [bp - 2], 0x40
+raw CODE:1D2E ; xchg si, ax
+raw CODE:1D2F ; xchg dx, ax
+; (not mapped) raw CODE:3D00   ; xchg cx, ax
+; (not mapped) raw CODE:3D05   ; xchg si, ax
+; (not mapped) raw CODE:3D23   ; and bx, 0xf
+raw CODE:1D91 ; or di, 0xc
+raw CODE:1DED ; xchg dx, ax
+raw CODE:1E0D ; xchg dx, ax
+raw CODE:1E2E ; xchg dx, ax
+raw CODE:1E38 ; xchg bx, ax
+raw CODE:2079 ; xchg si, ax
+raw CODE:207A ; xchg dx, ax
+raw CODE:2083 ; xchg cx, ax
+raw CODE:2088 ; xchg si, ax
+; (not mapped) raw CODE:3F32   ; and bx, 0xf
+raw CODE:2D0F ; xchg bx, ax
+raw T249A:0278 ; and bx, 0x7f
+raw T249A:0287 ; and cx, 7
+raw T249A:04F5 ; and si, 0x7f
+raw T249A:0504 ; and cx, 7
+raw T2522:001A ; and cx, 3
+raw T2600:0043 ; and si, 3
+raw T2600:0058 ; and si, 3
+raw T2600:0086 ; and bx, 3
+raw T2600:008F ; and si, 3
+raw T260B:003A ; and word ptr [bp + 6], 0xfffc
+raw T26D5:0008 ; and cx, 3
+raw T26EC:004B ; xchg dx, ax
+raw T271E:0019 ; and cx, 0xf
+raw T2763:001B ; or word ptr [0x368], 0
+raw T2768:017D ; or dx, 0
+raw T2768:02EF ; or word ptr [0x368], 0
+raw T27A6:002F ; and cx, 0xf
+raw T27B2:0011 ; and cx, 0xf
+raw T27D5:0030 ; xchg dx, ax
+; jumps at the edge of the short range, which the compiler sized otherwise
+; than TASM's estimate from its previous pass
+; (not mapped) raw T0408:2E94   ; jmp 0x2f11
+raw T0DA1:06A0 ; jmp 0x721
+; (not mapped) raw T1F5A:029B   ; jmp 0x31b
+raw T249A:0262 ; jmp 0x2e3
+; ---- code reached through pointers
+; the startup code's table of routines it calls before the program
+; (CODE:01A5 with SI = 1A32h, DI = 1A44h; an empty one at 1A44h for the
+; end): records of 6 bytes, a type (0: a near routine, CALL WORD PTR;
+; else CALL DWORD PTR), a priority (the lowest first) and the pointer.
+; All three are near; the run's -cover shows each of them runs
+; (not mapped) words DATA:1A34 3 CODE stride=6
+; compiled switches: CMP BX,N-1 / JA default / SHL BX,1 / JMP CS:[BX+table],
+; a table of N near offsets in the code segment (each table ends where
+; the next routine begins)
+; (not mapped) words CODE:1140 7 CODE          ; from CODE:106E
+; (not mapped) words CODE:37A6 18 CODE         ; from CODE:33E9 (24)
+; (not mapped) words T0408:23FB D T0408        ; from T0408:0FFC
+; (not mapped) words T0D36:031E 7 T0D36        ; from T0D36:026B
+; (not mapped) words T122D:0F46 5 T122D        ; from T122D:0B1E
+; (not mapped) words T122D:189F 5 T122D        ; from T122D:1634
+; (not mapped) words T17C0:09C9 D T17C0        ; from T17C0:0542 (13)
+; (not mapped) words T17C0:09E3 C T17C0        ; from T17C0:0258 (12)
+; (not mapped) words T17C0:09FB 9 T17C0        ; from T17C0:0081
+; (not mapped) words T17C0:1783 6 T17C0        ; from T17C0:0AA9
+; (not mapped) words T1938:037A 7 T1938        ; from T1938:019F
+; (not mapped) words T1938:06C3 8 T1938        ; from T1938:04C8
+; (not mapped) words T1938:08CC 6 T1938        ; from T1938:071B
+; (not mapped) words T1938:09FE 5 T1938        ; from T1938:0923
+; (not mapped) words T1938:0D3F D T1938        ; from T1938:0A53 (13)
+; (not mapped) words T1938:0F6C 7 T1938        ; from T1938:0DA0
+; (not mapped) words T1938:1235 8 T1938        ; from T1938:0FC1
+; (not mapped) words T1938:1401 6 T1938        ; from T1938:12EF
+; (not mapped) words T1B01:0B41 7 T1B01        ; from T1B01:0805
+; (not mapped) words T1C04:2C5F B T1C04        ; from T1C04:25E9 (11)
+; (not mapped) words T1C04:2C75 C T1C04        ; from T1C04:1634 (12)
+; (not mapped) words T1C04:2C8D 5 T1C04        ; from T1C04:12C8
+; (not mapped) words T1C04:2C97 6 T1C04        ; from T1C04:0E54
+; (not mapped) words T1C04:2CA3 6 T1C04        ; from T1C04:09B7
+; (not mapped) words T1C04:2CAF 5 T1C04        ; from T1C04:05E8
+; (not mapped) words T1C04:2CB9 5 T1C04        ; from T1C04:0213
+; (not mapped) words T1C04:2CC3 4 T1C04        ; from T1C04:0197
+; (not mapped) words T1C04:2CCB D T1C04        ; from T1C04:00C8
+; (not mapped) words T1ED2:069A 8 T1ED2        ; from T1ED2:00A7
+; (not mapped) words T1F5A:072A 6 T1F5A        ; from T1F5A:0578
+; (not mapped) words T1F5A:0930 6 T1F5A        ; from T1F5A:088E
+; (not mapped) words T2112:05D8 7 T2112        ; from T2112:00C6
+words T2250:062B 7 T2250 ; from T2112:005A
+; (not mapped) words T223C:00B6 7 T223C        ; from T223C:0074
+words T238E:1043 5 T238E ; from T2248:100B
+; T2354:0713 stores DX:AX as a far handler and CX:BX beside it in tables
+; at DATA:0D9E and DATA:0CBE (a timer callback and its period, presumably:
+; T2354 sets INT 08h, see below; what the period counts is not checked)
+name T249A:0713 timer_add
+ptr CODE:1592 CODE ; mov ax,1547h / mov dx,CODE / call timer_add
+ptr CODE:1636 CODE ; 16EDh, the same
+ptr CODE:164D CODE ; 19C0h
+ptr CODE:165E CODE ; 16EDh
+ptr T249A:0021 T249A ; 008Ah, DX = T2354
+; T2354's own slot 0: T2354:063C calls the INT 08h handler that was there
+; before, through the far pointer at DATA:0DE2 (PUSHF, CALL FAR)
+ptr T249A:05D1 T249A ; mov ax,063Ch / mov [0D9E],ax / mov ax,T2354
+; INT 21h AH=25h AL=08h with DS = T2354, DX = 0662h: the timer interrupt
+ptr T249A:0632 T249A
+name T249A:0662 int08
+; INT 21h AH=25h AL=09h with DS = CS, DX = 04C4h: the keyboard interrupt
+; (the old vector kept at T2354:0008)
+ptr T249A:055E T249A
+name T249A:04C4 int09
+; int09 keeps one bit per scancode at DATA:0AD8 (16 bytes, a bit set when
+; the key is up, as read from the code); T2354:0268 tests the keys of the
+; tables DATA:0AE9 / 0AEB point to (per player, presumably: a scancode
+; and five flags each, up, down, left, right and fire as a guess) against
+; it. The title menu runs with the BIOS's INT 09h (seen in a run at 36 s)
+; and gets its keys from the timer callback below through INT 16h.
+; INT 21h AH=25h AL=24h with DS = CS, DX = 0520h: the critical error
+; handler (sets DATA:0AD4 to 2, AL = 0; read from the code, not run)
+ptr T249A:0048 T249A
+name T249A:0520 int24
+; the timer callback T2354:0021 sets: a key from INT 16h (AH=01h, 00h)
+; into DATA:0404 (scancode), 0406 (character), 0408 = FFFFh (a key is
+; there), the key before into 0405 and 0407; T1090's menu reads them
+; (seen with -rwatch in a run)
+name T249A:008A timer_keys
+; the key set F27EE:2498 points to (F27EE:0B1B when the credits were left
+; with space, scancode 39h, else F27EE:0B3E; what 0B3E is for is not
+; looked into), by index as dumped in a run: 00 Esc, 01 space, 02
+; backspace, 03 Del, 04 Ctrl, 05 Tab, 06/07 enter, 08..0B up, down,
+; right, left, 0C..15 F1..F10, 16 S, 17 E, 18 Y, 19 N, 1A D, 1B X ...
+; In a map T0708 reads the key from DATA:0404 (through the far pointer
+; DATA:00BE) and compares it with these: Esc (00) shows message 0Ch
+; "QUIT THE GAME ? (Y)", Y (18) then sets F27EE:250C bit 0; D (1A) at
+; T0708:3F0A calls save_game when both players' cursor records (F27EE:26B4
+; and 26E5, 31h bytes each) have state 5 at +17h. T0D36:141F sets state 5
+; when the function chosen at +1Bh is 9: fire held over an empty square,
+; left held while fire is let go (the change of phase; seen with -watch
+; on F27EE:26CF, the function goes back to 1 when left is let go first).
+; T11FD:0004 (player, number) shows a message of the table at F2789:0008
+; (records of 18h bytes: 0Ch QUIT THE GAME, 28h SAVE ABORTED, 29h GAME
+; SAVED, 2Ah GAME NOT SAVED, 2Bh GAME NOT LOADED; -1 clears, presumably).
+name T12BF:000F show_message
+; T164D:0363 (?, dir, name far, ext) writes a path into F27E6:0077: a
+; directory of F27E6:0023 (6 bytes each: LIB\, MAP\, FX\, ANIM\; -1 none),
+; the name, an extension of F27E6:003B (5 bytes each: .FIN .PMP .SHP .LIB
+; .PAL .DAT .TXT .SND .FXX .COM .IFF .HI); what the first argument is
+; for is not looked into.
+name T1724:035E make_path
+; saving and loading a game: the file is <name>.DAT in the game's folder,
+; the name at F27EE:249C ("00" in the runs), made by make_path with no
+; directory. save_game ran at D (a run, 00.DAT created and written),
+; load_game at the start of a map when F27EE:250C bit 200h is set, after
+; DISK, LOAD, a position and a key at "PLEASE INSERT DISK" (T1090:0867
+; opens the file first to see that it is there).
+name T148F:000E save_game
+name T148F:0480 load_game
+; CODE:2296 passes CODE:2460 (a near routine) to CODE:3312 with a far
+; pointer into DATA and the address of its own further arguments (an
+; output routine for a formatter, presumably; not checked)
+ptr CODE:31A7 CODE
+; T0708 fills a record's fields 4Eh..68h with far pointers to routines
+; (what the record is: not checked)
+; (not mapped) ptr T0708:10FC CODE     ; +4E CODE:16F8
+; (not mapped) ptr T0708:110B T2467    ; +52 T2467:0006
+; (not mapped) ptr T0708:111A T2470    ; +56 T2470:0008
+; (not mapped) ptr T0708:1129 T24D8    ; +5A T24D8:0008
+; (not mapped) ptr T0708:1138 CODE     ; +5E CODE:2627
+; (not mapped) ptr T0708:1147 T0D36    ; +62 T0D36:05FF
+; (not mapped) ptr T0708:1156 CODE     ; +66 CODE:2D44
+; DATA:1770, 1774 and 1778 are far pointers to this routine, which does
+; nothing (PUSH DS, DS = DATA, POP DS, RETF)
+; (not mapped) code CODE:1D7F

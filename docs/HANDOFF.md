@@ -1,9 +1,11 @@
 # Handoff
 
-State of 2026-09-30: stage 1 for the launcher and the main program;
-BATTLE.EXE's and BI.EXE's code reached to 97% and 96%.
-`src/BI.hints` and `src/BATTLE.hints` rebuild BI.EXE and BATTLE.EXE byte
-for byte (`doskit/tools/check.py`: all ok). Nothing is understood yet
+State of 2026-09-30: stage 1 for the launcher, the main program and the
+two data disks' games; BATTLE.EXE's and BI.EXE's code reached to 97% and
+96%, DESERT.EX2's as BATTLE.EXE's, MOON.EXE's to 73%.
+`src/BI.hints`, `src/BATTLE.hints`, `src/DESERT.hints` and
+`src/MOON.hints` rebuild their programs byte for byte
+(`doskit/tools/check.py`: all ok). Nothing is understood yet
 beyond the segments; the port is the template's.
 
 ## Start here (next session)
@@ -27,8 +29,8 @@ games, each its own folder mounted as C: and started there:
 | `ISLE/INTVGA/INTRO.EXE`, `ISLE/INTEGA/INTRO.EXE` | the intro, VGA and EGA (Borland C++), with `INTRO.A00`..`A12`, `.FX`, `.PX`, `.MDI`, `.PDI`, `CHAR_BIG.DAT`, `CHAR_SMA.DAT` |
 | `ISLE/INSTALL.EXE`, `MOON/INSTALL.EXE` | installers (Borland C++); `MOON/INST.DAT` |
 | `DESERT/DESERT.EXE` | data disk 1's starter (2 KB, not Borland): names `DESERT.EX2`, `C:\BLUEBYTE\BI1D1\...`, `MAP\NN.HI`, `NN.DAT` (strings only; what it does is not checked) |
-| `DESERT/DESERT.EX2` | data disk 1's game (Borland C++, the same size of header and number of relocations as BATTLE.EXE: presumably the same engine, not checked) |
-| `MOON/MOON.EXE` | data disk 2's game (Borland C++, 4585 relocations; names `MAPINFO.DAT`, `MAP02.DAT`, `MAP04.DAT`, `HQ.PAL`, `TOT.PAL`, `END.PAL`/`.SND` besides BATTLE.EXE's files) |
+| `DESERT/DESERT.EX2` | data disk 1's game: BATTLE.EXE's code byte for byte, the same relocations; 3 bytes of far data differ (F2789, F27EE), the file ends before the stack |
+| `MOON/MOON.EXE` | data disk 2's game (Borland C++ with other encodings than BATTLE.EXE's, linked by TLINK 5.0, 4585 relocations, 96 code segments as BATTLE.EXE but sized and laid out otherwise; names `MAPINFO.DAT`, `MAP02.DAT`, `MAP04.DAT`, `HQ.PAL`, `TOT.PAL`, `END.PAL`/`.SND` besides BATTLE.EXE's files) |
 | `MAP/NN.PMP`, `.SHP`, `.FIN`, `.COM` | per map; the `.COM` files are no programs: they begin with `TPWM` (a packed file, presumably) |
 | `LIB/*.LIB`, `LIB/*.DAT` | graphics libraries by their names (units, parts, patterns, fonts, cursor); not looked at |
 | `*.IFF`, `*.LBM`, `*.PAL`, `NN.PAL` | pictures and palettes by their names; not looked at |
@@ -149,6 +151,26 @@ games, each its own folder mounted as C: and started there:
   the cursor record's state 5, the message table; BATTLE.hints). Esc, Y leaves the map without a
   save question. Neither run reached any of the 4.1 KB of gaps (-cover,
   gaps.py: 0 ran).
+- DESERT.EX2 and MOON.EXE: `doskit/tools/xfer.py` carries BATTLE.hints
+  to them (it handles programs of many code segments now: doskit
+  23cbe74). DESERT.hints has BATTLE's segment lines, ZEROS not stored
+  (`size=220`, the header's minimum allocation 2Bh paragraphs), and all
+  127 hints carried. MOON.hints' segment lines come from its own
+  relocations (the classes by position: 96 code frames from 0000 to
+  27FC, far data from 280A, DATA 2EAE as a guess from BATTLE's layout;
+  start= the lowest offset below 10h a far CALL/JMP enters by, 0 for
+  T2084, T238E, T249A, T260B where none does, which the build accepts).
+  Its compiler encoded AND/OR with a small constant in the byte form
+  and XCHG AX,reg in one byte (as TASM does; BATTLE.EXE's the other
+  way), 9 single instructions otherwise (`raw`). TLINK 5.0's header is
+  400h bytes longer than its relocations need (zeros; MOON/INSTALL.EXE
+  200h, DESERT.EXE none: no rule seen), so `linker tlink 50
+  header=original` (doskit, new). xfer.py matched 48452 of BATTLE's
+  58980 instructions; 71 hints carried, 56 not (switch tables in
+  T1C04, T1938, T17C0 and others, the handler pointers of T0708's
+  record, 12 raw lines of CODE: MOON's library differs, its CODE is
+  39B0h bytes, BATTLE's 4080h). The 50 carried raw lines are not needed
+  with MOON's encodings, but harmless.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -169,8 +191,11 @@ games, each its own folder mounted as C: and started there:
    BB.IFF, TITEL.IFF, LIB\char24.LIB, TITEL.TXT, TITEL.PND. (The shot
    asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
-3. DESERT.EX2 and MOON.EXE by `doskit/tools/xfer.py` from BATTLE.hints,
-   the INTRO programs on their own.
+3. MOON.EXE from 73% on: the 56 hints not carried, found again in
+   MOON's own code (gaps.py on src/MOON.hints; the switch tables by
+   their `CMP BX,N-1 / JA / SHL BX,1 / JMP CS:[BX+table]`), as MOON.hints'
+   own lines; whether DATA is 2EAE; then the INTRO programs on their
+   own.
 4. A tool for each data format (`tools/NAMEfiles.py`), starting with
    the palettes, `.IFF`/`.LBM` pictures and `.LIB` libraries.
 5. The port: `symmap.py`, then the program over `rmem.h` routine by
