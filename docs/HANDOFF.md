@@ -7,8 +7,9 @@ to 98%, the intros' to 92%.
 `src/BI.hints`, `src/BATTLE.hints`, `src/DESERT.hints`,
 `src/MOON.hints`, `src/INTVGA.hints` and `src/INTEGA.hints` rebuild
 their programs byte for byte
-(`doskit/tools/check.py`: all ok). Nothing is understood yet
-beyond the segments; the port is the template's.
+(`doskit/tools/check.py`: all ok). BI.EXE is read in full (which
+intro, then BATTLE.EXE); the others are not understood yet
+beyond the segments and a few routines; the port is the template's.
 
 ## Start here (next session)
 
@@ -26,7 +27,7 @@ games, each its own folder mounted as C: and started there:
 
 | Folder / file | What |
 |---|---|
-| `ISLE/BI.EXE` | Battle Isle's launcher (10 KB, assembly, linked by TLINK): checks the marker files `BIDISK.VGA`/`.EGA`/`.INT` (1 byte each), runs `INTVGA\INTRO.EXE` or `INTEGA\INTRO.EXE`, then `BATTLE.EXE` (read from its strings; not checked by a run) |
+| `ISLE/BI.EXE` | Battle Isle's launcher (10 KB, assembly, linked by TLINK): chooses VGA or EGA (`/V`, `/E`, the marker files `BIDISK.EGA`/`.VGA`, the BIOS), runs `INTVGA\INTRO.EXE` or `INTEGA\INTRO.EXE`, then `BATTLE.EXE` (read from the code, seen in runs; see below) |
 | `ISLE/BATTLE.EXE` | the game (208 KB, Borland C++ 1991, large model, 4630 relocations) |
 | `ISLE/INTVGA/INTRO.EXE` | an intro (Borland C++) in EGA's mode 0Dh despite the folder's name, with `INTRO.A00`..`A12`, `.FX`, `.PX`, `.MDI`, `.PDI`, `CHAR_BIG.DAT`, `CHAR_SMA.DAT` |
 | `ISLE/INTEGA/INTRO.EXE` | an intro (Borland C++) in VGA's mode 13h despite the folder's name, with `INTRO0..12.VGA`, `IPA0..12.VGA`, `CBIG`/`CSMA`/`BTAB`/`STAB.VGA`, `INTRO.FX`, `.PX`, `.MDI`, `.PDI` |
@@ -195,8 +196,9 @@ games, each its own folder mounted as C: and started there:
   14 s, enter at 33 s, 90 s) reaches MOON's first map with BATTLE.EXE's
   keys; gaps.py with its -cover: 0 gaps ran.
 - The intros, INTVGA/INTRO.EXE and INTEGA/INTRO.EXE: the folder names
-  are the wrong way round (a run: INTVGA's sets mode 0Dh, 16 colours,
-  INTEGA's mode 13h, 256 colours, and reads the `.VGA` files). Both are
+  seem the wrong way round but are what BI.EXE means (see below; a
+  run: INTVGA's sets mode 0Dh, 16 colours, INTEGA's mode 13h, 256
+  colours, and reads the `.VGA` files). Both are
   Borland C++ linked by TLINK 3.0, the same run time library in CODE
   (3FA0h bytes, the same offsets; it runs 10 bytes into T03FA's frame,
   so T03FA has `start=A`, found by a run) and the same timer module as
@@ -212,7 +214,20 @@ games, each its own folder mounted as C: and started there:
   timer callbacks `MOV AX,handler` before timer_add, found as gaps that
   ran in a run of each intro to its end (178 s and 200 s, no keys);
   after them no gap ran. The rest is unused library code, 4 KB.
-  Which intro BI.EXE runs on which card is not looked into.
+  BI.EXE runs INTVGA's on a card it takes for VGA (below).
+- Which intro BI.EXE runs (BI.hints, `check_card`): `/V` or `/v` in its
+  command tail means VGA, `/E` or `/e` EGA; without either, BIDISK.EGA
+  there means EGA, else BIDISK.VGA VGA, else INT 10h AX=1A00h decides
+  (AL=1Ah VGA). VGA runs INTVGA's intro (16 colours), EGA INTEGA's (256
+  colours), so the folder names match what the launcher takes the card
+  for, not what the intros show. Then CD .., and BATTLE.EXE runs if the
+  same marker file opens (else INSERT DISC, three tries). Both get
+  BI.EXE's command tail. GOG's ISLE folder has all three marker files
+  and starts `bi.exe` without arguments: EGA, INTEGA's 256-colour intro
+  (runs: no arguments, `/v`, `/e`, and one to BATTLE.EXE's start after
+  the intro's exit at 200 s). BIDISK.INT is not opened by BI.EXE;
+  BATTLE.EXE, DESERT.EX2 and MOON.EXE hold the string BIDISK.VGA (what
+  for is not looked into), none of them .EGA or .INT.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -233,9 +248,9 @@ games, each its own folder mounted as C: and started there:
    BB.IFF, TITEL.IFF, LIB\char24.LIB, TITEL.TXT, TITEL.PND. (The shot
    asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
-3. Which intro BI.EXE runs on which card (its marker files, BI.hints);
-   MOON.EXE's and the intros' last library gaps only if a run reaches
-   them.
+3. What BATTLE.EXE does with BIDISK.VGA and with a `/V` or `/E` in its
+   command tail (BI.EXE passes its own on); MOON.EXE's and the intros'
+   last library gaps only if a run reaches them.
 4. A tool for each data format (`tools/NAMEfiles.py`), starting with
    the palettes, `.IFF`/`.LBM` pictures and `.LIB` libraries.
 5. The port: `symmap.py`, then the program over `rmem.h` routine by

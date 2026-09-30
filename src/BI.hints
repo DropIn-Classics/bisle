@@ -1,6 +1,6 @@
 ; BI.EXE: the launcher of Battle Isle (ISLE/). Checks the BIDISK.* marker
-; files, runs INTVGA\INTRO.EXE (or INTEGA\) and then BATTLE.EXE (read from
-; its strings and the first instructions; not checked by a run yet).
+; files, runs INTVGA\INTRO.EXE or INTEGA\INTRO.EXE and then BATTLE.EXE
+; (read from the code and seen in runs; see check_card below).
 ; Hints for doskit/tools/disasm.py; numbers are hex.
 
 exe ISLE/BI.EXE
@@ -35,6 +35,30 @@ segment STACK 0245 STACK stack size=100
 ; order (that of the object records, not rebuilt)
 linker tlink 30
 relocorder original
+
+; which intro: check_card sets DATA:0004 to 0 for VGA, 1 for EGA, in this
+; order: /V or /v in the command tail (AX=562Fh: '/', then 'V', found by
+; find_switch, which retries with the letter in lower case) gives VGA, /E
+; or /e EGA; else the marker file BIDISK.EGA opens (DATA:003C) gives EGA,
+; else BIDISK.VGA (DATA:0031) VGA, else INT 10h AX=1A00h (the display
+; combination) answering AL=1Ah VGA, else EGA. VGA changes to INTVGA (the
+; 16-colour intro, mode 0Dh), EGA to INTEGA (the 256-colour one, 13h), and
+; runs INTRO.EXE there with BI.EXE's own command tail (the EXEC block at
+; DATA:0008 points to PSP:0080). Then CD .. and BIDISK.VGA or .EGA by the
+; same choice must open before BATTLE.EXE runs, with the same tail; if not,
+; "PLEASE INSERT DISC <VGA>/<EGA>", a key, and again, up to three times
+; (DATA:0006 counts), then "PROGRAM NOT FOUND" (DATA:0084) and the end.
+; GOG's folder has all three marker files and starts `bi.exe` without
+; arguments, so it runs INTEGA's intro: seen in runs (no arguments: opens
+; BIDISK.EGA, CD INTEGA; /v: CD INTVGA; /e: CD INTEGA; after the intro's
+; exit at 200 s: CD .., BIDISK.EGA, BATTLE.EXE). BIDISK.INT (DATA:0047)
+; is not opened here: no instruction takes its offset as read.
+name CODE:01BA check_card
+name CODE:0196 find_switch
+name CODE:0104 error_exit       ; shows the message AX, waits for a key
+name CODE:014D ask_disk         ; the same at another place, returns
+name DATA:0004 is_ega
+name DATA:0006 disk_tries
 
 ; S0107's code addresses CS:0240, the first byte after its own end (the
 ; first of S012B's): kept a number
