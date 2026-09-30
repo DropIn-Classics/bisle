@@ -76,8 +76,11 @@ games, each its own folder mounted as C: and started there:
 1. Gaps in BATTLE.EXE (and BI.EXE): far pointers in data (tables of
    `DD` handlers), switch tables; `gaps.py --seg SEG` per segment. The
    segment classes of the far data segments.
-2. A run of BATTLE.EXE in `doskit/tools/run.py` (not tried): does the
-   runner get it to the title screen? Then names for the main loop, the file loading, the
+2. BATTLE.EXE in the runner: `run.py -until 20 -shot 12 build/shots/b12.png
+   -dos ISLE/BATTLE.EXE` shows the title screen at 12 s; before it the
+   program prints "Color." and "Speaker." and reads CHAR6.DAT, BB.DAT,
+   BB.IFF, TITEL.IFF, LIB\char24.LIB, TITEL.TXT, TITEL.PND. (The shot
+   asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
 3. DESERT.EX2 and MOON.EXE by `doskit/tools/xfer.py` from BATTLE.hints,
    the INTRO programs on their own.
