@@ -7,7 +7,8 @@ exe ISLE/BATTLE.EXE
 ; the segments, from the relocations and the header (SS:SP = 2F32:0080);
 ; DS holds DGROUP (DATA, 2D8D: the startup code loads it). A module's code
 ; segment T.... begins where the one before ends (start=, first guessed
-; from the lowest offset a far CALL/JMP enters it by)
+; from the lowest offset a far CALL/JMP enters it by; T2248's from the end
+; of T223C's switch table at T223C:00B6, 7 words to 2248:0004)
 segment CODE  0000 CODE
 segment T0408 0408 CODE start=B prefix=T0408_
 segment T0708 0708 CODE start=E prefix=T0708_
@@ -37,7 +38,7 @@ segment T1F5A 1F5A CODE prefix=T1F5A_
 segment T2112 2112 CODE start=B prefix=T2112_
 segment T2190 2190 CODE start=D prefix=T2190_
 segment T223C 223C CODE start=1 prefix=T223C_
-segment T2248 2248 CODE prefix=T2248_
+segment T2248 2248 CODE start=4 prefix=T2248_
 segment T2354 2354 CODE prefix=T2354_
 segment T23DC 23DC CODE start=A prefix=T23DC_
 segment T23DE 23DE CODE start=A prefix=T23DE_
@@ -145,6 +146,8 @@ asm imm8_alu=add,adc,sbb,sub,cmp,xor xchg_ax_short=0 test_form=rm_reg
 ; one byte, XOR r,r in the r/m,reg form (see asm above)
 raw CODE:004F   ; and bx, 0xfff0
 raw CODE:0211   ; xor ah, ah
+raw CODE:3097   ; xchg cx, ax
+raw CODE:309C   ; xchg cx, ax
 raw CODE:31D1   ; xchg bx, ax
 raw CODE:31DF   ; xchg cx, ax
 raw CODE:31E4   ; xchg si, ax
@@ -153,6 +156,18 @@ raw CODE:321B   ; xchg di, ax
 raw CODE:3222   ; xchg si, ax
 raw CODE:3223   ; xchg dx, ax
 raw CODE:32B7   ; xchg cx, ax
+raw CODE:33F6   ; or word ptr [bp - 2], 1
+raw CODE:3401   ; or word ptr [bp - 2], 2
+raw CODE:3417   ; and word ptr [bp - 2], 0xffdf
+raw CODE:341D   ; or word ptr [bp - 2], 0x20
+raw CODE:3431   ; or word ptr [bp - 2], 8
+raw CODE:3451   ; or word ptr [bp - 2], 2
+raw CODE:3477   ; xchg dx, ax
+raw CODE:34B5   ; or word ptr [bp - 2], 0x10
+raw CODE:34C1   ; and word ptr [bp - 2], 0xffef
+raw CODE:3544   ; or word ptr [bp - 2], 4
+raw CODE:35A0   ; and word ptr [bp - 2], 0xfffb
+raw CODE:36B2   ; or word ptr [bp - 2], 0x40
 raw CODE:3CF6   ; xchg si, ax
 raw CODE:3CF7   ; xchg dx, ax
 raw CODE:3D00   ; xchg cx, ax
@@ -161,16 +176,22 @@ raw CODE:3D23   ; and bx, 0xf
 raw CODE:3D7A   ; or di, 0xc
 raw CODE:3DD6   ; xchg dx, ax
 raw CODE:3DF6   ; xchg dx, ax
+raw CODE:3E17   ; xchg dx, ax
 raw CODE:3E21   ; xchg bx, ax
 raw CODE:3F05   ; xchg si, ax
 raw CODE:3F06   ; xchg dx, ax
 raw CODE:3F0F   ; xchg cx, ax
 raw CODE:3F14   ; xchg si, ax
+raw T2354:0278   ; and bx, 0x7f
+raw T2354:0287   ; and cx, 7
+raw T2354:04F5   ; and si, 0x7f
+raw T2354:0504   ; and cx, 7
 raw T23DC:001A   ; and cx, 3
 raw T24BA:0043   ; and si, 3
 raw T24BA:0058   ; and si, 3
 raw T24BA:0086   ; and bx, 3
 raw T24BA:008F   ; and si, 3
+raw T24C5:003A   ; and word ptr [bp + 6], 0xfffc
 raw T258F:0008   ; and cx, 3
 raw T2619:0041   ; xchg dx, ax
 raw T264B:000F   ; and cx, 0xf
@@ -186,3 +207,84 @@ raw T2701:0036   ; xchg dx, ax
 raw T0408:2E94   ; jmp 0x2f11
 raw T0D36:06A1   ; jmp 0x721
 raw T1F5A:029B   ; jmp 0x31b
+raw T2354:0262   ; jmp 0x2e3
+
+; ---- code reached through pointers
+
+; compiled switches: CMP BX,N-1 / JA default / SHL BX,1 / JMP CS:[BX+table],
+; a table of N near offsets in the code segment (each table ends where
+; the next routine begins)
+words CODE:1140 7 CODE          ; from CODE:106E
+words CODE:37A6 18 CODE         ; from CODE:33E9 (24)
+words T0408:23FB D T0408        ; from T0408:0FFC
+words T0D36:031E 7 T0D36        ; from T0D36:026B
+words T122D:0F46 5 T122D        ; from T122D:0B1E
+words T122D:189F 5 T122D        ; from T122D:1634
+words T17C0:09C9 D T17C0        ; from T17C0:0542 (13)
+words T17C0:09E3 C T17C0        ; from T17C0:0258 (12)
+words T17C0:09FB 9 T17C0        ; from T17C0:0081
+words T17C0:1783 6 T17C0        ; from T17C0:0AA9
+words T1938:037A 7 T1938        ; from T1938:019F
+words T1938:06C3 8 T1938        ; from T1938:04C8
+words T1938:08CC 6 T1938        ; from T1938:071B
+words T1938:09FE 5 T1938        ; from T1938:0923
+words T1938:0D3F D T1938        ; from T1938:0A53 (13)
+words T1938:0F6C 7 T1938        ; from T1938:0DA0
+words T1938:1235 8 T1938        ; from T1938:0FC1
+words T1938:1401 6 T1938        ; from T1938:12EF
+words T1B01:0B41 7 T1B01        ; from T1B01:0805
+words T1C04:2C5F B T1C04        ; from T1C04:25E9 (11)
+words T1C04:2C75 C T1C04        ; from T1C04:1634 (12)
+words T1C04:2C8D 5 T1C04        ; from T1C04:12C8
+words T1C04:2C97 6 T1C04        ; from T1C04:0E54
+words T1C04:2CA3 6 T1C04        ; from T1C04:09B7
+words T1C04:2CAF 5 T1C04        ; from T1C04:05E8
+words T1C04:2CB9 5 T1C04        ; from T1C04:0213
+words T1C04:2CC3 4 T1C04        ; from T1C04:0197
+words T1C04:2CCB D T1C04        ; from T1C04:00C8
+words T1ED2:069A 8 T1ED2        ; from T1ED2:00A7
+words T1F5A:072A 6 T1F5A        ; from T1F5A:0578
+words T1F5A:0930 6 T1F5A        ; from T1F5A:088E
+words T2112:05D8 7 T2112        ; from T2112:00C6
+words T2112:05E6 7 T2112        ; from T2112:005A
+words T223C:00B6 7 T223C        ; from T223C:0074
+words T2248:1043 5 T2248        ; from T2248:100B
+
+; T2354:0713 stores DX:AX as a far handler and CX:BX beside it in tables
+; at DATA:0D9E and DATA:0CBE (a timer callback and its period, presumably:
+; T2354 sets INT 08h, see below; what the period counts is not checked)
+name T2354:0713 timer_add
+ptr CODE:1514 CODE      ; mov ax,1547h / mov dx,CODE / call timer_add
+ptr CODE:15B8 CODE      ; 16EDh, the same
+ptr CODE:15CF CODE      ; 19C0h
+ptr CODE:15E0 CODE      ; 16EDh
+ptr T2354:0021 T2354    ; 008Ah, DX = T2354
+; T2354's own slot 0: T2354:063C calls the INT 08h handler that was there
+; before, through the far pointer at DATA:0DE2 (PUSHF, CALL FAR)
+ptr T2354:05D1 T2354    ; mov ax,063Ch / mov [0D9E],ax / mov ax,T2354
+; INT 21h AH=25h AL=08h with DS = T2354, DX = 0662h: the timer interrupt
+ptr T2354:0632 T2354
+name T2354:0662 int08
+; INT 21h AH=25h AL=09h with DS = CS, DX = 04C4h: the keyboard interrupt
+; (the old vector kept at T2354:0008)
+ptr T2354:055E T2354
+name T2354:04C4 int09
+
+; CODE:2296 passes CODE:2460 (a near routine) to CODE:3312 with a far
+; pointer into DATA and the address of its own further arguments (an
+; output routine for a formatter, presumably; not checked)
+ptr CODE:229F CODE
+
+; T0708 fills a record's fields 4Eh..68h with far pointers to routines
+; (what the record is: not checked)
+ptr T0708:10FC CODE     ; +4E CODE:16F8
+ptr T0708:110B T2467    ; +52 T2467:0006
+ptr T0708:111A T2470    ; +56 T2470:0008
+ptr T0708:1129 T24D8    ; +5A T24D8:0008
+ptr T0708:1138 CODE     ; +5E CODE:2627
+ptr T0708:1147 T0D36    ; +62 T0D36:05FF
+ptr T0708:1156 CODE     ; +66 CODE:2D44
+
+; DATA:1770, 1774 and 1778 are far pointers to this routine, which does
+; nothing (PUSH DS, DS = DATA, POP DS, RETF)
+code CODE:1D7F

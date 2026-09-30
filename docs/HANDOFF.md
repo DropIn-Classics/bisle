@@ -1,6 +1,7 @@
 # Handoff
 
-State of 2026-09-30: stage 1 for the launcher and the main program.
+State of 2026-09-30: stage 1 for the launcher and the main program;
+BATTLE.EXE's code reached to 95%.
 `src/BI.hints` and `src/BATTLE.hints` rebuild BI.EXE and BATTLE.EXE byte
 for byte (`doskit/tools/check.py`: all ok). Nothing is understood yet
 beyond the segments; the port is the template's.
@@ -66,16 +67,39 @@ games, each its own folder mounted as C: and started there:
   assembly modules keep TASM's forms: 36 `raw` lines. Four jumps at the
   edge of the short range were sized otherwise than TASM's estimate:
   `raw` too.
-- The analysis reaches about 70% of BATTLE.EXE's code bytes: 48 KB of
-  non-zero bytes in 110 gaps are not reached yet (the largest at
-  T1C04:00CD, 11 KB; `doskit/tools/gaps.py src/BATTLE.hints --seg T1C04`).
+- The analysis reaches 95% of BATTLE.EXE's code bytes (153193 of
+  160608 as instructions); 6.6 KB of non-zero bytes in about 100 gaps
+  are left, nearly all in CODE (the run time library: routines no
+  reached code calls, by a CALL, an immediate, a table or a far pointer
+  in data; unused library code, presumably, not checked). What reached
+  the rest (from 48 KB left):
+  - 35 compiled switches, `CMP BX,N-1 / JA / SHL BX,1 / JMP CS:[BX+table]`
+    with the table of near offsets in the code segment right before the
+    next routine (`words` hints); most of the gaps were behind them,
+    and switches inside switches.
+  - Far pointers made of two immediates, the offset plain and the
+    segment relocated: `MOV AX,handler / MOV DX,seg` before a far call
+    to T2354:0713 (`timer_add`, a timer callback and its period in
+    CX:BX, presumably), a record at T0708:10F6 filled with seven far
+    pointers to routines; `ptr` hints. doskit's `ptr` and `words` seeded
+    code only in the segment named CODE; now in every segment of class
+    CODE (doskit 1c03e90).
+  - T2354 sets INT 08h (T2354:0662) and INT 09h (T2354:04C4) with
+    INT 21h AH=25h, DS = CS.
+  - T2248 begins at offset 4 (`start=4`): T223C's switch table runs up
+    to there; the build was 16 bytes too long without it.
+  - The far pointers the analysis finds in data (relocated segment
+    words) are nearly all inside unreached code, CALL FAR instructions;
+    only DATA:1770/1774/1778 are real (all to CODE:1D7F, a routine that
+    does nothing).
   In BI.EXE most of the segments other than CODE are not reached yet.
 
 ## Next
 
-1. Gaps in BATTLE.EXE (and BI.EXE): far pointers in data (tables of
-   `DD` handlers), switch tables; `gaps.py --seg SEG` per segment. The
-   segment classes of the far data segments.
+1. Gaps in BI.EXE the same way (switch tables, far pointers of two
+   immediates). BATTLE.EXE's last 6.6 KB in CODE: whether any of it is
+   reached (a run with a trace would tell). The segment classes of the
+   far data segments.
 2. BATTLE.EXE in the runner: `run.py -until 20 -shot 12 build/shots/b12.png
    -dos ISLE/BATTLE.EXE` shows the title screen at 12 s; before it the
    program prints "Color." and "Speaker." and reads CHAR6.DAT, BB.DAT,
