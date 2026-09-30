@@ -1,0 +1,188 @@
+; BATTLE.EXE: the game (Battle Isle), Borland C++ 1991, large model;
+; started by BI.EXE after the intro.
+; Hints for doskit/tools/disasm.py; numbers are hex.
+
+exe ISLE/BATTLE.EXE
+
+; the segments, from the relocations and the header (SS:SP = 2F32:0080);
+; DS holds DGROUP (DATA, 2D8D: the startup code loads it). A module's code
+; segment T.... begins where the one before ends (start=, first guessed
+; from the lowest offset a far CALL/JMP enters it by)
+segment CODE  0000 CODE
+segment T0408 0408 CODE start=B prefix=T0408_
+segment T0708 0708 CODE start=E prefix=T0708_
+segment T0B70 0B70 CODE start=E prefix=T0B70_
+segment T0BA0 0BA0 CODE start=3 prefix=T0BA0_
+segment T0CEB 0CEB CODE start=8 prefix=T0CEB_
+segment T0D36 0D36 CODE start=F prefix=T0D36_
+segment T0E9B 0E9B CODE start=B prefix=T0E9B_
+segment T1090 1090 CODE start=E prefix=T1090_
+segment T11FD 11FD CODE start=4 prefix=T11FD_
+segment T122D 122D CODE start=2 prefix=T122D_
+segment T13CA 13CA CODE start=F prefix=T13CA_
+segment T1479 1479 CODE start=4 prefix=T1479_
+segment T15AC 15AC CODE start=7 prefix=T15AC_
+segment T164D 164D CODE start=C prefix=T164D_
+segment T169E 169E CODE start=E prefix=T169E_
+segment T1727 1727 CODE start=4 prefix=T1727_
+segment T178C 178C CODE start=D prefix=T178C_
+segment T17C0 17C0 CODE start=4 prefix=T17C0_
+segment T1938 1938 CODE start=F prefix=T1938_
+segment T1ABC 1ABC CODE start=8 prefix=T1ABC_
+segment T1B01 1B01 CODE start=7 prefix=T1B01_
+segment T1C04 1C04 CODE start=D prefix=T1C04_
+segment T1ED2 1ED2 CODE start=5 prefix=T1ED2_
+segment T1F3C 1F3C CODE start=A prefix=T1F3C_
+segment T1F5A 1F5A CODE prefix=T1F5A_
+segment T2112 2112 CODE start=B prefix=T2112_
+segment T2190 2190 CODE start=D prefix=T2190_
+segment T223C 223C CODE start=1 prefix=T223C_
+segment T2248 2248 CODE prefix=T2248_
+segment T2354 2354 CODE prefix=T2354_
+segment T23DC 23DC CODE start=A prefix=T23DC_
+segment T23DE 23DE CODE start=A prefix=T23DE_
+segment T23FD 23FD CODE start=A prefix=T23FD_
+segment T2433 2433 CODE start=6 prefix=T2433_
+segment T2467 2467 CODE start=6 prefix=T2467_
+segment T2470 2470 CODE start=8 prefix=T2470_
+segment T2472 2472 CODE start=8 prefix=T2472_
+segment T2475 2475 CODE start=6 prefix=T2475_
+segment T2479 2479 CODE start=A prefix=T2479_
+segment T247D 247D CODE start=4 prefix=T247D_
+segment T2482 2482 CODE start=4 prefix=T2482_
+segment T2485 2485 CODE start=1 prefix=T2485_
+segment T24A8 24A8 CODE start=8 prefix=T24A8_
+segment T24B5 24B5 CODE start=E prefix=T24B5_
+segment T24BA 24BA CODE start=8 prefix=T24BA_
+segment T24C5 24C5 CODE prefix=T24C5_
+segment T24D2 24D2 CODE prefix=T24D2_
+segment T24D3 24D3 CODE prefix=T24D3_
+segment T24D8 24D8 CODE start=8 prefix=T24D8_
+segment T24DF 24DF CODE start=2 prefix=T24DF_
+segment T2503 2503 CODE start=6 prefix=T2503_
+segment T2506 2506 CODE start=A prefix=T2506_
+segment T2515 2515 CODE start=8 prefix=T2515_
+segment T251F 251F CODE start=E prefix=T251F_
+segment T2525 2525 CODE start=A prefix=T2525_
+segment T2536 2536 CODE start=4 prefix=T2536_
+segment T253B 253B CODE start=2 prefix=T253B_
+segment T253C 253C CODE start=E prefix=T253C_
+segment T253E 253E CODE start=A prefix=T253E_
+segment T2541 2541 CODE start=4 prefix=T2541_
+segment T2550 2550 CODE start=6 prefix=T2550_
+segment T258F 258F CODE start=2 prefix=T258F_
+segment T2590 2590 CODE start=A prefix=T2590_
+segment T2592 2592 CODE start=2 prefix=T2592_
+segment T2593 2593 CODE start=6 prefix=T2593_
+segment T259F 259F CODE start=4 prefix=T259F_
+segment T25A6 25A6 CODE prefix=T25A6_
+segment T2619 2619 CODE start=4 prefix=T2619_
+segment T261E 261E CODE start=8 prefix=T261E_
+segment T2621 2621 CODE start=8 prefix=T2621_
+segment T2624 2624 CODE start=6 prefix=T2624_
+segment T2628 2628 CODE start=4 prefix=T2628_
+segment T262A 262A CODE start=E prefix=T262A_
+segment T263D 263D CODE start=A prefix=T263D_
+segment T264B 264B CODE prefix=T264B_
+segment T2653 2653 CODE prefix=T2653_
+segment T265E 265E CODE start=E prefix=T265E_
+segment T2670 2670 CODE start=A prefix=T2670_
+segment T267C 267C CODE start=E prefix=T267C_
+segment T2683 2683 CODE start=A prefix=T2683_
+segment T268A 268A CODE start=6 prefix=T268A_
+segment T2690 2690 CODE start=4 prefix=T2690_
+segment T2695 2695 CODE start=4 prefix=T2695_
+segment T26D2 26D2 CODE start=A prefix=T26D2_
+segment T26DE 26DE CODE start=8 prefix=T26DE_
+segment T26E6 26E6 CODE start=7 prefix=T26E6_
+segment T26EA 26EA CODE start=F prefix=T26EA_
+segment T26FE 26FE CODE start=A prefix=T26FE_
+segment T2701 2701 CODE start=E prefix=T2701_
+segment T2718 2718 CODE start=8 prefix=T2718_
+segment T271A 271A CODE start=E prefix=T271A_
+segment T271D 271D CODE start=8 prefix=T271D_
+segment T2720 2720 CODE start=A prefix=T2720_
+segment T2723 2723 CODE start=A prefix=T2723_
+segment T2728 2728 CODE start=E prefix=T2728_
+segment F2736 2736 FAR_DATA prefix=F2736_
+segment F273A 273A FAR_DATA prefix=F273A_
+segment F273B 273B FAR_DATA prefix=F273B_
+segment F2740 2740 FAR_DATA prefix=F2740_
+segment F2789 2789 FAR_DATA prefix=F2789_
+segment F27E3 27E3 FAR_DATA prefix=F27E3_
+segment F27E6 27E6 FAR_DATA prefix=F27E6_
+segment F27EE 27EE FAR_DATA prefix=F27EE_
+segment F2C09 2C09 FAR_DATA prefix=F2C09_
+segment F2C0A 2C0A FAR_DATA prefix=F2C0A_
+segment F2D33 2D33 FAR_DATA prefix=F2D33_
+segment F2D35 2D35 FAR_DATA prefix=F2D35_
+segment F2D36 2D36 FAR_DATA prefix=F2D36_
+segment F2D37 2D37 FAR_DATA prefix=F2D37_
+segment F2D5F 2D5F FAR_DATA prefix=F2D5F_
+segment F2D65 2D65 FAR_DATA prefix=F2D65_
+segment F2D66 2D66 FAR_DATA prefix=F2D66_
+segment F2D7A 2D7A FAR_DATA prefix=F2D7A_
+segment F2D88 2D88 FAR_DATA prefix=F2D88_
+segment F2D8A 2D8A FAR_DATA prefix=F2D8A_
+segment F2D8C 2D8C FAR_DATA prefix=F2D8C_
+segment DATA  2D8D DATA
+segment STACK 2F32 STACK stack size=80
+; zeros after the stack (SP = 0080h, the file goes on for 220h bytes; what
+; they are is not known yet)
+segment ZEROS 2F3A ZEROS
+
+; the header as TLINK writes it, its relocations in its order
+linker tlink 30
+relocorder original
+
+; how the compiler encoded what has two encodings: AND and OR with a
+; small constant in the word form (81h), XCHG AX,reg as 87h /r, TEST r,r
+; with the first register in r/m (counted over the reached code; the
+; library's assembly modules differ, their instructions are raw below)
+asm imm8_alu=add,adc,sbb,sub,cmp,xor xchg_ax_short=0 test_form=rm_reg
+
+; the library's assembly modules: the byte form of AND/OR, XCHG AX,reg in
+; one byte, XOR r,r in the r/m,reg form (see asm above)
+raw CODE:004F   ; and bx, 0xfff0
+raw CODE:0211   ; xor ah, ah
+raw CODE:31D1   ; xchg bx, ax
+raw CODE:31DF   ; xchg cx, ax
+raw CODE:31E4   ; xchg si, ax
+raw CODE:3219   ; xchg bp, ax
+raw CODE:321B   ; xchg di, ax
+raw CODE:3222   ; xchg si, ax
+raw CODE:3223   ; xchg dx, ax
+raw CODE:32B7   ; xchg cx, ax
+raw CODE:3CF6   ; xchg si, ax
+raw CODE:3CF7   ; xchg dx, ax
+raw CODE:3D00   ; xchg cx, ax
+raw CODE:3D05   ; xchg si, ax
+raw CODE:3D23   ; and bx, 0xf
+raw CODE:3D7A   ; or di, 0xc
+raw CODE:3DD6   ; xchg dx, ax
+raw CODE:3DF6   ; xchg dx, ax
+raw CODE:3E21   ; xchg bx, ax
+raw CODE:3F05   ; xchg si, ax
+raw CODE:3F06   ; xchg dx, ax
+raw CODE:3F0F   ; xchg cx, ax
+raw CODE:3F14   ; xchg si, ax
+raw T23DC:001A   ; and cx, 3
+raw T24BA:0043   ; and si, 3
+raw T24BA:0058   ; and si, 3
+raw T24BA:0086   ; and bx, 3
+raw T24BA:008F   ; and si, 3
+raw T258F:0008   ; and cx, 3
+raw T2619:0041   ; xchg dx, ax
+raw T264B:000F   ; and cx, 0xf
+raw T2690:0011   ; or word ptr [0x368], 0
+raw T2695:0173   ; or dx, 0
+raw T2695:02E5   ; or word ptr [0x368], 0
+raw T26D2:0035   ; and cx, 0xf
+raw T26DE:0017   ; and cx, 0xf
+raw T2701:0036   ; xchg dx, ax
+
+; jumps at the edge of the short range, which the compiler sized otherwise
+; than TASM's estimate from its previous pass
+raw T0408:2E94   ; jmp 0x2f11
+raw T0D36:06A1   ; jmp 0x721
+raw T1F5A:029B   ; jmp 0x31b

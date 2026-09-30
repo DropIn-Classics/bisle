@@ -1,0 +1,43 @@
+; BI.EXE: the launcher of Battle Isle (ISLE/). Checks the BIDISK.* marker
+; files, runs INTVGA\INTRO.EXE (or INTEGA\) and then BATTLE.EXE (read from
+; its strings and the first instructions; not checked by a run yet).
+; Hints for doskit/tools/disasm.py; numbers are hex.
+
+exe ISLE/BI.EXE
+
+; the segments, from the relocations and the header (SS:SP = 0245:0100);
+; the names other than CODE, DATA and STACK say their frame. The original's
+; segments are WORD or BYTE aligned: each begins where the one before ends
+; (start=), here at the lowest offset a far CALL/JMP enters it (S0022: after
+; CODE's last RETF), read from the bytes, not from a map
+segment CODE  0000 CODE
+segment S0022 0022 CODE prefix=S22_ start=3
+segment S0093 0093 CODE prefix=S93_ start=C
+segment S0095 0095 CODE prefix=S95_ start=C
+segment S00B4 00B4 CODE prefix=SB4_ start=C
+segment S00EA 00EA CODE prefix=SEA_ start=8
+segment S00EC 00EC CODE prefix=SEC_ start=8
+segment S00F2 00F2 CODE prefix=SF2_
+segment S00FC 00FC CODE prefix=SFC_ start=6
+segment S00FE 00FE CODE prefix=SFE_ start=2
+segment S00FF 00FF CODE prefix=SFF_ start=A
+segment S0102 0102 CODE prefix=S102_ start=A
+segment S0107 0107 CODE prefix=S107_ start=E
+segment S012B 012B CODE prefix=S12B_ start=A
+segment S0131 0131 CODE prefix=S131_ start=C
+segment S0143 0143 CODE prefix=S143_ start=8
+segment S014F 014F CODE prefix=S14F_ start=C
+segment S015B 015B CODE prefix=S15B_ start=8
+segment DATA  015D DATA
+segment STACK 0245 STACK stack size=100
+
+; the header as TLINK writes it (its mark at 1Ch), the relocations in its
+; order (that of the object records, not rebuilt)
+linker tlink 30
+relocorder original
+
+; S0107's code addresses CS:0240, the first byte after its own end (the
+; first of S012B's): kept a number
+num S0107:01D5
+num S0107:021C
+num S0107:0232
