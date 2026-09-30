@@ -249,6 +249,22 @@ games, each its own folder mounted as C: and started there:
   -cover no gap of BATTLE.hints ran: the AdLib code was reached by the
   analysis already. The intros and MOON.EXE load 388h too (not looked
   into).
+- Battles, driven in the runner: one player against the computer
+  (OPTIONS, the first entry, the code CONRA from GOG's
+  Quick_Ref_Card.pdf, OK, START; keys 14 space, 33 down, 34 enter, 36
+  enter, 37 c, 37.5 o, 38 n, 38.5 r, 39 a, 40 enter, 43/44/45 down, 46
+  enter, 48.5 enter; the map is MAP\16, up at about 50 s). Then player
+  1 asks for the change of phase (66 left, 67 left, then every 20 s from
+  70: space+, +0.6 left+, +1.5 space-, +2 left-) and presses F1 4 s
+  later: F1 changes the phase once both players asked (the computer
+  asks at once; "F1 : CHANGE MODE" is shown, after it a new request
+  reads "REQUESTING MOVE MODE"). Movement and action (attack) phases
+  alternate, the orders are carried out at the change. In 600 s the
+  computer attacked (fight scenes at 200 s and 500 s in the shots) and
+  won (STATS.IFF, LOOSER.SND at 534 s, then the menu). With -cover one
+  gap ran: T1F5A:0000, a RETF that ends T1F3C's last routine (T1F5A
+  `start=1` now, in DESERT.hints too). Neither BIDISK.VGA nor ANIM\ was
+  opened: the animations check_vga_disk guards are not the fight scenes.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -257,12 +273,11 @@ games, each its own folder mounted as C: and started there:
 
 ## Next
 
-1. BATTLE.EXE's last 4.1 KB: a battle (a unit moved onto an enemy's,
-   the FIGHT screen) with `-cover` would tell whether any of it runs
-   (saving and loading did not reach any); the first map's units stand
-   far apart, so it takes several turns: a key script built turn by
-   turn, saving on the way (the change of phase as above). The segment
-   classes of the far data segments.
+1. BATTLE.EXE's last 4.1 KB: menus, a map, saving, loading and battles
+   against the computer ran none of it (above); unused library code and
+   switch tables, presumably. Left to try: a won map (the ANIM\
+   animations, check_vga_disk). The segment classes of the far data
+   segments.
 2. BATTLE.EXE in the runner: `run.py -until 20 -shot 12 build/shots/b12.png
    -dos ISLE/BATTLE.EXE` shows the title screen at 12 s; before it the
    program prints "Color." and "Speaker." and reads CHAR6.DAT, BB.DAT,

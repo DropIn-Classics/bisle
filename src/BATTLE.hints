@@ -34,7 +34,7 @@ segment T1B01 1B01 CODE start=7 prefix=T1B01_
 segment T1C04 1C04 CODE start=D prefix=T1C04_
 segment T1ED2 1ED2 CODE start=5 prefix=T1ED2_
 segment T1F3C 1F3C CODE start=A prefix=T1F3C_
-segment T1F5A 1F5A CODE prefix=T1F5A_
+segment T1F5A 1F5A CODE start=1 prefix=T1F5A_   ; T1F3C's last routine ends in its first byte (a RETF; a run)
 segment T2112 2112 CODE start=B prefix=T2112_
 segment T2190 2190 CODE start=D prefix=T2190_
 segment T223C 223C CODE start=1 prefix=T223C_
