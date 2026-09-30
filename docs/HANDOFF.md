@@ -313,6 +313,14 @@ games, each its own folder mounted as C: and started there:
   The other ANIM\ palettes hold 6-bit values (where the game sets them
   is not looked into). Many entries are (255, 0, 0): unused, presumably.
   `tools/png.py` writes indexed PNGs for the format tools.
+- `tools/ifffiles.py`: the 16 pictures (.IFF, BIGMASK.LBM; all packed
+  but MOON's TITEL.IFF) are IFF "PBM " of 320x200, 352x256 or 360x240,
+  read as BATTLE.EXE's `load_picture` (T2550:0006) reads them, written
+  back identical, shown as PNG; packing the pixels anew gives every row
+  as stored. The map's frame in video memory was GAME.IFF's pixels but
+  colour 64, the windows for the maps (a run, `-vram`). The runner's
+  PNGs take a 6-bit value v as (v << 2) | (v >> 4), the tools' as
+  (v * 255 + 31) / 63: they differ by 1 at some values.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -333,9 +341,9 @@ games, each its own folder mounted as C: and started there:
    asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
 3. A tool for each data format (`tools/NAMEfiles.py`): TPWM and the
-   palettes are done (`tpwmfiles.py --out build/unpacked` gives the
-   unpacked files); next the `.IFF`/`.LBM` pictures and the `.LIB`
-   libraries, reading the unpacked files.
+   palettes and the pictures are done (`tpwmfiles.py --out
+   build/unpacked` gives the unpacked files); next the `.LIB`
+   libraries (units, parts, fonts, cursor).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.
 5. Later: the AdLib sound refined (`-oplwav` against the game in GOG's
