@@ -236,10 +236,17 @@ games, each its own folder mounted as C: and started there:
   files, 6 s each): no switch read there, as far as seen.
 - Sound (BATTLE.hints, `sound_init`, `adlib_probe`): BATTLE.EXE probes
   for an AdLib at 388h through the OPL's timer status (0, then C0h after
-  timer 1 runs) and prints "AdLib." or "Speaker.". doskit's runner keeps
-  the OPL registers but answers 06h and makes no FM sound, so every run
-  printed "Speaker." and ran the speaker code; the GOG game plays AdLib
-  (the user heard it). The intros and MOON.EXE load 388h too (not looked
+  timer 1 runs) and prints "AdLib." or "Speaker.". doskit's runner answered 06h
+  there, so the runs before doskit 60f8f68 printed "Speaker." and ran the
+  speaker code; the GOG game plays AdLib (the user heard it). doskit has
+  the OPL2's timers now, and an FM synthesizer of its own
+  (runtime/opl.c, for the port as well): BATTLE.EXE prints "AdLib." and
+  `-oplwav FILE` writes what it plays (49716 Hz mono from t=0). A run
+  (the save key script, 80 s): music from 4 s (the title) to 16 s (space)
+  and from 33 s (the map) on, no sample clipped. How close it sounds to
+  the original is not judged yet (by ear, against GOG's DOSBox). With
+  -cover no gap of BATTLE.hints ran: the AdLib code was reached by the
+  analysis already. The intros and MOON.EXE load 388h too (not looked
   into).
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
@@ -261,12 +268,13 @@ games, each its own folder mounted as C: and started there:
    BB.IFF, TITEL.IFF, LIB\char24.LIB, TITEL.TXT, TITEL.PND. (The shot
    asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
-3. AdLib in doskit (a kit change with a test there, AGENTS.md rule 7):
-   the OPL's timers and status, so that the probe finds it, then FM
-   synthesis for `-wav` and the port; until then the runs take the
-   speaker path, and the AdLib code (CODE, sound_init's other branch) is
-   not reached. MOON.EXE's and the intros' last library gaps only if a
-   run reaches them.
+3. The AdLib sound by ear: `build/battle_opl.wav` from a run with
+   `-oplwav` against the game in GOG's DOSBox (the title music, the
+   map's); what differs goes into doskit's runtime/opl.c (the modulation
+   depth, the attack's curve and the drums are choices there). Whether
+   the music uses the rhythm mode (register BDh bit 5) is not looked
+   into. MOON.EXE's and the intros' last library gaps only if a run
+   reaches them.
 4. A tool for each data format (`tools/NAMEfiles.py`), starting with
    the palettes, `.IFF`/`.LBM` pictures and `.LIB` libraries.
 5. The port: `symmap.py`, then the program over `rmem.h` routine by
