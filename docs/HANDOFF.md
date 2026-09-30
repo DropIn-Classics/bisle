@@ -278,8 +278,12 @@ games, each its own folder mounted as C: and started there:
   is read and map 16 starts again. With -cover one gap ran: T2354:0000,
   POP SI / POP BP / RETF, the end of T2248's last routine (T2354
   `start=3` now, in DESERT.hints too). Animation 4 (F27EE:250C bit 20h,
-  the last map, presumably) is not reached. That a poke is no real win:
-  what a real one does besides is not known.
+  the last map, presumably) was poked in as well (`-poke LT0708_4551
+  F27EE:250C FD24`): ANIM\es in five parts (a self-destruction sequence,
+  about 47 s), then `end_credits` (T25A6:0655) opens ANIM\ab.fx and types
+  the staff credits; no gap ran. F27EE:251B was 4 when map 16 ended: the
+  04 of 04.HI, presumably. That a poke is no real win: what a real one
+  does besides is not known.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -291,8 +295,8 @@ games, each its own folder mounted as C: and started there:
 1. BATTLE.EXE's last 4.1 KB: menus, a map, saving, loading, battles
    against the computer and poked wins with their animations ran none
    of it (above) but for a RETF; unused library code and switch tables,
-   presumably. Left: the last map's animation 4 (bit 20h), the segment
-   classes of the far data segments.
+   presumably, as the ending and the credits (poked in) ran none either.
+   Left: the segment classes of the far data segments.
 2. BATTLE.EXE in the runner: `run.py -until 20 -shot 12 build/shots/b12.png
    -dos ISLE/BATTLE.EXE` shows the title screen at 12 s; before it the
    program prints "Color." and "Speaker." and reads CHAR6.DAT, BB.DAT,

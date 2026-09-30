@@ -351,13 +351,23 @@ name T164D:04C7 check_vga_disk
 ; hs.a00, hs.pal. What 250E's bits mean is not looked into (bit 1 set
 ; against the computer, presumably).
 ; T2248:0F28 (n, far ?, 0, 0, 1, path far): plays animation n of ANIM\
-; (seen: 2 qa, 3 hs; the names from anim.fx, presumably, not checked).
+; (seen: 2 qa, 3 hs, 4 es in five parts es.a00..a04 with es0..es4.pal;
+; the names from anim.fx, presumably, not checked).
 name T2248:0F28 play_anim
+; bit 20h, poked in as well (-poke LT0708_4551 F27EE:250C FD24, the value
+; there 24DDh in the run with result 11h): check_vga_disk, play_anim(4)
+; (the ending, "SELF DESTRUCTION SEQUENCE" on a screen in the shots), after
+; 300 ticks check_vga_disk again and T25A6:0655 (far ?, path far), which
+; opens ANIM\ab.fx and types the staff credits on a black screen (shots at
+; 124 s to 240 s); the name is a presumption from the shots.
+name T25A6:0655 end_credits
 ; T15AC:0007: after a map (STATS.IFF in the lost battle, not checked that it
 ; is this routine; MENU.IFF, CODES.DAT,
 ; MENU.FXX after the poked wins, then "TYPE NAME FOR TOP FOUR" and
 ; MAP\NN.HI). Sets F27EE:250C bit 20h when the map's record (10 bytes,
-; +8 bit 0) says so: the last map, presumably (not reached).
+; +8 bit 0) says so: the last map, presumably (not reached without a
+; poke). F27EE:251B was 4 when map 16 (CONRA) ended, and the name went to
+; MAP\04.HI: the map's number in the game's order, presumably.
 name T15AC:0007 after_map
 ; T2695:0004 (far ?, name far, far ?) opens the file named, reads 8 bytes
 ; and compares them with TPWM (the packed files, as the maps' .COM); with
