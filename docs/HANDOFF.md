@@ -265,6 +265,21 @@ games, each its own folder mounted as C: and started there:
   gap ran: T1F5A:0000, a RETF that ends T1F3C's last routine (T1F5A
   `start=1` now, in DESERT.hints too). Neither BIDISK.VGA nor ANIM\ was
   opened: the animations check_vga_disk guards are not the fight scenes.
+- A map's end, poked in (BATTLE.hints at `play_anim`): in the battle
+  against the computer, `-poke LT0708_4088#401 F27EE:26CB 07` and
+  `-poke LT0708_4088#401 F27EE:26D6 0F00` (at about 62 s) give player 1
+  state 7 and result 0Fh: "VICTORY !! HQ IS YOURS" / "YOU LOST YOUR HQ
+  !!", and after a key (space at 70 s) check_vga_disk opens BIDISK.VGA
+  and `play_anim` (T2248:0F28) plays ANIM\qa (the HQ blown up); result
+  11h plays ANIM\hs. Then MENU.IFF, CODES.DAT, "TYPE NAME FOR TOP FOUR";
+  the name (keys, enter) is written to MAP\04.HI (28h bytes, not
+  decoded; no .HI ships with the game, the runner keeps it in
+  `build/run/state`; why 04 for map 16 is not looked into), then MAP\16.HI
+  is read and map 16 starts again. With -cover one gap ran: T2354:0000,
+  POP SI / POP BP / RETF, the end of T2248's last routine (T2354
+  `start=3` now, in DESERT.hints too). Animation 4 (F27EE:250C bit 20h,
+  the last map, presumably) is not reached. That a poke is no real win:
+  what a real one does besides is not known.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -273,11 +288,11 @@ games, each its own folder mounted as C: and started there:
 
 ## Next
 
-1. BATTLE.EXE's last 4.1 KB: menus, a map, saving, loading and battles
-   against the computer ran none of it (above); unused library code and
-   switch tables, presumably. Left to try: a won map (the ANIM\
-   animations, check_vga_disk). The segment classes of the far data
-   segments.
+1. BATTLE.EXE's last 4.1 KB: menus, a map, saving, loading, battles
+   against the computer and poked wins with their animations ran none
+   of it (above) but for a RETF; unused library code and switch tables,
+   presumably. Left: the last map's animation 4 (bit 20h), the segment
+   classes of the far data segments.
 2. BATTLE.EXE in the runner: `run.py -until 20 -shot 12 build/shots/b12.png
    -dos ISLE/BATTLE.EXE` shows the title screen at 12 s; before it the
    program prints "Color." and "Speaker." and reads CHAR6.DAT, BB.DAT,

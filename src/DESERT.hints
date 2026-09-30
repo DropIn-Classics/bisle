@@ -40,7 +40,7 @@ segment T2112 2112 CODE start=B prefix=T2112_
 segment T2190 2190 CODE start=D prefix=T2190_
 segment T223C 223C CODE start=1 prefix=T223C_
 segment T2248 2248 CODE start=4 prefix=T2248_
-segment T2354 2354 CODE prefix=T2354_
+segment T2354 2354 CODE start=3 prefix=T2354_
 segment T23DC 23DC CODE start=A prefix=T23DC_
 segment T23DE 23DE CODE start=A prefix=T23DE_
 segment T23FD 23FD CODE start=A prefix=T23FD_
@@ -148,7 +148,9 @@ asm imm8_alu=add,adc,sbb,sub,cmp,xor xchg_ax_short=0 test_form=rm_reg
 ; DS holds DGROUP (DATA, 2D8D: the startup code loads it). A module's code
 ; segment T.... begins where the one before ends (start=, first guessed
 ; from the lowest offset a far CALL/JMP enters it by; T2248's from the end
-; of T223C's switch table at T223C:00B6, 7 words to 2248:0004)
+; of T223C's switch table at T223C:00B6, 7 words to 2248:0004; T1F5A's,
+; T25A6's and T2354's from runs: the last routine before them ends with a
+; RETF in their frame, T2354:0000 POP SI, POP BP, RETF, zeros to 0010)
 ; zeros after the stack (SP = 0080h, the file goes on for 220h bytes; what
 ; they are is not known yet)
 ; the header as TLINK writes it, its relocations in its order
@@ -334,11 +336,37 @@ name T164D:0363 make_path
 ; of F27EE:250C; when those are set is not looked into) before the
 ; animations of ANIM\ (make_path dir 3), and after LT0408_0F95: a check
 ; that the disk with BIDISK.VGA is in the drive, presumably (BI.EXE asks
-; for <VGA> and <EGA> disks). Not reached in the runs (menus, the first
-; map, saving; -dos shows no open of it, a -break on it no hit).
+; for <VGA> and <EGA> disks). Reached in runs with a map's end poked in
+; (below), before play_anim; not in the menus, a map, saving or a lost
+; battle against the computer.
 ; BATTLE.EXE starts the same with /v, /e or no argument (mode 13h, the
 ; same files; runs of 6 s): it reads no switch there, as far as seen.
 name T164D:04C7 check_vga_disk
+; the end of a map, T0708:4095: when a cursor record (+17h) has state 7,
+; the players' results at F27EE:26D6 and 2707 (the records' +22h) are
+; messages of show_message's table: 0Fh VICTORY !!, 10h YOU LOST ALL UNITS,
+; 11h MINE DISABLED; 0Fh becomes 0Ah VICTORY !! HQ IS YOURS / 0Bh YOU LOST
+; YOUR HQ !! and sets F27EE:250C bit 4000h, 11h becomes 0Fh / 10h and sets
+; bit 2000h (so 0Fh is the HQ taken, 11h all units lost, as the messages
+; read). Bit 10h is set when F27EE:250E bit 2 is set, or bit 1 and the
+; result of the player whose record is chosen by F27EE:243E bit 2 is 0Fh
+; or 11h; it stays only with 4000h or 2000h. At LT0708_44CE bit 10h plays
+; animation 2 (3 with 2000h), bit 20h animation 4 after T15AC:0007. Runs
+; against the computer (the CONRA key script of HANDOFF.md) with
+; -poke LT0708_4088#401 F27EE:26CB 07 and F27EE:26D6 0F00 (player 1 took
+; the HQ): check_vga_disk, then play_anim(2) opens ANIM\anim.fx, qa.a00,
+; qa.pal (the HQ blown up); with 1100 (all units) play_anim(3) opens
+; hs.a00, hs.pal. What 250E's bits mean is not looked into (bit 1 set
+; against the computer, presumably).
+; T2248:0F28 (n, far ?, 0, 0, 1, path far): plays animation n of ANIM\
+; (seen: 2 qa, 3 hs; the names from anim.fx, presumably, not checked).
+name T2248:0F28 play_anim
+; T15AC:0007: after a map (STATS.IFF in the lost battle, not checked that it
+; is this routine; MENU.IFF, CODES.DAT,
+; MENU.FXX after the poked wins, then "TYPE NAME FOR TOP FOUR" and
+; MAP\NN.HI). Sets F27EE:250C bit 20h when the map's record (10 bytes,
+; +8 bit 0) says so: the last map, presumably (not reached).
+name T15AC:0007 after_map
 ; T2695:0004 (far ?, name far, far ?) opens the file named, reads 8 bytes
 ; and compares them with TPWM (the packed files, as the maps' .COM); with
 ; DATA:0AD4 (int24's flag) and a count of 4 around it: retries after a
