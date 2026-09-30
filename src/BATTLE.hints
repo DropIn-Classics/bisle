@@ -76,7 +76,7 @@ segment T2590 2590 CODE start=A prefix=T2590_
 segment T2592 2592 CODE start=2 prefix=T2592_
 segment T2593 2593 CODE start=6 prefix=T2593_
 segment T259F 259F CODE start=4 prefix=T259F_
-segment T25A6 25A6 CODE prefix=T25A6_
+segment T25A6 25A6 CODE start=D prefix=T25A6_
 segment T2619 2619 CODE start=4 prefix=T2619_
 segment T261E 261E CODE start=8 prefix=T261E_
 segment T2621 2621 CODE start=8 prefix=T2621_
@@ -146,6 +146,7 @@ asm imm8_alu=add,adc,sbb,sub,cmp,xor xchg_ax_short=0 test_form=rm_reg
 ; one byte, XOR r,r in the r/m,reg form (see asm above)
 raw CODE:004F   ; and bx, 0xfff0
 raw CODE:0211   ; xor ah, ah
+raw CODE:300D   ; xchg dx, ax
 raw CODE:3097   ; xchg cx, ax
 raw CODE:309C   ; xchg cx, ax
 raw CODE:31D1   ; xchg bx, ax
@@ -182,6 +183,8 @@ raw CODE:3F05   ; xchg si, ax
 raw CODE:3F06   ; xchg dx, ax
 raw CODE:3F0F   ; xchg cx, ax
 raw CODE:3F14   ; xchg si, ax
+raw CODE:3F32   ; and bx, 0xf
+raw CODE:3F72   ; xchg bx, ax
 raw T2354:0278   ; and bx, 0x7f
 raw T2354:0287   ; and cx, 7
 raw T2354:04F5   ; and si, 0x7f
@@ -210,6 +213,13 @@ raw T1F5A:029B   ; jmp 0x31b
 raw T2354:0262   ; jmp 0x2e3
 
 ; ---- code reached through pointers
+
+; the startup code's table of routines it calls before the program
+; (CODE:01A5 with SI = 1A32h, DI = 1A44h; an empty one at 1A44h for the
+; end): records of 6 bytes, a type (0: a near routine, CALL WORD PTR;
+; else CALL DWORD PTR), a priority (the lowest first) and the pointer.
+; All three are near; the run's -cover shows each of them runs
+words DATA:1A34 3 CODE stride=6
 
 ; compiled switches: CMP BX,N-1 / JA default / SHL BX,1 / JMP CS:[BX+table],
 ; a table of N near offsets in the code segment (each table ends where

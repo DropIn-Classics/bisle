@@ -1,7 +1,7 @@
 # Handoff
 
 State of 2026-09-30: stage 1 for the launcher and the main program;
-BATTLE.EXE's and BI.EXE's code reached to 95%.
+BATTLE.EXE's and BI.EXE's code reached to 97% and 96%.
 `src/BI.hints` and `src/BATTLE.hints` rebuild BI.EXE and BATTLE.EXE byte
 for byte (`doskit/tools/check.py`: all ok). Nothing is understood yet
 beyond the segments; the port is the template's.
@@ -67,12 +67,15 @@ games, each its own folder mounted as C: and started there:
   assembly modules keep TASM's forms: 36 `raw` lines. Four jumps at the
   edge of the short range were sized otherwise than TASM's estimate:
   `raw` too.
-- The analysis reaches 95% of BATTLE.EXE's code bytes (153193 of
-  160608 as instructions); 6.6 KB of non-zero bytes in about 100 gaps
-  are left, nearly all in CODE (the run time library: routines no
-  reached code calls, by a CALL, an immediate, a table or a far pointer
-  in data; unused library code, presumably, not checked). What reached
-  the rest (from 48 KB left):
+- The analysis reaches 97% of BATTLE.EXE's code bytes (155889 of
+  160608 as instructions); 4.1 KB of non-zero bytes in about 100 gaps
+  are left, nearly all in CODE (the run time library). None of them
+  runs in a run of 60 s into the first map (`run.py -until 60 -key 14
+  space -key 20 enter -key 26 enter -key 32 space -key 38 enter -cover
+  FILE ISLE/BATTLE.EXE`, then `gaps.py src/BATTLE.hints --seg all
+  --cover FILE`: 0 gaps ran); unused library code, presumably, or code
+  of parts of the game that run did not reach. What reached the rest
+  (from 48 KB left):
   - 35 compiled switches, `CMP BX,N-1 / JA / SHL BX,1 / JMP CS:[BX+table]`
     with the table of near offsets in the code segment right before the
     next routine (`words` hints); most of the gaps were behind them,
@@ -88,6 +91,16 @@ games, each its own folder mounted as C: and started there:
     INT 21h AH=25h, DS = CS.
   - T2248 begins at offset 4 (`start=4`): T223C's switch table runs up
     to there; the build was 16 bytes too long without it.
+  - The startup code's table of routines it calls before main
+    (DATA:1A32, records of 6 bytes, CODE:01A5 walks it): three near
+    routines (CODE:297B, 2E2F, 3F48), a `words ... stride=6` hint. A run
+    with `-cover` (doskit 795b46d) showed they ran though the analysis
+    did not reach them; a `-trace` of the first 500 instructions showed
+    the CALL WORD PTR ES:[BX+2] at CODE:01E0 that enters them.
+  - T25A6 begins at offset D: T259F's last routine runs on over its
+    frame's end to a RETF at T25A6:000C (found by the same run).
+  - A far jump within CODE (CODE:3FFF, JMP FAR PTR) that doskit's
+    assembler wrote as a short jump (fixed in doskit ccbdc27).
   - The far pointers the analysis finds in data (relocated segment
     words) are nearly all inside unreached code, CALL FAR instructions;
     only DATA:1770/1774/1778 are real (all to CODE:1D7F, a routine that
@@ -103,9 +116,9 @@ games, each its own folder mounted as C: and started there:
 
 ## Next
 
-1. BATTLE.EXE's last 6.6 KB in CODE: whether any of it is reached (a
-   run with a trace would tell). The segment classes of the far data
-   segments.
+1. BATTLE.EXE's last 4.1 KB: runs further into the game with
+   `-cover` (a battle, the menus, loading and saving) tell whether any
+   of it runs. The segment classes of the far data segments.
 2. BATTLE.EXE in the runner: `run.py -until 20 -shot 12 build/shots/b12.png
    -dos ISLE/BATTLE.EXE` shows the title screen at 12 s; before it the
    program prints "Color." and "Speaker." and reads CHAR6.DAT, BB.DAT,
