@@ -7,11 +7,11 @@
 exe MOON/MOON.EXE
 
 ; the segments, from the relocations and the header (SS:SP = 3021:0080;
-; the file ends with the stack); DS holds DGROUP (DATA, 2EAE, as a guess
-; from BATTLE.EXE's layout: its last frame). The code segments T....
-; begin where the one before ends (start=, the lowest offset below 10h a
-; far CALL/JMP enters each by; 0 where none does); F.... far data as in
-; BATTLE.EXE (the class a guess)
+; the file ends with the stack); DS holds DGROUP (DATA, 2EAE: a run
+; loaded the program at 0076 and had DS = 2F24 at CODE:0116). The code
+; segments T.... begin where the one before ends (start=, the lowest
+; offset below 10h a far CALL/JMP enters each by; 0 where none does);
+; F.... far data as in BATTLE.EXE (the class a guess)
 segment CODE  0000 CODE
 segment T039B 039B CODE start=7 prefix=T039B_
 segment T03EB 03EB CODE start=6 prefix=T03EB_
@@ -207,6 +207,16 @@ code CODE:1C5D
 ; ptrscan.py): PUSH BP ... RETF, returns a number clamped to 0..63h (a
 ; percentage, presumably; not checked). BATTLE.EXE has no such bytes
 code T1867:034E
+
+; T070B fills a record's fields 4Eh..68h with far pointers to routines,
+; as BATTLE.EXE's T0708:10F6 (what the record is: not checked)
+ptr T070B:110E CODE   ; +4E CODE:1776
+ptr T070B:111D T25AD  ; +52 T25AD:0006
+ptr T070B:112C T25B6  ; +56 T25B6:0008
+ptr T070B:113B T261E  ; +5A T261E:0008
+ptr T070B:114A CODE   ; +5E CODE:20B0
+ptr T070B:1159 T0DA1  ; +62 T0DA1:05F2
+ptr T070B:1168 CODE   ; +66 CODE:1C14
 
 ; ==== carried over from BATTLE.hints by tools/xfer.py; check, then keep or edit
 ; BATTLE.EXE: the game (Battle Isle), Borland C++ 1991, large model;

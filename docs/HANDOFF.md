@@ -182,7 +182,13 @@ games, each its own folder mounted as C: and started there:
   T1867:034E is a far routine nothing calls and BATTLE.EXE does not
   have (a `code` hint). T2579:019D..0346 is data in the code segment
   (a table of 43h records of 6 bytes from 01A7, read through CS).
-  What is left is mostly the library in CODE (1.7 KB). A run (space at
+  T070B:10F6 fills the record of seven far pointers to routines, as
+  BATTLE's T0708 (`ptr` hints; two of them, CODE:20B0 and CODE:1C14,
+  were not reached before). DATA is 2EAE: a run loaded the program at
+  0076 and had DS = 2F24 at CODE:0116. What is left (3.5 KB, 161150
+  bytes reached) is mostly the library in CODE (1.6 KB): routines
+  nothing calls and data read through CS (CODE:2694's table, the
+  words at 26F0/26F2). A run (space at
   14 s, enter at 33 s, 90 s) reaches MOON's first map with BATTLE.EXE's
   keys; gaps.py with its -cover: 0 gaps ran.
 - The runner read port 201h as F0h, axis bits that fall at once: a
@@ -205,11 +211,8 @@ games, each its own folder mounted as C: and started there:
    BB.IFF, TITEL.IFF, LIB\char24.LIB, TITEL.TXT, TITEL.PND. (The shot
    asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
-3. MOON.EXE: the other hints not carried (T0708's record of far
-   pointers to routines, BATTLE's CODE raw lines) found again in MOON's
-   own code where they matter; whether DATA is 2EAE (a run's DS would
-   tell); the library's last 1.7 KB. Then the INTRO programs on their
-   own.
+3. The INTRO programs (VGA and EGA) on their own; MOON.EXE's last
+   library gaps only if a run reaches them.
 4. A tool for each data format (`tools/NAMEfiles.py`), starting with
    the palettes, `.IFF`/`.LBM` pictures and `.LIB` libraries.
 5. The port: `symmap.py`, then the program over `rmem.h` routine by
