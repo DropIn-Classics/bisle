@@ -305,6 +305,14 @@ games, each its own folder mounted as C: and started there:
   distance from bytes there that are not known. All 600 files are
   reproduced that way (449 ISLE's packer, 120 MOON's, 31 MOON's but
   the last item). About 20 s for all.
+- `tools/palfiles.py`: the 34 .PAL files, all packed, 768 bytes
+  unpacked, written back identical, shown as PNG (`--png DIR`). Two
+  kinds: 8-bit values (00..02, MENU, MOON's ANIM\END/HQ/TOT) that
+  `set_palette` (T251F:000E) scales by a level, (value * level) >> 10;
+  on map 16 the DAC was that of level 252 exactly (a run, `-vgastate`).
+  The other ANIM\ palettes hold 6-bit values (where the game sets them
+  is not looked into). Many entries are (255, 0, 0): unused, presumably.
+  `tools/png.py` writes indexed PNGs for the format tools.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -324,9 +332,9 @@ games, each its own folder mounted as C: and started there:
    BB.IFF, TITEL.IFF, LIB\char24.LIB, TITEL.TXT, TITEL.PND. (The shot
    asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
-3. A tool for each data format (`tools/NAMEfiles.py`): TPWM is done
-   (`tpwmfiles.py --out build/unpacked` gives the unpacked files); next
-   the palettes (768 bytes unpacked), `.IFF`/`.LBM` pictures and `.LIB`
+3. A tool for each data format (`tools/NAMEfiles.py`): TPWM and the
+   palettes are done (`tpwmfiles.py --out build/unpacked` gives the
+   unpacked files); next the `.IFF`/`.LBM` pictures and the `.LIB`
    libraries, reading the unpacked files.
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.

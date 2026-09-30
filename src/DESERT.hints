@@ -409,6 +409,13 @@ name T26D2:000A save_file
 ; files of ISLE\ come out at their header's length and end at the file's
 ; end (the .PAL files 768 bytes).
 name T2695:0004 load_file
+; T251F:000E (level, palette far): all 256 DAC entries from a palette of
+; 8-bit values, each (value * level) >> 10 (level a byte), waiting for the
+; vertical retrace before each blue. The map's 00.PAL was set at level 252
+; (the DAC in a run matched that level only; tools/palfiles.py).
+name T251F:000E set_palette
+; T253E:000A (index, r, g, b): one DAC entry, the values as they are.
+name T253E:000A set_dac_entry
 ; T0D36:1592 (n): puts back the interrupt handlers (T2354:056F, 005E),
 ; prints message n of F273B (1 not enough memory, 2 cannot load file,
 ; 3 internal) and exits with -1 (read from the code, not run)
