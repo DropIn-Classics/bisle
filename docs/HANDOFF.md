@@ -67,15 +67,18 @@ games, each its own folder mounted as C: and started there:
   assembly modules keep TASM's forms: 36 `raw` lines. Four jumps at the
   edge of the short range were sized otherwise than TASM's estimate:
   `raw` too.
-- The analysis reaches 97% of BATTLE.EXE's code bytes (155889 of
+- The analysis reaches 97% of BATTLE.EXE's code bytes (155904 of
   160608 as instructions); 4.1 KB of non-zero bytes in about 100 gaps
-  are left, nearly all in CODE (the run time library). None of them
-  runs in a run of 60 s into the first map (`run.py -until 60 -key 14
-  space -key 20 enter -key 26 enter -key 32 space -key 38 enter -cover
-  FILE ISLE/BATTLE.EXE`, then `gaps.py src/BATTLE.hints --seg all
-  --cover FILE`: 0 gaps ran); unused library code, presumably, or code
-  of parts of the game that run did not reach. What reached the rest
-  (from 48 KB left):
+  are left, nearly all in CODE (the run time library, 3.3 KB); in the
+  game's modules they are mostly switch tables (data) and a few
+  routines nothing calls (T2354:05B1 sets the PIT's channel 0,
+  T2354:0856, T164D:00F6). None of them runs in seven runs of 300 s
+  (the menus at random, the first map with player 1's keys at random,
+  the first map idle; the seven -cover files merged, then `gaps.py
+  src/BATTLE.hints --seg all --cover FILE`: 0 gaps ran); unused library
+  code, presumably, or code of parts of the game the runs did not
+  reach (a battle, loading and saving were not reached on purpose).
+  What reached the rest (from 48 KB left):
   - 35 compiled switches, `CMP BX,N-1 / JA / SHL BX,1 / JMP CS:[BX+table]`
     with the table of near offsets in the code segment right before the
     next routine (`words` hints); most of the gaps were behind them,
@@ -87,8 +90,8 @@ games, each its own folder mounted as C: and started there:
     pointers to routines; `ptr` hints. doskit's `ptr` and `words` seeded
     code only in the segment named CODE; now in every segment of class
     CODE (doskit 1c03e90).
-  - T2354 sets INT 08h (T2354:0662) and INT 09h (T2354:04C4) with
-    INT 21h AH=25h, DS = CS.
+  - T2354 sets INT 08h (T2354:0662), INT 09h (T2354:04C4) and INT 24h
+    (T2354:0520) with INT 21h AH=25h, DS = CS.
   - T2248 begins at offset 4 (`start=4`): T223C's switch table runs up
     to there; the build was 16 bytes too long without it.
   - The startup code's table of routines it calls before main
@@ -113,12 +116,34 @@ games, each its own folder mounted as C: and started there:
   module as BATTLE.EXE's T2354 by its first routine (not compared in
   full). Its routines are `code` hints, so that it reads. Left: data in
   S0107 (addressed through CS) and single bytes at segments' ends.
+- Driving BATTLE.EXE in the runner: the credits after the title run on
+  until a key (`-key 14 space`); the title menu (START, OPTIONS, DISK,
+  EXIT) takes keys from about 30 s on (`-key 33 enter` starts the first
+  map; keys before that do nothing, why is not looked into). Down and
+  up move, enter chooses or changes an entry (OPTIONS: FIRST, SETTING,
+  PLAYER, OK; its SETTING: ALL SHOPS / HIDE SHOP, NO LIMIT / 4 TURNS /
+  8 TURNS, PALETTE; DISK: LOAD, MOUSE, RATING, OK), Esc does nothing
+  there. The menu (T1090) reads the key the timer callback got from
+  INT 16h (DATA:0404) against a set of keys (a far pointer at
+  F27EE:2498: Esc, space, backspace, Del, Ctrl, Tab, enter, up, down,
+  right, left, F1..F8 by their scancodes) and ORs in the joystick's
+  directions. In a map the game's INT 09h keeps a bitmap of the keys
+  and each player has a table of keys with directions (DATA:0AE9,
+  0AEB: records of 7 bytes, a scancode and left, right, up, down, fire
+  as read from T2354's joystick code): player 1 the arrows, the keypad,
+  space and enter, player 2 letters, Alt and Ctrl.
+- The runner read port 201h as F0h, axis bits that fall at once: a
+  joystick held up and left. BATTLE.EXE took it for an attached one
+  (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
+  did nothing. doskit's runner reads FFh now, as a PC without a joystick
+  (doskit, with a test, GAMEPORT.EXE).
 
 ## Next
 
-1. BATTLE.EXE's last 4.1 KB: runs further into the game with
-   `-cover` (a battle, the menus, loading and saving) tell whether any
-   of it runs. The segment classes of the far data segments.
+1. BATTLE.EXE's last 4.1 KB: a battle (a unit moved onto an enemy's,
+   the FIGHT screen) and loading and saving (DISK, LOAD) with `-cover`
+   would tell whether any of it runs; that needs a key script made for
+   it, from shots. The segment classes of the far data segments.
 2. BATTLE.EXE in the runner: `run.py -until 20 -shot 12 build/shots/b12.png
    -dos ISLE/BATTLE.EXE` shows the title screen at 12 s; before it the
    program prints "Color." and "Speaker." and reads CHAR6.DAT, BB.DAT,

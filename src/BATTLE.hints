@@ -279,6 +279,21 @@ name T2354:0662 int08
 ; (the old vector kept at T2354:0008)
 ptr T2354:055E T2354
 name T2354:04C4 int09
+; int09 keeps one bit per scancode at DATA:0AD8 (16 bytes, a bit set when
+; the key is up, as read from the code); T2354:0268 tests the keys of the
+; tables DATA:0AE9 / 0AEB point to (per player, presumably: a scancode
+; and five flags each, up, down, left, right and fire as a guess) against
+; it. The title menu runs with the BIOS's INT 09h (seen in a run at 36 s)
+; and gets its keys from the timer callback below through INT 16h.
+; INT 21h AH=25h AL=24h with DS = CS, DX = 0520h: the critical error
+; handler (sets DATA:0AD4 to 2, AL = 0; read from the code, not run)
+ptr T2354:0048 T2354
+name T2354:0520 int24
+; the timer callback T2354:0021 sets: a key from INT 16h (AH=01h, 00h)
+; into DATA:0404 (scancode), 0406 (character), 0408 = FFFFh (a key is
+; there), the key before into 0405 and 0407; T1090's menu reads them
+; (seen with -rwatch in a run)
+name T2354:008A timer_keys
 
 ; CODE:2296 passes CODE:2460 (a near routine) to CODE:3312 with a far
 ; pointer into DATA and the address of its own further arguments (an
