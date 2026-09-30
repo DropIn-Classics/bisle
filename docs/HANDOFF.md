@@ -243,8 +243,9 @@ games, each its own folder mounted as C: and started there:
   (runtime/opl.c, for the port as well): BATTLE.EXE prints "AdLib." and
   `-oplwav FILE` writes what it plays (49716 Hz mono from t=0). A run
   (the save key script, 80 s): music from 4 s (the title) to 16 s (space)
-  and from 33 s (the map) on, no sample clipped. How close it sounds to
-  the original is not judged yet (by ear, against GOG's DOSBox). With
+  and from 33 s (the map) on, no sample clipped. By ear (the user, against
+  the original): the map's music clearly recognizable, good for now,
+  refinement later; the title music not judged separately. With
   -cover no gap of BATTLE.hints ran: the AdLib code was reached by the
   analysis already. The intros and MOON.EXE load 388h too (not looked
   into).
@@ -268,14 +269,13 @@ games, each its own folder mounted as C: and started there:
    BB.IFF, TITEL.IFF, LIB\char24.LIB, TITEL.TXT, TITEL.PND. (The shot
    asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
-3. The AdLib sound by ear: `build/battle_opl.wav` from a run with
-   `-oplwav` against the game in GOG's DOSBox (the title music, the
-   map's); what differs goes into doskit's runtime/opl.c (the modulation
-   depth, the attack's curve and the drums are choices there). Whether
-   the music uses the rhythm mode (register BDh bit 5) is not looked
-   into. MOON.EXE's and the intros' last library gaps only if a run
-   reaches them.
-4. A tool for each data format (`tools/NAMEfiles.py`), starting with
+3. A tool for each data format (`tools/NAMEfiles.py`), starting with
    the palettes, `.IFF`/`.LBM` pictures and `.LIB` libraries.
-5. The port: `symmap.py`, then the program over `rmem.h` routine by
+4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.
+5. Later: the AdLib sound refined (`-oplwav` against the game in GOG's
+   DOSBox; what differs goes into doskit's runtime/opl.c, whose
+   modulation depth, attack curve and drums are choices). Whether the
+   music uses the rhythm mode (register BDh bit 5) is not looked into.
+   MOON.EXE's and the intros' last library gaps only if a run reaches
+   them.
