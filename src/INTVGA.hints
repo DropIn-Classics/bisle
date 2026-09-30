@@ -1,0 +1,140 @@
+; INTVGA/INTRO.EXE: one of Battle Isle's two intros (BI.EXE runs one
+; before BATTLE.EXE; which on which card is not looked into). Despite the
+; folder's name it sets mode 0Dh (EGA, 320x200, 16 colours; a run, INT
+; 10h) and reads INTRO.A00..A12, .PDI, .PX, CHAR_BIG.DAT, CHAR_SMA.DAT;
+; it plays to its end and exits at about 178 s. Borland C++, large model,
+; 428 relocations, linked by TLINK 3.0.
+; Hints for doskit/tools/disasm.py; numbers are hex.
+
+exe ISLE/INTVGA/INTRO.EXE
+
+; the segments, from the relocations and the header (SS:SP = 08F2:0080;
+; the file ends before the stack); DS holds DGROUP (DATA, 07A5: the
+; startup code's MOV DX,07A5). CODE holds the run time library, as in
+; BATTLE.EXE, presumably; T.... are the modules' code segments (start=,
+; the lowest offset below 10h a far CALL/JMP enters each by; 0 where
+; none does); F.... far data (the class a guess)
+segment CODE  0000 CODE
+; the library in CODE runs 10 bytes into T03FA's frame (a run: CODE:3FA0 ran)
+segment T03FA 03FA CODE start=A prefix=T03FA_
+segment T0536 0536 CODE start=A prefix=T0536_
+segment T05A7 05A7 CODE start=A prefix=T05A7_
+segment T05B2 05B2 CODE start=C prefix=T05B2_
+segment T05B4 05B4 CODE start=8 prefix=T05B4_
+segment T05BD 05BD CODE start=6 prefix=T05BD_
+segment T05E8 05E8 CODE start=4 prefix=T05E8_
+segment T05EC 05EC CODE start=8 prefix=T05EC_
+segment T05F1 05F1 CODE start=4 prefix=T05F1_
+segment T05F5 05F5 CODE prefix=T05F5_
+segment T05FB 05FB CODE start=8 prefix=T05FB_
+segment T05FE 05FE CODE start=4 prefix=T05FE_
+segment T0607 0607 CODE start=6 prefix=T0607_
+segment T0614 0614 CODE start=C prefix=T0614_
+segment T0621 0621 CODE start=A prefix=T0621_
+segment T062B 062B CODE start=A prefix=T062B_
+segment T062C 062C CODE start=A prefix=T062C_
+segment T0631 0631 CODE start=A prefix=T0631_
+segment T063B 063B CODE start=E prefix=T063B_
+segment T0645 0645 CODE start=E prefix=T0645_
+segment T065A 065A CODE start=D prefix=T065A_
+segment T0661 0661 CODE start=8 prefix=T0661_
+segment T0663 0663 CODE start=4 prefix=T0663_
+segment T0666 0666 CODE prefix=T0666_
+segment T0678 0678 CODE start=C prefix=T0678_
+segment T0682 0682 CODE start=6 prefix=T0682_
+segment T0694 0694 CODE start=2 prefix=T0694_
+segment T06A0 06A0 CODE start=6 prefix=T06A0_
+segment T06A5 06A5 CODE start=6 prefix=T06A5_
+segment T06E2 06E2 CODE start=C prefix=T06E2_
+segment T06E5 06E5 CODE start=2 prefix=T06E5_
+segment T06E7 06E7 CODE start=C prefix=T06E7_
+segment T06EA 06EA CODE start=E prefix=T06EA_
+segment T06ED 06ED CODE start=E prefix=T06ED_
+segment T06F3 06F3 CODE start=2 prefix=T06F3_
+segment T0700 0700 CODE prefix=T0700_
+segment T0705 0705 CODE start=4 prefix=T0705_
+segment T0708 0708 CODE start=4 prefix=T0708_
+segment T0709 0709 CODE start=8 prefix=T0709_
+segment F070D 070D FAR_DATA prefix=F070D_
+segment F07A3 07A3 FAR_DATA prefix=F07A3_
+segment DATA  07A5 DATA
+segment STACK 08F2 STACK stack size=80
+; memory after the stack, not in the file, as DESERT.EX2's 220h zero
+; bytes: the header's minimum allocation (2Ah paragraphs past the image's
+; end, 8F1Eh) reaches 91BEh, so its size is 201h..21Eh; 210h is taken,
+; the exact one is not known
+segment ZEROS 08FA ZEROS size=210
+
+; the header as TLINK writes it, its relocations in its order
+linker tlink 30
+relocorder original
+
+; the code generator's encodings: TEST r,r with the first register in
+; r/m (as BATTLE.EXE's; not checked)
+asm test_form=rm_reg
+
+; single instructions encoded otherwise (build.py's list): the library's
+; XOR AH,AH in the reg,r/m form and AND with a small constant in the word
+; form (as MOON.EXE's CODE)
+raw CODE:0211   ; xor ah, ah
+raw CODE:0705   ; and word ptr [bp + 0xa], 3
+raw CODE:0D3C   ; and dx, 0
+raw CODE:0D44   ; and word ptr [bp - 4], 0x7f
+raw CODE:0D49   ; and word ptr [bp - 2], 0
+raw CODE:0D64   ; and bx, 0x7f
+raw CODE:2076   ; or word ptr es:[bx + 2], 0x10
+raw CODE:23D6   ; or word ptr es:[bx + 2], 0x10
+raw CODE:2B37   ; and word ptr es:[bx + 2], 0xfff3
+raw CODE:2B94   ; or word ptr es:[bx + 2], 4
+raw CODE:2BC1   ; or word ptr es:[bx + 2], 8
+
+; ---- code reached through pointers
+; compiled switches: CMP BX,N-1 / JA default / SHL BX,1 / JMP CS:[BX+table]
+; with a table of N near offsets in the code segment (found by the bytes
+; D1 E3 2E FF A7 and the CMP before each)
+words CODE:07A2 12 CODE        ; from CODE:0766 (18)
+words CODE:1140 7 CODE         ; from CODE:106E
+words CODE:1D4E 7 CODE         ; from CODE:1C0F
+words CODE:37AC 18 CODE        ; from CODE:33EF (24)
+; the startup code's table of routines it calls before the program
+; (CODE:01A5 with SI = 14BEh, DI = 14D0h, as BATTLE.EXE's; records of 6
+; bytes: a type, 0 for a near routine, a priority and the pointer):
+; three near routines, CODE:29F7, 2E96 and 3E85 (not run)
+words DATA:14C0 3 CODE stride=6
+; DATA:11FC, 1200 and 1204 are far pointers to this routine, which does
+; nothing (PUSH DS, DS = DATA, POP DS, RETF), as BATTLE.EXE's CODE:1D7F
+code CODE:1DD2
+; T0536 is a timer module as BATTLE.EXE's T2354 (its code alike, not
+; compared in full; no INT 09h here). T0536:0470 keeps the old INT 08h
+; vector at DATA:0DB6, puts its own slot 0 (T0536:04EE, which calls the
+; old handler through DATA:0DB6) at DATA:0D72 and sets INT 08h to
+; T0536:0514 with DS = CS
+ptr T0536:0483 T0536
+ptr T0536:04E4 T0536
+name T0536:0514 int08
+; T0536:0005 adds T0536:0088 through T0536:05A4 (DX:AX the far handler,
+; CX:BX = 0:4000h beside it, as BATTLE's timer_add) and sets INT 24h to
+; T0536:03D2 with DS = CS (the old vector kept at T0536:000A)
+ptr T0536:001F T0536
+name T0536:05A4 timer_add
+ptr T0536:0046 T0536
+name T0536:03D2 int24
+; T0536:0088 reads the keyboard with INT 16h, as BATTLE's timer_keys
+; (presumably; not compared)
+name T0536:0088 timer_keys
+; timer callbacks the library adds: MOV AX,handler / MOV DX,CODE (a
+; relocated 0) before the far call to timer_add, as BATTLE.EXE's CODE:1592
+; and on (the handlers ran in a run, -cover)
+ptr CODE:1514 CODE    ; 1547h, CX:BX = 1:0
+ptr CODE:15B8 CODE    ; 16EDh, 0:4000h
+ptr CODE:15CF CODE    ; 19C0h, 0:3A98h
+ptr CODE:15E0 CODE    ; 16EDh, 0:0900h
+; a near code offset pushed as an argument (the routine ran in a run;
+; what takes it is not looked into)
+ptr CODE:231B CODE    ; 24DCh, then DATA
+; PUSH CS / PUSH 1986h: a far pointer to a buffer in the code segment
+; (zeros in the file), not code
+dptr CODE:196F CODE
+; CODE:2B71 puts CODE:2D7D into the far pointer at DATA:11FC (the slot
+; that held the routine that does nothing)
+ptr CODE:2B71 CODE

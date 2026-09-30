@@ -1,10 +1,12 @@
 # Handoff
 
-State of 2026-09-30: stage 1 for the launcher, the main program and the
-two data disks' games; BATTLE.EXE's and BI.EXE's code reached to 97% and
-96%, DESERT.EX2's as BATTLE.EXE's, MOON.EXE's to 98%.
-`src/BI.hints`, `src/BATTLE.hints`, `src/DESERT.hints` and
-`src/MOON.hints` rebuild their programs byte for byte
+State of 2026-09-30: stage 1 for the launcher, the main program, the
+two data disks' games and the two intros; BATTLE.EXE's and BI.EXE's
+code reached to 97% and 96%, DESERT.EX2's as BATTLE.EXE's, MOON.EXE's
+to 98%, the intros' to 92%.
+`src/BI.hints`, `src/BATTLE.hints`, `src/DESERT.hints`,
+`src/MOON.hints`, `src/INTVGA.hints` and `src/INTEGA.hints` rebuild
+their programs byte for byte
 (`doskit/tools/check.py`: all ok). Nothing is understood yet
 beyond the segments; the port is the template's.
 
@@ -26,7 +28,8 @@ games, each its own folder mounted as C: and started there:
 |---|---|
 | `ISLE/BI.EXE` | Battle Isle's launcher (10 KB, assembly, linked by TLINK): checks the marker files `BIDISK.VGA`/`.EGA`/`.INT` (1 byte each), runs `INTVGA\INTRO.EXE` or `INTEGA\INTRO.EXE`, then `BATTLE.EXE` (read from its strings; not checked by a run) |
 | `ISLE/BATTLE.EXE` | the game (208 KB, Borland C++ 1991, large model, 4630 relocations) |
-| `ISLE/INTVGA/INTRO.EXE`, `ISLE/INTEGA/INTRO.EXE` | the intro, VGA and EGA (Borland C++), with `INTRO.A00`..`A12`, `.FX`, `.PX`, `.MDI`, `.PDI`, `CHAR_BIG.DAT`, `CHAR_SMA.DAT` |
+| `ISLE/INTVGA/INTRO.EXE` | an intro (Borland C++) in EGA's mode 0Dh despite the folder's name, with `INTRO.A00`..`A12`, `.FX`, `.PX`, `.MDI`, `.PDI`, `CHAR_BIG.DAT`, `CHAR_SMA.DAT` |
+| `ISLE/INTEGA/INTRO.EXE` | an intro (Borland C++) in VGA's mode 13h despite the folder's name, with `INTRO0..12.VGA`, `IPA0..12.VGA`, `CBIG`/`CSMA`/`BTAB`/`STAB.VGA`, `INTRO.FX`, `.PX`, `.MDI`, `.PDI` |
 | `ISLE/INSTALL.EXE`, `MOON/INSTALL.EXE` | installers (Borland C++); `MOON/INST.DAT` |
 | `DESERT/DESERT.EXE` | data disk 1's starter (2 KB, not Borland): names `DESERT.EX2`, `C:\BLUEBYTE\BI1D1\...`, `MAP\NN.HI`, `NN.DAT` (strings only; what it does is not checked) |
 | `DESERT/DESERT.EX2` | data disk 1's game: BATTLE.EXE's code byte for byte, the same relocations; 3 bytes of far data differ (F2789, F27EE), the file ends before the stack |
@@ -191,6 +194,25 @@ games, each its own folder mounted as C: and started there:
   words at 26F0/26F2). A run (space at
   14 s, enter at 33 s, 90 s) reaches MOON's first map with BATTLE.EXE's
   keys; gaps.py with its -cover: 0 gaps ran.
+- The intros, INTVGA/INTRO.EXE and INTEGA/INTRO.EXE: the folder names
+  are the wrong way round (a run: INTVGA's sets mode 0Dh, 16 colours,
+  INTEGA's mode 13h, 256 colours, and reads the `.VGA` files). Both are
+  Borland C++ linked by TLINK 3.0, the same run time library in CODE
+  (3FA0h bytes, the same offsets; it runs 10 bytes into T03FA's frame,
+  so T03FA has `start=A`, found by a run) and the same timer module as
+  BATTLE.EXE's T2354 (INTVGA's T0536, INTEGA's T0559 8 bytes further
+  on: INT 08h and 24h handlers, a timer callback reading INT 16h, no
+  INT 09h). Their segment lines come from the relocations (a scratch
+  script, as MOON's); the header's minimum allocation needs zeros after
+  the stack that are not in the file (`ZEROS size=`, 210h and 220h, the
+  exact sizes not known). The library's encodings are MOON.EXE's (the
+  byte form of AND/OR, 10 `raw` lines of the word form). 92% of the code
+  reached (INTVGA 26956 of 29179 bytes, INTEGA 27281 of 29552): the
+  switches, the startup table, the timer handlers, and the library's
+  timer callbacks `MOV AX,handler` before timer_add, found as gaps that
+  ran in a run of each intro to its end (178 s and 200 s, no keys);
+  after them no gap ran. The rest is unused library code, 4 KB.
+  Which intro BI.EXE runs on which card is not looked into.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -211,8 +233,9 @@ games, each its own folder mounted as C: and started there:
    BB.IFF, TITEL.IFF, LIB\char24.LIB, TITEL.TXT, TITEL.PND. (The shot
    asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
-3. The INTRO programs (VGA and EGA) on their own; MOON.EXE's last
-   library gaps only if a run reaches them.
+3. Which intro BI.EXE runs on which card (its marker files, BI.hints);
+   MOON.EXE's and the intros' last library gaps only if a run reaches
+   them.
 4. A tool for each data format (`tools/NAMEfiles.py`), starting with
    the palettes, `.IFF`/`.LBM` pictures and `.LIB` libraries.
 5. The port: `symmap.py`, then the program over `rmem.h` routine by

@@ -1,0 +1,128 @@
+; INTEGA/INTRO.EXE: the other of the two intros. Despite the folder's
+; name it sets mode 13h (VGA, 320x200, 256 colours; a run, INT 10h) and
+; reads INTRO0..12.VGA, IPA0..12.VGA, .PDI, .PX and the other .VGA
+; files; it plays to its end and exits at about 200 s. The same library
+; and timer module as INTVGA's; Borland C++, large model, 455
+; relocations, linked by TLINK 3.0.
+; Hints for doskit/tools/disasm.py; numbers are hex.
+
+exe ISLE/INTEGA/INTRO.EXE
+
+; the segments, from the relocations and the header (SS:SP = 0954:0080;
+; the file ends before the stack); DS holds DGROUP (DATA, 07D6: the
+; startup code's MOV DX,07D6). CODE holds the run time library, as in
+; BATTLE.EXE, presumably; T.... are the modules' code segments (start=,
+; the lowest offset below 10h a far CALL/JMP enters each by; 0 where
+; none does); F.... far data (the class a guess)
+segment CODE  0000 CODE
+; the library in CODE runs 10 bytes into T03FA's frame (a run: CODE:3FA0 ran)
+segment T03FA 03FA CODE start=A prefix=T03FA_
+segment T0529 0529 CODE start=E prefix=T0529_
+; T0529's last routine runs on to a RETF at T0559:0009; zeros follow.
+; T0559 from 0012 on is INTVGA's T0536 from 000A on (the same bytes but
+; for DATA's offsets and its own, 8 higher); the frame says it begins
+; below 0010, so between 000A and 000F (which is not known; the bytes
+; are the same)
+segment T0559 0559 CODE start=A prefix=T0559_
+segment T05CB 05CB CODE start=2 prefix=T05CB_
+segment T05CD 05CD CODE start=C prefix=T05CD_
+segment T05E0 05E0 CODE start=8 prefix=T05E0_
+segment T05EA 05EA CODE start=2 prefix=T05EA_
+segment T05FB 05FB CODE start=E prefix=T05FB_
+segment T0608 0608 CODE start=2 prefix=T0608_
+segment T060D 060D CODE start=2 prefix=T060D_
+segment T064A 064A CODE start=8 prefix=T064A_
+segment T064C 064C CODE start=E prefix=T064C_
+segment T0652 0652 CODE start=2 prefix=T0652_
+segment T0655 0655 CODE start=2 prefix=T0655_
+segment T0656 0656 CODE start=6 prefix=T0656_
+segment T0659 0659 CODE start=4 prefix=T0659_
+segment T065B 065B CODE start=E prefix=T065B_
+segment T065F 065F CODE prefix=T065F_
+segment T0662 0662 CODE prefix=T0662_
+segment T0667 0667 CODE start=4 prefix=T0667_
+segment T0674 0674 CODE start=2 prefix=T0674_
+segment T0676 0676 CODE start=2 prefix=T0676_
+segment T0695 0695 CODE start=2 prefix=T0695_
+segment T06CA 06CA CODE start=E prefix=T06CA_
+segment T06CC 06CC CODE start=6 prefix=T06CC_
+segment T06D5 06D5 CODE start=8 prefix=T06D5_
+segment T06D7 06D7 CODE start=8 prefix=T06D7_
+segment T06DB 06DB CODE start=C prefix=T06DB_
+segment T06E3 06E3 CODE start=4 prefix=T06E3_
+segment T06E6 06E6 CODE prefix=T06E6_
+segment T06F3 06F3 CODE start=6 prefix=T06F3_
+segment T06FE 06FE CODE start=4 prefix=T06FE_
+segment T0703 0703 CODE start=C prefix=T0703_
+segment T070E 070E CODE start=2 prefix=T070E_
+segment T071E 071E CODE start=C prefix=T071E_
+segment T0723 0723 CODE start=A prefix=T0723_
+segment T0725 0725 CODE start=6 prefix=T0725_
+segment F0728 0728 FAR_DATA prefix=F0728_
+segment F07D4 07D4 FAR_DATA prefix=F07D4_
+segment DATA  07D6 DATA
+segment STACK 0954 STACK stack size=80
+; memory after the stack, not in the file: the header's minimum
+; allocation (2Bh paragraphs past the image's end, 9534h) reaches 97E4h,
+; so its size is 215h..224h; 220h is taken (BATTLE.EXE's), the exact
+; one is not known
+segment ZEROS 095C ZEROS size=220
+
+; the header as TLINK writes it, its relocations in its order
+linker tlink 30
+relocorder original
+
+; the code generator's encodings: TEST r,r with the first register in
+; r/m (as BATTLE.EXE's; not checked)
+asm test_form=rm_reg
+
+; single instructions encoded otherwise (build.py's list): the library's
+; XOR AH,AH in the reg,r/m form and AND with a small constant in the word
+; form, as INTVGA's
+raw CODE:0211   ; xor ah, ah
+raw CODE:0705   ; and word ptr [bp + 0xa], 3
+raw CODE:0D3C   ; and dx, 0
+raw CODE:0D44   ; and word ptr [bp - 4], 0x7f
+raw CODE:0D49   ; and word ptr [bp - 2], 0
+raw CODE:0D64   ; and bx, 0x7f
+raw CODE:2076   ; or word ptr es:[bx + 2], 0x10
+raw CODE:23D6   ; or word ptr es:[bx + 2], 0x10
+raw CODE:2B37   ; and word ptr es:[bx + 2], 0xfff3
+raw CODE:2B94   ; or word ptr es:[bx + 2], 4
+raw CODE:2BC1   ; or word ptr es:[bx + 2], 8
+
+; ---- code reached through pointers
+; compiled switches: CMP BX,N-1 / JA default / SHL BX,1 / JMP CS:[BX+table]
+; with a table of N near offsets in the code segment (found by the bytes
+; D1 E3 2E FF A7 and the CMP before each; the library's, as INTVGA's)
+words CODE:07A2 12 CODE        ; from CODE:0766 (18)
+words CODE:1140 7 CODE         ; from CODE:106E
+words CODE:1D4E 7 CODE         ; from CODE:1C0F
+words CODE:37AC 18 CODE        ; from CODE:33EF (24)
+; the startup code's table of routines it calls before the program
+; (CODE:01A5 with SI = 17C4h, DI = 17D6h; records of 6 bytes: a type, 0
+; for a near routine, a priority and the pointer): three near routines,
+; CODE:29F7, 2E96 and 3E85, as INTVGA's (not run)
+words DATA:17C6 3 CODE stride=6
+; DATA:1502, 1506 and 150A are far pointers to this routine, which does
+; nothing (PUSH DS, DS = DATA, POP DS, RETF), as BATTLE.EXE's CODE:1D7F
+code CODE:1DD2
+; T0559 is INTVGA's T0536 8 bytes further on (see INTVGA.hints): the
+; timer module
+ptr T0559:048B T0559
+ptr T0559:04EC T0559
+name T0559:051C int08
+ptr T0559:0027 T0559
+name T0559:05AC timer_add
+ptr T0559:004E T0559
+name T0559:03DA int24
+name T0559:0090 timer_keys
+; the library's timer callbacks and pointers, as INTVGA's (see there)
+ptr CODE:1514 CODE    ; 1547h, CX:BX = 1:0
+ptr CODE:15B8 CODE    ; 16EDh, 0:4000h
+ptr CODE:15CF CODE    ; 19C0h, 0:3A98h
+ptr CODE:15E0 CODE    ; 16EDh, 0:0900h
+ptr CODE:231B CODE    ; 24DCh, then DATA
+dptr CODE:196F CODE   ; PUSH CS / PUSH 1986h: a buffer, not code
+; CODE:2B71 puts CODE:2D7D into the far pointer at DATA:1502
+ptr CODE:2B71 CODE
