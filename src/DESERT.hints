@@ -326,6 +326,40 @@ name T11FD:0004 show_message
 ; .PAL .DAT .TXT .SND .FXX .COM .IFF .HI); what the first argument is
 ; for is not looked into.
 name T164D:0363 make_path
+; T164D:04C7 loads BIDISK.VGA (F27E6:0000) with load_file, the far
+; values at F27EE:2447 and F27EE:245E the other arguments; when nothing
+; comes back: fatal_error(2), "ERROR: cannot load file." (F273B's table,
+; "ERROR: %s" at F273B:0044), the handlers put back and exit(-1). It is
+; called in T0708 after LT0708_44E2 and LT0708_4570 (by bits 10h and 20h
+; of F27EE:250C; when those are set is not looked into) before the
+; animations of ANIM\ (make_path dir 3), and after LT0408_0F95: a check
+; that the disk with BIDISK.VGA is in the drive, presumably (BI.EXE asks
+; for <VGA> and <EGA> disks). Not reached in the runs (menus, the first
+; map, saving; -dos shows no open of it, a -break on it no hit).
+; BATTLE.EXE starts the same with /v, /e or no argument (mode 13h, the
+; same files; runs of 6 s): it reads no switch there, as far as seen.
+name T164D:04C7 check_vga_disk
+; T2695:0004 (far ?, name far, far ?) opens the file named, reads 8 bytes
+; and compares them with TPWM (the packed files, as the maps' .COM); with
+; DATA:0AD4 (int24's flag) and a count of 4 around it: retries after a
+; critical error, presumably. The rest is not looked into.
+name T2695:0004 load_file
+; T0D36:1592 (n): puts back the interrupt handlers (T2354:056F, 005E),
+; prints message n of F273B (1 not enough memory, 2 cannot load file,
+; 3 internal) and exits with -1 (read from the code, not run)
+name T0D36:1592 fatal_error
+; sound: CODE:1588 (mode) calls CODE:0215 with port 388h, which probes
+; with CODE:0AC2: OPL timers reset, status AND E0h must be 0; timer 1
+; started (reg 2 = FFh, reg 4 = 21h), 200 reads of the status, then AND
+; E0h must be C0h; 1 if both hold. Mode 1 means the speaker, 2 AdLib
+; without the probe, else the probe decides (DATA:16EC); the timer
+; callbacks it adds differ (CODE:16ED alone, or CODE:19C0 and 16ED). Where
+; the mode comes from and where "AdLib." / "Speaker." (F2736) are printed
+; is not looked into. doskit's runner answers 06h at 388h, so the probe
+; fails there and every run printed "Speaker."; the GOG game (DOSBox)
+; plays AdLib (heard by the user).
+name CODE:1588 sound_init
+name CODE:0AC2 adlib_probe
 ; saving and loading a game: the file is <name>.DAT in the game's folder,
 ; the name at F27EE:249C ("00" in the runs), made by make_path with no
 ; directory. save_game ran at D (a run, 00.DAT created and written),

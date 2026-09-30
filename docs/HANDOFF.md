@@ -228,6 +228,19 @@ games, each its own folder mounted as C: and started there:
   the intro's exit at 200 s). BIDISK.INT is not opened by BI.EXE;
   BATTLE.EXE, DESERT.EX2 and MOON.EXE hold the string BIDISK.VGA (what
   for is not looked into), none of them .EGA or .INT.
+- BATTLE.EXE and BIDISK.VGA (BATTLE.hints, `check_vga_disk`): it loads
+  the file before the animations of ANIM\ and at one place in T0408;
+  if that fails, "ERROR: cannot load file." and the end (`fatal_error`).
+  A disk check, presumably; no run reached it (menus, first map, saving).
+  With `/v`, `/e` or no argument it starts the same (mode 13h, the same
+  files, 6 s each): no switch read there, as far as seen.
+- Sound (BATTLE.hints, `sound_init`, `adlib_probe`): BATTLE.EXE probes
+  for an AdLib at 388h through the OPL's timer status (0, then C0h after
+  timer 1 runs) and prints "AdLib." or "Speaker.". doskit's runner keeps
+  the OPL registers but answers 06h and makes no FM sound, so every run
+  printed "Speaker." and ran the speaker code; the GOG game plays AdLib
+  (the user heard it). The intros and MOON.EXE load 388h too (not looked
+  into).
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -248,9 +261,12 @@ games, each its own folder mounted as C: and started there:
    BB.IFF, TITEL.IFF, LIB\char24.LIB, TITEL.TXT, TITEL.PND. (The shot
    asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
-3. What BATTLE.EXE does with BIDISK.VGA and with a `/V` or `/E` in its
-   command tail (BI.EXE passes its own on); MOON.EXE's and the intros'
-   last library gaps only if a run reaches them.
+3. AdLib in doskit (a kit change with a test there, AGENTS.md rule 7):
+   the OPL's timers and status, so that the probe finds it, then FM
+   synthesis for `-wav` and the port; until then the runs take the
+   speaker path, and the AdLib code (CODE, sound_init's other branch) is
+   not reached. MOON.EXE's and the intros' last library gaps only if a
+   run reaches them.
 4. A tool for each data format (`tools/NAMEfiles.py`), starting with
    the palettes, `.IFF`/`.LBM` pictures and `.LIB` libraries.
 5. The port: `symmap.py`, then the program over `rmem.h` routine by
