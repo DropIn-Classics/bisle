@@ -35,7 +35,7 @@ games, each its own folder mounted as C: and started there:
 | `DESERT/DESERT.EXE` | data disk 1's starter (2 KB, not Borland): names `DESERT.EX2`, `C:\BLUEBYTE\BI1D1\...`, `MAP\NN.HI`, `NN.DAT` (strings only; what it does is not checked) |
 | `DESERT/DESERT.EX2` | data disk 1's game: BATTLE.EXE's code byte for byte, the same relocations; 3 bytes of far data differ (F2789, F27EE), the file ends before the stack |
 | `MOON/MOON.EXE` | data disk 2's game (Borland C++ with other encodings than BATTLE.EXE's, linked by TLINK 5.0, 4585 relocations, 96 code segments as BATTLE.EXE but sized and laid out otherwise; names `MAPINFO.DAT`, `MAP02.DAT`, `MAP04.DAT`, `HQ.PAL`, `TOT.PAL`, `END.PAL`/`.SND` besides BATTLE.EXE's files) |
-| `MAP/NN.PMP`, `.SHP`, `.FIN`, `.COM` | per map; the `.COM` files are no programs: they begin with `TPWM` (a packed file, presumably) |
+| `MAP/NN.FIN`, `.SHP`, `.COM`, `.PMP` | per map, all packed: the map, what its buildings hold, data for the computer player, a picture-like file not decoded (`tools/mapfiles.py`); MOON has no `.PMP` |
 | `LIB/*.LIB`, `LIB/*.DAT` | graphics libraries: sprites of units, terrain, cursor, frame, fonts, fight scenes (`tools/libfiles.py`); a `.DAT` gives the order of a library's entries |
 | `*.IFF`, `*.LBM`, `*.PAL`, `NN.PAL` | pictures and palettes by their names; not looked at |
 | `*.SND`, `*.PND`, `*.FXX`, `*.PXX` | sound or animation data by their names; not looked at |
@@ -340,6 +340,25 @@ games, each its own folder mounted as C: and started there:
   All 40 written back identical, the packed entries too. ISLE's UNITB,
   BIGUNITB, 00 and 01.LIB have entries of another kind (not decoded)
   that no program names: left over, presumably.
+- `tools/mapfiles.py`: the 103 maps of the three games (ISLE 00..33,
+  DESERT 00..33, MOON 00..33 and STATMAP), all files written back
+  identical. T0708 loads them when a map starts (-dos: .FIN, .SHP, .COM,
+  .PMP; make_path's extensions 0, 2, 9, 1). `load_fin` (T0E9B:02B6): the
+  width and height, then two bytes a square, a GROUND.DAT index (its
+  flags 400h, 100h, 40h make a building, owner by flags 1 and 2) and a
+  unit (F4h up none, else type = byte >> 1 and player = bit 0); ISLE's
+  types 15, 17, 19, 21 take two squares, the next type in the row below
+  or above by player. Every map has one 40h building per player (the
+  headquarters, presumably). `load_shp` (T0E9B:007B): 27 bits for the
+  unit types, then records of 12 bytes (owner, which building table,
+  index, two bytes, seven unit types). ISLE's 11.SHP ends 4 bytes into
+  its last record. The .COM (27 records of 6 bytes; ISLE's 16..31) is
+  loaded only with F27EE:250C bit 400h: in the run against the computer
+  (map 16) it was. The .PMP ("INFO", "ILBM", W = 2w+4 by H = 2h+4
+  bytes, a name: M00.. in ISLE, CLOCK, LOSAG, .. in DESERT) goes into a
+  buffer that nothing but the unpacking read in a run to the first map
+  and 25 s on it (-rwatch); its bytes are no picture of the .FIN's
+  ground square by square.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -360,9 +379,11 @@ games, each its own folder mounted as C: and started there:
    asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
 3. A tool for each data format (`tools/NAMEfiles.py`): TPWM, the
-   palettes, the pictures and the libraries are done (`tpwmfiles.py
-   --out build/unpacked` gives the unpacked files); next the maps
-   (`MAP\NN.PMP`, `.SHP`, `.FIN`) or the tables (`UNIT.DAT`, ...).
+   palettes, the pictures, the libraries and the maps are done
+   (`tpwmfiles.py --out build/unpacked` gives the unpacked files); next
+   the tables (`UNIT.DAT`, `GROUND.DAT`, the maps' records of them),
+   then the maps drawn with PART.LIB and UNIT.LIB against a run's
+   screen.
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.
 5. Later: the AdLib sound refined (`-oplwav` against the game in GOG's
@@ -409,22 +430,30 @@ For the port (behaviour):
    what happens with BIGUNIT's missing MAA and in MOON without .DAT
    files.
 
+9. The maps (mapfiles.py): which building kind (ground flag 400h,
+   100h, 40h; the tables F27EE:2780, 259C, 24B0, and the .SHP's kind 3,
+   F27EE:0B64) is which; the .SHP's bytes +3, +4 and its 27 bits; the
+   .COM's records and why the loader swaps their bytes 2 and 3; when
+   F27EE:250C bit 400h is set; whether owner/player 0 is the player of
+   the arrow keys; what reads the .PMP and what its bytes are; MOON.EXE's
+   loader (MOON's 16.FIN has a two-square unit without its second half).
+
 For understanding the programs:
 
-9. make_path's first argument; the OR of DATA:0368 in file_open;
-   T2695:02BB's message (DATA:0C88, "insert the disk", presumably);
-   load_picture for pictures larger than 360x240 (T2550:02E5).
-10. The record T0708 fills with far pointers to routines (+56 is
+10. make_path's first argument; the OR of DATA:0368 in file_open;
+    T2695:02BB's message (DATA:0C88, "insert the disk", presumably);
+    load_picture for pictures larger than 360x240 (T2550:02E5).
+11. The record T0708 fills with far pointers to routines (+56 is
     draw_entry); CODE:2296's formatter (presumably).
-11. The far data segments' classes (which are BSS); the zeros after the
+12. The far data segments' classes (which are BSS); the zeros after the
     stack in BATTLE.EXE and the intros (ZEROS).
-12. What BATTLE.EXE, DESERT.EX2 and MOON.EXE do with the string
+13. What BATTLE.EXE, DESERT.EX2 and MOON.EXE do with the string
     BIDISK.VGA besides check_vga_disk; what DESERT.EXE (the starter)
     does.
 
 Hardly:
 
-13. Why the runner did not write the shot asked for at 20 s (Next,
+14. Why the runner did not write the shot asked for at 20 s (Next,
     item 2).
-14. In which order the TPWM packer saw the files (the byte past the end
+15. In which order the TPWM packer saw the files (the byte past the end
     in six files; the bytes past the end in 31 of MOON's).

@@ -328,6 +328,15 @@ name T11FD:0004 show_message
 ; .PAL .DAT .TXT .SND .FXX .COM .IFF .HI); what the first argument is
 ; for is not looked into.
 name T164D:0363 make_path
+; a map's files, loaded by T0708 when a map starts (seen with -dos: .FIN,
+; .SHP, .COM only with F27EE:250C bit 400h, then .PMP into a buffer nothing
+; else read in a run; the name from F27EE:2523 in two digits). The .FIN
+; (width, height, two bytes a square: GROUND.DAT index and unit) and the
+; .SHP (27 bytes of UNIT.DAT bits, then the buildings' records of 12 bytes
+; with seven unit types each) as read from these two; tools/mapfiles.py
+; has the formats.
+name T0E9B:02B6 load_fin
+name T0E9B:007B load_shp
 ; T164D:04C7 loads BIDISK.VGA (F27E6:0000) with load_file, the far
 ; values at F27EE:2447 and F27EE:245E the other arguments; when nothing
 ; comes back: fatal_error(2), "ERROR: cannot load file." (F273B's table,
