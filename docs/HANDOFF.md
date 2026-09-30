@@ -132,6 +132,23 @@ games, each its own folder mounted as C: and started there:
   0AEB: records of 7 bytes, a scancode and left, right, up, down, fire
   as read from T2354's joystick code): player 1 the arrows, the keypad,
   space and enter, player 2 letters, Alt and Ctrl.
+- Saving and loading, driven in the runner: in the first map each
+  player asks for the change of phase (player 1: cursor two left onto
+  an empty square, `space+`, `left+`, `space-`, `left-`; player 2 the
+  same with `lctrl` and `x`; fire must be let go while left is still
+  held), then D shows INSERT SAVE DISK / PRESS SPACE and a key saves
+  `ISLE\00.DAT` (T13CA:000F `save_game`). The runner keeps it in
+  `build/run/state`, so later runs find it: DISK, LOAD, `0`, enter
+  loads it (T13CA:0462 `load_game`) and the map comes back as saved.
+  The key times of that run: 14 space, 33 enter (the map is up at about
+  45 s), 48 left, 49 left, 50 space+, 50.6 left+, 51.5 space-, 52 left-,
+  53 x, 54 x, 55 lctrl+, 55.6 x+, 56.5 lctrl-, 57 x-, 59 d, 62 0; for
+  loading 14 space, 33 down, 34 down, 35 enter, 37 enter, 39 0, 42
+  enter. The save asks for no position; where its name "00" comes from
+  is not looked into. The path was found from the code (the key set,
+  the cursor record's state 5, the message table; BATTLE.hints). Esc, Y leaves the map without a
+  save question. Neither run reached any of the 4.1 KB of gaps (-cover,
+  gaps.py: 0 ran).
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -141,9 +158,11 @@ games, each its own folder mounted as C: and started there:
 ## Next
 
 1. BATTLE.EXE's last 4.1 KB: a battle (a unit moved onto an enemy's,
-   the FIGHT screen) and loading and saving (DISK, LOAD) with `-cover`
-   would tell whether any of it runs; that needs a key script made for
-   it, from shots. The segment classes of the far data segments.
+   the FIGHT screen) with `-cover` would tell whether any of it runs
+   (saving and loading did not reach any); the first map's units stand
+   far apart, so it takes several turns: a key script built turn by
+   turn, saving on the way (the change of phase as above). The segment
+   classes of the far data segments.
 2. BATTLE.EXE in the runner: `run.py -until 20 -shot 12 build/shots/b12.png
    -dos ISLE/BATTLE.EXE` shows the title screen at 12 s; before it the
    program prints "Color." and "Speaker." and reads CHAR6.DAT, BB.DAT,

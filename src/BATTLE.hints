@@ -295,6 +295,38 @@ name T2354:0520 int24
 ; (seen with -rwatch in a run)
 name T2354:008A timer_keys
 
+; the key set F27EE:2498 points to (F27EE:0B1B when the credits were left
+; with space, scancode 39h, else F27EE:0B3E; what 0B3E is for is not
+; looked into), by index as dumped in a run: 00 Esc, 01 space, 02
+; backspace, 03 Del, 04 Ctrl, 05 Tab, 06/07 enter, 08..0B up, down,
+; right, left, 0C..15 F1..F10, 16 S, 17 E, 18 Y, 19 N, 1A D, 1B X ...
+; In a map T0708 reads the key from DATA:0404 (through the far pointer
+; DATA:00BE) and compares it with these: Esc (00) shows message 0Ch
+; "QUIT THE GAME ? (Y)", Y (18) then sets F27EE:250C bit 0; D (1A) at
+; T0708:3F0A calls save_game when both players' cursor records (F27EE:26B4
+; and 26E5, 31h bytes each) have state 5 at +17h. T0D36:141F sets state 5
+; when the function chosen at +1Bh is 9: fire held over an empty square,
+; left held while fire is let go (the change of phase; seen with -watch
+; on F27EE:26CF, the function goes back to 1 when left is let go first).
+; T11FD:0004 (player, number) shows a message of the table at F2789:0008
+; (records of 18h bytes: 0Ch QUIT THE GAME, 28h SAVE ABORTED, 29h GAME
+; SAVED, 2Ah GAME NOT SAVED, 2Bh GAME NOT LOADED; -1 clears, presumably).
+name T11FD:0004 show_message
+; T164D:0363 (?, dir, name far, ext) writes a path into F27E6:0077: a
+; directory of F27E6:0023 (6 bytes each: LIB\, MAP\, FX\, ANIM\; -1 none),
+; the name, an extension of F27E6:003B (5 bytes each: .FIN .PMP .SHP .LIB
+; .PAL .DAT .TXT .SND .FXX .COM .IFF .HI); what the first argument is
+; for is not looked into.
+name T164D:0363 make_path
+; saving and loading a game: the file is <name>.DAT in the game's folder,
+; the name at F27EE:249C ("00" in the runs), made by make_path with no
+; directory. save_game ran at D (a run, 00.DAT created and written),
+; load_game at the start of a map when F27EE:250C bit 200h is set, after
+; DISK, LOAD, a position and a key at "PLEASE INSERT DISK" (T1090:0867
+; opens the file first to see that it is there).
+name T13CA:000F save_game
+name T13CA:0462 load_game
+
 ; CODE:2296 passes CODE:2460 (a near routine) to CODE:3312 with a far
 ; pointer into DATA and the address of its own further arguments (an
 ; output routine for a formatter, presumably; not checked)
