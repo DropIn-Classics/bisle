@@ -1,7 +1,7 @@
 # Handoff
 
 State of 2026-09-30: stage 1 for the launcher and the main program;
-BATTLE.EXE's code reached to 95%.
+BATTLE.EXE's and BI.EXE's code reached to 95%.
 `src/BI.hints` and `src/BATTLE.hints` rebuild BI.EXE and BATTLE.EXE byte
 for byte (`doskit/tools/check.py`: all ok). Nothing is understood yet
 beyond the segments; the port is the template's.
@@ -92,14 +92,20 @@ games, each its own folder mounted as C: and started there:
     words) are nearly all inside unreached code, CALL FAR instructions;
     only DATA:1770/1774/1778 are real (all to CODE:1D7F, a routine that
     does nothing).
-  In BI.EXE most of the segments other than CODE are not reached yet.
+- BI.EXE: 96% of its code bytes as instructions (5346 of 5584). Its
+  own code (CODE, S00FF, S0102, S0107, S012B, S015B) was reached
+  already; the rest is S0022 and the segments only S0022 calls. Nothing
+  calls S0022 (no relocation outside it names it): a library module
+  linked in and not used, presumably, the same timer and keyboard
+  module as BATTLE.EXE's T2354 by its first routine (not compared in
+  full). Its routines are `code` hints, so that it reads. Left: data in
+  S0107 (addressed through CS) and single bytes at segments' ends.
 
 ## Next
 
-1. Gaps in BI.EXE the same way (switch tables, far pointers of two
-   immediates). BATTLE.EXE's last 6.6 KB in CODE: whether any of it is
-   reached (a run with a trace would tell). The segment classes of the
-   far data segments.
+1. BATTLE.EXE's last 6.6 KB in CODE: whether any of it is reached (a
+   run with a trace would tell). The segment classes of the far data
+   segments.
 2. BATTLE.EXE in the runner: `run.py -until 20 -shot 12 build/shots/b12.png
    -dos ISLE/BATTLE.EXE` shows the title screen at 12 s; before it the
    program prints "Color." and "Speaker." and reads CHAR6.DAT, BB.DAT,

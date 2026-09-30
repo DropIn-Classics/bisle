@@ -41,3 +41,29 @@ relocorder original
 num S0107:01D5
 num S0107:021C
 num S0107:0232
+
+; S0022 is called by nothing: no relocation outside it names its segment
+; and no far pointer leads into it. It is a library module linked in and
+; not used (presumably); the same timer and keyboard module as T2354 in
+; BATTLE.EXE, by its first routine (not compared in full). Written as
+; code so that it reads: its routines, each after a RETF, entered here;
+; the segments only S0022 calls (S0093, S0095, S00B4, S00EA, S00EC,
+; S00F2, S00FC, S00FE, S0131, S0143, S014F) follow from them
+code S0022:0011         ; sets a timer callback and INT 24h
+code S0022:005E
+code S0022:03E4         ; sets INT 09h
+code S0022:0423
+code S0022:0465         ; OUT 43h,36h: sets the timer chip's channel 0
+code S0022:060B
+code S0022:06A5
+code S0022:06E9
+code S0022:06FE
+code S0022:070A
+; the handlers it sets
+ptr S0022:0021 S0022    ; mov ax,008Ah / mov dx,S0022: the timer callback,
+                        ; period 4000h (call S0022:05A6)
+ptr S0022:0048 S0022    ; INT 21h AH=25h AL=24h, DS = CS, DX = 03D4h
+ptr S0022:0412 S0022    ; INT 21h AH=25h AL=09h, DS = CS, DX = 0378h
+ptr S0022:0485 S0022    ; mov ax,04F0h: slot 0, calls the INT 08h handler
+                        ; that was there before (as T2354:063C in BATTLE)
+ptr S0022:04E6 S0022    ; INT 21h AX=2508h, DS = S0022, DX = 0516h
