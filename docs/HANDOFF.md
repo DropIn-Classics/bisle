@@ -284,6 +284,15 @@ games, each its own folder mounted as C: and started there:
   the staff credits; no gap ran. F27EE:251B was 4 when map 16 ended: the
   04 of 04.HI, presumably. That a poke is no real win: what a real one
   does besides is not known.
+- The file routines (BATTLE.hints, from the code, their calls seen in
+  -dos traces): `file_open` (T2690:0004), `file_close` (T2628:0004),
+  `file_size` (T2653:0000), `save_file` (T26D2:000A) and `load_file`
+  (T2695:0004), which unpacks the TPWM files: "TPWM", the unpacked
+  length (a long), then flag bytes whose bits (from the top) each say
+  a byte as it is (0) or a copy from earlier output (1: two bytes, the
+  length in the low nibble + 3, the distance in 12 bits). A scratch
+  script with that reading unpacks all 244 TPWM files of ISLE\ to
+  their header's length, each ending at the file's end.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -304,7 +313,8 @@ games, each its own folder mounted as C: and started there:
    asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
 3. A tool for each data format (`tools/NAMEfiles.py`), starting with
-   the palettes, `.IFF`/`.LBM` pictures and `.LIB` libraries.
+   the TPWM unpacking (known, above; many files are packed, the palettes
+   too), then the palettes, `.IFF`/`.LBM` pictures and `.LIB` libraries.
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.
 5. Later: the AdLib sound refined (`-oplwav` against the game in GOG's

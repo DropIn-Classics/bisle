@@ -455,10 +455,37 @@ name T238E:0F28 play_anim
 ; poke). F27EE:251B was 4 when map 16 (CONRA) ended, and the name went to
 ; MAP\04.HI: the map's number in the game's order, presumably.
 name T1682:000B after_map
-; T2695:0004 (far ?, name far, far ?) opens the file named, reads 8 bytes
-; and compares them with TPWM (the packed files, as the maps' .COM); with
-; DATA:0AD4 (int24's flag) and a count of 4 around it: retries after a
-; critical error, presumably. The rest is not looked into.
+; the file routines (assembly, read from the code; the opens, reads and
+; closes are seen in -dos traces of runs):
+; T2690:0004 (mode, name far): mode 1 creates the file (INT 21h 3Ch), else
+; opens it with AL = mode (3Dh); the handle in AX, 0 on an error. What
+; the OR of DATA:0368 before the REPNE SCASB is for is not looked into.
+name T2763:000E file_open
+; T2628:0004 (handle): closes it; DX:AX 0, or -1 on an error.
+name T26FB:000E file_close
+; T2653:0000 (name far): the size a load gives: opens, reads 8 bytes; a
+; packed file (TPWM) gives the size in its header (+4, a long), another
+; its length (a seek to the end); -1 when the open fails.
+name T2726:000A file_size
+; T26D2:000A (name far, buffer far, length long): creates the file and
+; writes the buffer in pieces below 8000h; 0 when all went (MAP\NN.HI
+; was written from here in a run; where save_game writes is not checked).
+name T27A6:0004 save_file
+; T2695:0004 (buffer far, name far, work far): opens the file and reads 8
+; bytes. A packed file ("TPWM", then the unpacked length as a long) is
+; unpacked into the buffer through the work buffer (1000h bytes read at a
+; time): a flag byte, its bits from the top, each for one item: 0 a byte
+; as it is, 1 two bytes b1 b2 that copy (b1 AND 0Fh) + 3 bytes from
+; ((b1 AND F0h) SHL 4) OR b2 bytes back in the output; it stops at the
+; length. Another file is read whole in pieces of 8000h. A buffer of 0 or
+; -1 is allocated first (T2619:0004 with the length: farmalloc,
+; presumably). The buffer comes back in DX:AX (through T2718:0008), 0
+; when the open fails; then with DATA:0AD4 (int24's flag) and DATA:0366
+; set it calls T2695:02BB (a message with DATA:0C88, presumably "insert
+; the disk", not checked) and tries again, 4 times in all. The unpacking
+; was checked with a scratch script on the game's files: all 244 TPWM
+; files of ISLE\ come out at their header's length and end at the file's
+; end (the .PAL files 768 bytes).
 name T2768:000E load_file
 ; T0D36:1592 (n): puts back the interrupt handlers (T2354:056F, 005E),
 ; prints message n of F273B (1 not enough memory, 2 cannot load file,
