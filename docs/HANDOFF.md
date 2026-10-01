@@ -15,7 +15,10 @@ end with its statistics, and the computer player's assessment, plan and
 commands, and how it steers its cursor to carry the commands out, and
 the sound (the songs and the effects, with the AdLib) are read and
 checked against runs (below); the PC speaker's sound is read, not run;
-the animations of ANIM\ are not read; the port is the template's.
+the animations of ANIM\ are not read. The port (stage 3) has begun:
+BATTLE.EXE's start, the logo and the title run as C over the program's
+memory image and are the original's in memory and video memory at the
+menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
@@ -1438,8 +1441,55 @@ games, each its own folder mounted as C: and started there:
   `fires.py N ..` the same for find_path and fire_reach. A run to 600 s
   takes about 140 s here.
 
+## The port
+
+How it is made (port/README.md has what is translated and what was
+compared):
+
+- `port/src/gen/names.h` comes from `symmap.py port/src/gen/names.h BI
+  BATTLE=src/BATTLE.hints` (check.py checks it); the C names every
+  variable it uses, so a variable gets a `name` in BATTLE.hints first
+  (the section "names of data, for the port" at its end), then build.py,
+  symmap.py, and xfer.py for DESERT.hints and MOON.hints. A name must not
+  be a routine's (`score` was taken: `score_now`). xfer.py maps a data
+  name only where an instruction names the address, so some stay "(not
+  mapped)" even in DESERT.hints, whose addresses are BATTLE's.
+- The program is loaded at PSP 0067h and keeps 3080h paragraphs (its
+  INT 21h AH=4Ah in a `-dos` run), so the first block it gets from DOS is
+  at 30E8h, as in the runner; its one big block (493E0h bytes, T0708's
+  main) is cut up by the compiler's huge pointer arithmetic (`hadd`).
+- DATA:0092 on is a table of far pointers to the library's records in
+  DATA (the drawing record 00D6, the keys 0404, the players' input
+  03AC..); the compiled code goes through them (`LES BX,[0092]`), the C
+  uses the records' names.
+- The clock (dos.c): time moves only where the program waits. The title
+  waits for 3 ticks a pass and a retrace in flip_page; the number of its
+  passes until a key at a given time is not the original's, so keys for
+  a comparison are given by passes (`-keysat` and `BI_KEYSAT`), not by
+  time. With a key by time the two pages came out exchanged (one pass
+  more or less).
+- load_file (T2695) writes one byte more than a packed file's length
+  says (it stops when the count goes below 0), and takes its bytes from
+  the 1000h bytes it reads the file through: past the file's end what
+  the buffer held before. The port reads through the same buffer in the
+  program's memory, so the byte is the original's.
+- load_picture returns -1 whatever happened, and looks for BODY from
+  the segment's start, word by word.
+- Scratch (build/scratch): `rl.py LABEL [LINES]` prints a routine folded,
+  `BATTLE.fold` is all of build/BATTLE.ASM folded so (rd.py 1 65518; made
+  again after names change), `pb.sh` builds the port with MSVC, `pcmp.py
+  NAME ORIG_BREAK PORT_PLACE [T:KEY..] [PLACE@ADDR=N:KEY,..]` runs both to
+  a place and compares (memcmp.py; FILTER=0 shows all), `vcmp.py` the
+  video memories by region, `heapcmp.py` the memory behind the program.
+- The Bash tool's here-documents break on apostrophes and backslashes
+  here: scripts and C files are written as files, not through `cat <<`.
+
 ## Next
 
+0. The port, in this order: the sound (CODE:0215..1B79 over
+   doskit/runtime/opl.c; sndfiles.py has it in Python), the menus
+   (T1090), a map's start and its loop (T0708), then what the loop calls.
+   Each step compared with the runner as port/README.md says.
 1. BATTLE.EXE's last 4.1 KB: menus, a map, saving, loading, battles
    against the computer and poked wins with their animations ran none
    of it (above) but for a RETF; unused library code and switch tables,

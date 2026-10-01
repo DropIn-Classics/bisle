@@ -1,7 +1,7 @@
 /* main.c - Battle Isle: a native compatibility implementation requiring an
  * installed copy of the original game.
  *
- *     battle-isle [-game DIR | -gog FILE|FOLDER|SETUP.exe]
+ *     battle-isle [-game DIR | -gog FILE|FOLDER|SETUP.exe] [/s] [/m]
  *
  * DIR is the game's unpacked files: -game, else $BATTLE_ISLE_GAME, else the first
  * folder `game` holding ISLE/BI.EXE beside the program, in the current
@@ -17,12 +17,16 @@
  * headless build shows it only in a run scripted with keys (DK_KEYS,
  * plat_null.c) and copies without asking otherwise.
  *
- * A release build (PORT_VERSION and PORT_UPDATE_URL defined) asks once
- * whether it may look for newer releases and shows one it found
- * (update.h, docs/RELEASE.md point 7).
+ * Then the game's main program, ISLE/BATTLE.EXE, is loaded from the
+ * player's file into a megabyte of memory as DOS loaded it, and the C of
+ * this port runs over that memory (bi.h, battle.c); /s and /m are the
+ * original's switches.  Files the game writes go to the data folder's
+ * `save`.
  *
- * Nothing is ported yet: the program shows where it found the game and
- * waits for Esc.
+ * For comparisons with the original (doskit/tools/memcmp.py):
+ * BI_BREAK=NAME#N ends the program at the Nth pass of a place of that
+ * name (bi_at), after writing the memory to $BI_RAM and the video memory
+ * to $BI_VRAM, as the runner's -break, -ram and -vram do.
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,14 +36,10 @@
 #include "launcher.h"
 #include "platform.h"
 #include "sys.h"
-#include "textmode.h"
-#include "update.h"
+#include "bi.h"
 
 #ifndef PORT_VERSION
 #define PORT_VERSION ""
-#endif
-#ifndef PORT_UPDATE_URL
-#define PORT_UPDATE_URL ""
 #endif
 
 static const GogRelease release = {
@@ -57,49 +57,6 @@ static const GogRelease release = {
 
 /* what earlier versions wrote beside the program (sys_data_migrate) */
 static const char *const old_files[] = { "game", NULL };
-
-static uint8_t pixels[TM_WIDTH * TM_HEIGHT];
-static uint32_t palette[256];
-
-/* the lines about newer releases, from row y: the question, once, or
- * the setting and a release found; key the scancode read (-1 none) */
-static void updates(int y, int key)
-{
-    const uint8_t attr = TM_ATTR(TM_LIGHTGREY, TM_BLUE), hi = TM_ATTR(TM_YELLOW, TM_BLUE);
-    char line[80];
-    UpdateInfo u;
-    int consent = update_consent();
-
-    if (!*PORT_VERSION || !*PORT_UPDATE_URL)
-        return;
-    if (consent < 0) {
-        if (key == 0x15 || key == 0x31)                 /* Y, N */
-            update_set_consent(key == 0x15);
-        tm_text(3, y, "Look for new versions of this port on GitHub, once a day?  Y / N", hi);
-        return;
-    }
-    if (key == 0x3C)                                    /* F2 */
-        update_set_consent(!consent);
-    update_start(PORT_VERSION, PORT_UPDATE_URL);
-    snprintf(line, sizeof line, "F2: look for new versions: %s", update_consent() ? "on" : "off");
-    tm_text(3, y, line, attr);
-    if (update_poll(&u)) {
-        if (key == 0x16)                                /* U */
-            update_open(u.page);
-        snprintf(line, sizeof line, "%s is out (this is %s).  U opens its page.", u.version,
-                 PORT_VERSION);
-        tm_text(3, y + 1, line, hi);
-        snprintf(line, sizeof line, "%.74s", u.notes);
-        line[strcspn(line, "\n")] = 0;                /* the notes' first line */
-        tm_text(3, y + 2, line, attr);
-    }
-}
-
-static void show(void)
-{
-    tm_render(pixels, palette);
-    plat_present(pixels, TM_WIDTH, TM_HEIGHT, palette);
-}
 
 static const LauncherApp app = { "Battle Isle", "battle-isle", PORT_VERSION };
 
@@ -151,19 +108,47 @@ static int get_game(const char *given, const char *gog, char *out, size_t n)
     return 0;
 }
 
+/* BATTLE.EXE of the game's folder into memory, the program's files in
+ * ISLE, its own in the data folder's `save`; 1, or 0 after saying why not */
+static int load_program(const char *game)
+{
+    char isle[SYS_PATH], exe[SYS_PATH], data[SYS_PATH], save[SYS_PATH], err[256];
+
+    if (!sys_find(game, "ISLE", isle, sizeof isle) || !sys_find(isle, "BATTLE.EXE", exe, sizeof exe)) {
+        plat_message("ISLE/BATTLE.EXE is not in the game's folder.");
+        return 0;
+    }
+    /* what the program keeps of its memory (INT 21h AH=4Ah, seen in the
+     * runner): 3080h paragraphs from its PSP on */
+    if (rm_load_exe(exe, BATTLE_SIZE, BATTLE_SHA256, RM_LOAD_PSP, 0x3080, err, sizeof err) != 0) {
+        plat_message(err);
+        return 0;
+    }
+    rm_ds = SEG(DATA);
+    sys_data_dir(data, sizeof data);
+    sys_join(save, sizeof save, data, "save");
+    sys_mkdir(save);
+    dos_set_dirs(isle, save);
+    return 1;
+}
+
 int main(int argc, char **argv)
 {
     const char *given = NULL, *gog = NULL;
     char game[SYS_PATH];
-    int i;
+    char *args[8];
+    int i, nargs = 1;
 
+    args[0] = argv[0];
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-game") && i + 1 < argc)
             given = argv[++i];
         else if (!strcmp(argv[i], "-gog") && i + 1 < argc)
             gog = argv[++i];
+        else if (argv[i][0] == '/' && nargs < 8)
+            args[nargs++] = argv[i];
         else {
-            fprintf(stderr, "usage: battle-isle [-game DIR | -gog FILE|FOLDER]\n");
+            fprintf(stderr, "usage: battle-isle [-game DIR | -gog FILE|FOLDER] [/s] [/m]\n");
             return 2;
         }
     }
@@ -171,28 +156,11 @@ int main(int argc, char **argv)
     sys_data_migrate(old_files);
     if (!plat_init("Battle Isle"))
         return 1;
-    if (!get_game(given, gog, game, sizeof game)) {
+    if (!get_game(given, gog, game, sizeof game) || !load_program(game)) {
         plat_shutdown();
         return 1;
     }
-    tm_clear(' ', TM_ATTR(TM_LIGHTGREY, TM_BLUE));
-    tm_frame(1, 1, 78, 5, TM_ATTR(TM_WHITE, TM_BLUE));
-    tm_text(3, 2, "Battle Isle", TM_ATTR(TM_YELLOW, TM_BLUE));
-    tm_text(3, 3, "The game's files:", TM_ATTR(TM_LIGHTGREY, TM_BLUE));
-    tm_text(3, 4, game, TM_ATTR(TM_WHITE, TM_BLUE));
-    tm_text(3, 8, "Nothing is ported yet.  Esc ends the program.", TM_ATTR(TM_LIGHTGREY, TM_BLUE));
-    while (plat_pump()) {
-        int b, key = -1;
-        while ((b = plat_read_scancode()) >= 0)
-            if (!(b & 0x80))
-                key = b;
-        if (key == 0x01)
-            break;
-        tm_fill(0, 10, TM_WIDTH, 3, ' ', TM_ATTR(TM_LIGHTGREY, TM_BLUE));
-        updates(10, key);
-        show();
-        plat_sleep_ms(15);
-    }
+    battle_main(nargs, args);
     plat_shutdown();
     return 0;
 }

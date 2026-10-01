@@ -1909,3 +1909,153 @@ ptr CODE:31A7 CODE
 ; DATA:1770, 1774 and 1778 are far pointers to this routine, which does
 ; nothing (PUSH DS, DS = DATA, POP DS, RETF)
 ; (not mapped) code CODE:1D7F
+; ---- names of data, for the port (port/src/gen/names.h, symmap.py)
+; DATA:0092 on is a table of far pointers to the records below, which
+; the compiled modules reach the library's data by (LES BX,[0092]; the
+; library's own routines use the addresses).
+; The drawing record: the colour, a rectangle (fill_rect, draw_row,
+; draw_column, draw_line; put_pixel its first corner), whether draw_entry
+; clips, and to which rectangle; whether there is one page only; the
+; offset of each row in a page (0F0h words).
+name DATA:00D6 draw_colour
+name DATA:00D8 draw_x1
+name DATA:00DA draw_y1
+name DATA:00DC draw_x2
+name DATA:00DE draw_y2
+name DATA:00E4 clip_on
+name DATA:00E8 clip_x1
+name DATA:00EA clip_y1
+name DATA:00EC clip_x2
+name DATA:00EE clip_y2
+name DATA:00F2 one_page
+name DATA:00F4 row_offsets
+; the font draw_chars draws with (a far pointer), the mode's numbers
+; (T2485:0055 sets them: 140h by 0C8h, 50h bytes a row of a plane, 3E80h a
+; page), the count of timer_keys' calls, the lists of what the sprites
+; covered (a far pointer to the list's end and one to its start, for the
+; page drawn to and for the other: flip_page exchanges them), the video
+; mode found at the start, the segments of the page drawn to and of the
+; page shown, where store_part puts the next part of the ground
+name DATA:02DC font_ptr
+name DATA:02E0 screen_width
+name DATA:02E2 screen_height
+name DATA:02EC row_bytes
+name DATA:02EE page_bytes
+name DATA:0304 tick_count
+name DATA:031E covered_end
+name DATA:0322 covered_start
+name DATA:0326 covered_end_other
+name DATA:032A covered_start_other
+name DATA:033E covered_second
+name DATA:0342 old_video_mode
+name DATA:034A two_pages
+name DATA:0350 page_drawn
+name DATA:0352 page_shown
+name DATA:0354 page_drawn_kept
+name DATA:0356 page_shown_kept
+name DATA:0358 parts_next
+name DATA:035C text_scale
+name DATA:0362 pointer_store
+; the disk's record (file_open, T2695:02BB's message): two words and a
+; name (T164D:0482 copies "VGA  " there)
+name DATA:0366 disk_record
+; the joysticks (T265E:000E looks for them, T2670:000A reads them): which
+; are there, their axes as read, the middle's limits; the keys held and
+; what they stand for, per player: now, the time before, what has come of
+; it (the directions and fire for the program's loops) and counts of the
+; passes a direction was held
+name DATA:0374 joy0_there
+name DATA:0376 joy1_there
+name DATA:0378 joy_axes
+name DATA:0384 joy_middle
+name DATA:03A4 joy_bits
+name DATA:03A6 joy_wait
+name DATA:03A8 joy0_used
+name DATA:03AA joy1_used
+name DATA:03AC input0_now
+name DATA:03B2 input0_before
+name DATA:03B8 input0_events
+name DATA:03C2 input0_counts
+name DATA:03D8 input1_now
+name DATA:03DE input1_before
+name DATA:03E4 input1_events
+; (not mapped) name DATA:03EE input1_counts
+; the key timer_keys got from INT 16h: scancode, the one before, the
+; character, the one before, FFFFh when there is one
+name DATA:0404 key_scan
+name DATA:0406 key_char
+name DATA:0408 key_there
+; the mouse (T2683:000A, T263D:000A; INT 33h)
+name DATA:040A mouse_on
+; the blocks T2619:0004 got from DOS (INT 21h AH=48h): their number and
+; their segments
+name DATA:044E blocks_count
+name DATA:0450 blocks
+; the palette load_picture takes from a picture (768 bytes)
+; (not mapped) name DATA:04A0 picture_palette
+; the CRTC's ports (from the BIOS's 40:63), a file error (int24 sets 2,
+; T2619:0004 1), timer_keys' count of four, the keys' bitmap (int09: a bit
+; set while the key is up), the last scancode, the two players' tables of
+; keys (near pointers)
+name DATA:0AB6 crtc_port
+name DATA:0AB8 crtc_data_port
+name DATA:0ABA status_port
+name DATA:0AD4 file_error
+name DATA:0AD6 input_divider
+name DATA:0AD8 keys_up
+name DATA:0AE8 last_scancode
+name DATA:0AE9 keys0_table
+name DATA:0AEB keys1_table
+; the timers (above, at timer_add)
+name DATA:0CBC timers_last
+name DATA:0CBE timers_period_low
+name DATA:0CDE timers_period_high
+name DATA:0CFE timers_left_low
+name DATA:0D1E timers_left_high
+name DATA:0D3E timers_due
+name DATA:0D5E timers_handle
+name DATA:0D7E timers_place
+name DATA:0D9E timers_handler
+name DATA:0DDE pit_run_low
+name DATA:0DE0 pit_run_high
+name DATA:0DE2 old_int08
+name DATA:0DE6 pit_period_low
+name DATA:0DE8 pit_period_high
+name DATA:0DEA pit_period_set
+; the Blue Byte logo's steps (HANDOFF.md at libfiles.py): 43h records of
+; x, y and the entry's offset in BB.DAT
+name T2579:01A7 logo_steps
+; the game's flags (HANDOFF.md, open question 1) and the menu's (250E)
+name F2902:4155 game_flags
+name F2902:4157 menu_flags
+; the names of files: CHAR6 (the font), CHAR24's library record (a name
+; of 0Ah bytes, +0Ah the file's length, +0Eh a far pointer to the table of
+; far pointers to its entries that load_lib makes of its directory, +12h
+; their number)
+name F2902:0BE3 name_char6
+name F2902:0BBB lib_char24
+; the key set in use (a far pointer; title sets it by the key that ended
+; it) and twelve of its keys copied
+name F2902:0C57 key_set
+name F2902:0C05 key_set_keyboard
+; (not mapped) name F27EE:0B3E key_set_other
+name F2902:0C4B key_set_copy
+; title's names: BB, TITEL
+; (not mapped) name F2C09:000C name_bb
+; (not mapped) name F2C09:0006 name_titel
+; make_path's directories (6 bytes each), extensions (5 bytes each), the
+; path it makes, and the disks' names (8 bytes each; T164D:0482)
+; (not mapped) name F27E6:000B disk_names
+; (not mapped) name F27E6:0023 path_dirs
+; (not mapped) name F27E6:003B path_exts
+; (not mapped) name F27E6:0077 path_made
+; timer 0's handler (above)
+name T249A:063C old_timer
+; fatal_error's messages (14h bytes each, the first for number 1)
+; (not mapped) name F273B:0008 fatal_messages
+; the two players' records (17h bytes each: +0 a word of flags, bit 2 the
+; computer plays; +2..+4 the status screen's counts; the orders' list at
+; +11h), the score (the status screen's ACTUAL, a long), the map chosen
+name F2902:41E4 players
+name F2902:41E0 score_now
+name F2902:416C map_number

@@ -7,16 +7,50 @@ repository.
 
 ## State
 
-Started 2026-09-30 from doskit's template: finds or unpacks the game's
-files and shows a text screen. Nothing of the game is translated yet.
+The port runs the game's main program, `ISLE/BATTLE.EXE`, as C over the
+program's own memory image (doskit/docs/METHOD.md, stage 3): the player's
+file is loaded into a megabyte of memory where the runner loads it (PSP
+0067h; its SHA-256 is checked), and each routine of the original is a C
+function of the hints' name that reads and writes that memory by the
+hints' names (`src/gen/names.h`, written by doskit's `symmap.py`). A part
+that is not translated yet ends the program with a message that names it.
 
-The game's files (doskit ebd96fa's template): a GOG release found by
-itself is copied only when the player agrees, in the kit's dialog about
-the game's files (`launcher.h`), which also shows the copy's progress
-and says what to do when nothing was found; `-gog` copies without
-asking. Built on Windows 11 with MSVC (no warnings) and started
-headless with `-game` (5 pictures, exit 0); the dialog itself was not
-started, macOS and Linux not built.
+Translated so far (2026-10-01): the start, the Blue Byte logo, the title
+with its running lines, up to the title menu's entry. No sound yet.
+
+| File | The original's | What |
+|---|---|---|
+| `main.c` | - | finds the game's files, loads BATTLE.EXE, starts it |
+| `bi.h` | - | the names, far pointers, what the modules share |
+| `dos.c` | DOS, BIOS, PIT | files, the keyboard, the clock (timer interrupt, retrace) |
+| `timer.c` | T2354 | the timers, the keys, the players' input |
+| `files.c` | T2619..T2728, T164D | memory blocks, files, TPWM unpacking, paths |
+| `gfx.c` | T23DC..T259F | pages, sprites, pictures, palette, text, lines |
+| `lib.c` | T0CEB | the sprite libraries (`sort_lib` not yet) |
+| `text.c` | T164D | text in the large letters |
+| `title.c` | T1727 | the logo and the title |
+| `battle.c` | T0708 | main, to the menu's call |
+| `sound.c` | CODE:0215..1B79 | a stand-in: the songs are loaded, nothing plays |
+
+The game's files (doskit's template): a GOG release found by itself is
+copied only when the player agrees, in the kit's dialog about the game's
+files (`launcher.h`), which also shows the copy's progress and says what
+to do when nothing was found; `-gog` copies without asking. The dialog
+itself was not started yet. Files the game writes (saved games, scores)
+go to the data folder's `save`.
+
+What the port does otherwise than a PC:
+
+- Time is counted in the PIT's counts and moves only where the program
+  waits (the retrace, a count of ticks, the scan lines of `set_palette`);
+  the timer's interrupt runs at those points, not between any two
+  instructions.
+- No joystick and no mouse (INT 33h): the original's code for them is
+  translated as far as it is reached without them.
+- The original's routines keep scratch values in their code segments;
+  the port keeps them in C variables.
+- The template's question about looking for newer releases (update.h) is
+  not asked: it comes back with the setup screen (doskit/docs/LAUNCHER.md).
 
 ## Build and run
 
@@ -32,6 +66,9 @@ stays undefined.
 looks for newer ones (doskit/runtime/update.h); the workflow sets it to
 the latest release's `latest.json`.
 
+`/s` and `/m` are the original's switches (the PC speaker's sound, which
+the port does not have, and another text at the start).
+
 ## Releases
 
 `.github/workflows/build.yml` builds the packages doskit/docs/RELEASE.md
@@ -43,4 +80,33 @@ anything the game needs before the first release.
 
 ## Checked
 
-(what was compared with the original, where and how)
+How: the original stopped in the runner at an address and the port at
+the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
+`BI_VRAM`), both with keys given by the passes of a loop, not by time
+(the runner's `-keysat`, the port's `BI_KEYSAT`), then
+`doskit/tools/memcmp.py` on the two memories and video memories.
+
+- The title menu's entry (`menu`, T1090:000E) after the logo and the
+  title, space at the 200th pass of the title's loop (T1727:031E;
+  Windows 11, MSVC, the headless build): all 256 KB of video memory the
+  same (both pages, the lists of what the sprites covered); of the
+  program's memory all segments the same but
+  - the routines' scratch variables in their code segments (T23FD,
+    T2433, T2470, T2550, T265E, T2695, T26D2), the saved interrupt
+    vectors (T2354:0008, DATA:0DE2), the stack;
+  - the C library's own variables (DATA:005C..0090, DATA:1432..1A3E) and
+    its startup code's (CODE:01A6..0207, CODE:38F9..3F47);
+  - the sound: its two timers and their tables (DATA:0CBC..0DAC), its
+    variables after the stack (ZEROS), CODE:14F0, CODE:164D;
+  - what goes with the time: `tick_count`, `input_divider`, the timers'
+    counts left and the counts of the players' input.
+  The memory the program got from DOS (behind the program, 30E7:0 on:
+  the font, the title's files) is the same in every byte but one, the
+  size of the free block after it (the runner's memory ends at 9FC0h,
+  the port's at A000h); memcmp.py does not look there, a scratch script
+  did.
+- The pictures of the logo and the title were looked at (the headless
+  build's `DK_SHOTS`), not compared pixel for pixel on their way.
+
+Not built: macOS, Linux. Not started: the window build (only the
+headless one ran).
