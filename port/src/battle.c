@@ -1288,6 +1288,7 @@ void battle_main(int argc, char **argv)
                 t0d36_000f(0x64);
                 fade_out();
             }
+            bi_at("after_map");
             after_map(spare);
             if (GW(game_flags) & 0x20) {
                 /* the last map: the ending and the credits */

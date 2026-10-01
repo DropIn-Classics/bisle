@@ -2066,7 +2066,7 @@ name F2902:416C map_number
 ; each), the operators of each voice (two bytes a voice: nine voices, and
 ; the percussion mode's eleven), each operator's register offset, whether
 ; it is a carrier, its voice and its voice in the percussion mode
-name DATA:0DEC voice_scale
+; (not mapped: DATA:0DEC would be voice_scale and credits_text) name DATA:1336 voice_scale
 name DATA:0E02 perc_bits
 name DATA:0E07 op_modulator
 name DATA:0E15 op_carrier
@@ -2212,6 +2212,39 @@ name F2E5B:0061 scene_count_b
 ; (not mapped) name F2D5F:0000 scene_pieces
 name F2E89:0004 scene_ground_bonus
 ; (not mapped) name F2D66:0000 scene_scripts
+; the films' values (play_anim): where on the screen, the buffers, the
+; frame to come, the folder, whether the files are loaded, the path made,
+; the files' names
+name F2E9D:000C anim_y
+name F2E9D:000E anim_work
+name F2E9D:0012 anim_count
+name F2E9D:0014 anim_frame
+name F2E9D:0018 anim_dir
+name F2E9D:001C anim_load
+name F2E9D:001E anim_path
+name F2E9D:0050 anim_palette
+name F2E9D:0054 anim_data
+name F2E9D:0058 anim_x
+name F2E9D:005A anim_names
+; the credits' values (end_credits): the cursor's blinking, where the next
+; letter goes, the page kept, where the cursor is, the sounds' file, the
+; text
+; (not mapped) name F2D88:0000 credits_blink
+; (not mapped) name F2D88:0002 credits_count
+; (not mapped) name F2D88:0004 credits_x
+; (not mapped) name F2D88:000A credits_page
+; (not mapped) name F2D88:000C credits_y
+; (not mapped) name F2D88:0022 credits_cursor_x
+; (not mapped) name F2D88:0024 credits_cursor_y
+; (not mapped) name F2D88:0026 credits_name
+; (not mapped: DATA:0DEC would be voice_scale and credits_text) name DATA:0DEC credits_text
+; the computer player's state that a saved game holds besides computer_state:
+; a record of 9 bytes a unit for the move phase and for the attack phase,
+; the keys' scripts (20h a player), the commands' queues (49h a player)
+; (not mapped) name F2C0A:00BA computer_move_units
+name F2D2D:00AC computer_attack_units
+; (not mapped) name F2C0A:11AE computer_scripts
+name F2D2D:11E5 computer_queues
 ; the ticks a pass of the map's loop takes (4; also the number of the
 ; scores' file after a map), the position LOAD was given, the name made
 ; of a number (T26EA:000F writes it: a saved game, a map's files), the

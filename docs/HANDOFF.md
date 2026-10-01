@@ -1560,6 +1560,48 @@ compared):
   target's number modulo the count, the answer's by the shot's number.
   fight_step's counts for the scene are the units' +2, also for a type
   whose count is its +3.
+- Places the port counts for comparisons (bi_at; the original's address
+  beside each): title_pass LT1727_031E, menu_pass LT1090_058B, map_setup
+  LT0708_0392, map_pass LT0708_135C, fight_step (the routine's entry),
+  key_clear LT0D36_0CA1 and key_wait LT0D36_0D0D (the two loops of the
+  wait for a key, T0D36:0C85), ask_key LT1090_1236 (LOAD's position),
+  save_key LT13CA_0173 (the save's digit), box_key LT262A_011C (the
+  message box), name_pass LT1090_0381, anim_frame LT2248_009C, after_map
+  LT0708_4551, credits_letter LT25A6_03B8. The runner takes at most 64
+  -break/-poke/-keyat: the scratch pcmp.py puts the longest group of
+  keys into the -keysat file.
+- Keys in such runs: a key pressed and let go at two passes of a loop
+  that spins without waiting (the save's digit, the message box) reaches
+  the original as the release only (both bytes within a few
+  instructions): press it and let it go thousands of passes later.
+  Space and Enter are player 0's fire: a wait for a key ended by one of
+  them and never let go keeps the next wait in its first loop (it waits
+  for fire to be let go) for ever in the original; the port left it
+  after 898 turns, when a turn of four retraces held no reading of the
+  input (the reading's phase against the retrace is not the original's).
+  A key that is no player's (p) avoids it.
+- bi.h's SFP(name, p) uses p twice: a call as p runs twice (the films'
+  decoder did, and the second call found no frame). Take the value into
+  a variable first.
+- The films (play_anim, read in full for the port): a frame is "VDIF" and
+  for each of the four planes runs: FFh and a word says where the next
+  bytes go (3E80h or more ends the plane), a byte with bit 80h a count
+  less 2 and the byte to fill with, another the count of bytes that
+  follow; the routine returns the next frame's place, FFFF:FFFF when
+  what is there is no frame. ANIM\bl and br have 37 frames. The palette
+  files of the films hold 6-bit values, shifted left by 2 for
+  set_palette; bl and br keep the map's palette. The sounds are ANIM.FX,
+  started at fixed frames.
+- A saved game (save_game, read in full): the header's 12h bytes and 23
+  parts of the memory as they are, 37815 bytes; the far pointers inside
+  (the cursors' records) fit because the port loads the program where
+  the runner does. The save's digit is read from the scancode (2..0Bh),
+  LOAD's from the character.
+- The credits (end_credits): typed onto the page shown (page_drawn set
+  to page_shown meanwhile), Esc is read from the BIOS's keyboard and
+  leaves by longjmp; the text is DATA:0DEC (0Dh a line's end, 0Ch a
+  page's, 0 the end); colour 1 is set by INT 10h AX=1010h (the port:
+  set_dac_entry).
 - T2701:000E unpacks a packed entry in memory as load_file does a file,
   a byte more than the length says; draw_packed (T24D8:0008) draws from
   the buffer when it returns 0. Above 64 KB, or when the buffer's offset
@@ -1578,11 +1620,13 @@ compared):
 
 0. The port: the sound, the menus, a map's setup and its loop with the
    cursors, the screens over a window (T1479), a move (T122D), the change
-   of phase (T0408), T15AC and the fight scene (T1F3C..T223C) are done;
-   next what port/src/todo.c lists, a module at a time: T2248 (the
-   films), T178C..T1ED2 (the
-   computer), T13CA, T15AC, T2248. Each step compared with the runner as
-   port/README.md says.
+   of phase (T0408), T15AC, the fight scene (T1F3C..T223C), the films
+   (T2248), saving and loading (T13CA) and the credits (T25A6) are done;
+   what is left in port/src/todo.c is the computer player
+   (T178C..T1ED2; tools/computer.py did its routines again from runs and
+   says what each does). After it: the launcher's screen, the other
+   platforms' builds, DESERT and MOON. Each step compared with the
+   runner as port/README.md says.
 1. BATTLE.EXE's last 4.1 KB: menus, a map, saving, loading, battles
    against the computer and poked wins with their animations ran none
    of it (above) but for a RETF; unused library code and switch tables,

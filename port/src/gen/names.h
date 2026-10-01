@@ -462,7 +462,11 @@
     X(F2C09, name_bb, 0x000C) \
     X(F2C0A, computer_types, 0x0000) \
     X(F2C0A, computer_state, 0x00A2) \
+    X(F2C0A, computer_move_units, 0x00BA) \
+    X(F2C0A, computer_attack_units, 0x0934) \
+    X(F2C0A, computer_scripts, 0x11AE) \
     X(F2C0A, computer_keys, 0x11EE) \
+    X(F2C0A, computer_queues, 0x11FE) \
     X(F2D37, scene_arrived, 0x0008) \
     X(F2D37, scene_shot, 0x0009) \
     X(F2D37, scene_record, 0x000A) \
@@ -487,6 +491,25 @@
     X(F2D5F, scene_pieces, 0x0000) \
     X(F2D65, scene_ground_bonus, 0x000E) \
     X(F2D66, scene_scripts, 0x0000) \
+    X(F2D7A, anim_y, 0x0006) \
+    X(F2D7A, anim_work, 0x0008) \
+    X(F2D7A, anim_count, 0x000C) \
+    X(F2D7A, anim_frame, 0x000E) \
+    X(F2D7A, anim_dir, 0x0012) \
+    X(F2D7A, anim_load, 0x0016) \
+    X(F2D7A, anim_path, 0x0018) \
+    X(F2D7A, anim_palette, 0x004A) \
+    X(F2D7A, anim_data, 0x004E) \
+    X(F2D7A, anim_x, 0x0052) \
+    X(F2D7A, anim_names, 0x0054) \
+    X(F2D88, credits_blink, 0x0000) \
+    X(F2D88, credits_count, 0x0002) \
+    X(F2D88, credits_x, 0x0004) \
+    X(F2D88, credits_page, 0x000A) \
+    X(F2D88, credits_y, 0x000C) \
+    X(F2D88, credits_cursor_x, 0x0022) \
+    X(F2D88, credits_cursor_y, 0x0024) \
+    X(F2D88, credits_name, 0x0026) \
     X(F2D8A, effects_ptr, 0x000C) \
     X(F2D8A, effects_asked, 0x0010) \
     X(DATA, draw_colour, 0x00D6) \
@@ -569,6 +592,7 @@
     X(DATA, pit_period_low, 0x0DE6) \
     X(DATA, pit_period_high, 0x0DE8) \
     X(DATA, pit_period_set, 0x0DEA) \
+    X(DATA, credits_text, 0x0DEC) \
     X(DATA, voice_scale, 0x1336) \
     X(DATA, perc_bits, 0x134C) \
     X(DATA, op_modulator, 0x1351) \

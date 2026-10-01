@@ -1053,3 +1053,94 @@ void t2433_0006(fptr buffer, fptr picture, fptr sprites, fptr work)
         t2621_0008();
     }
 }
+
+/* T24C5:002E: a film's frame ("VDIF", then for each of the four planes
+ * runs of bytes: FFh and a word is where the next goes, 3E80h or more
+ * ends the plane; a byte with bit 80h is a count less 2 and the byte to
+ * fill with, another the count of bytes that follow) drawn at x, y of
+ * the page drawn to; the frame after it, or FFFF:FFFF for no frame */
+fptr t24c5_002e(int x, int y, fptr frame)
+{
+    uint16_t seg = GW(page_drawn), fs = FSEG(frame), si = FOFF(frame), base, di;
+    unsigned n, b, v, at;
+    int plane;
+
+    base = (uint16_t)(y * 0x50 + ((uint16_t)(x & 0xFFFC) >> 2));
+    di = base;
+    if (frw(fs, si) != 0x4456 || frw(fs, (uint16_t)(si + 2)) != 0x4649)
+        return 0xFFFFFFFFu;
+    si += 4;
+    for (plane = 0; plane < 4; plane++) {
+        planes(1u << plane);
+        for (;;) {
+            b = frb(fs, si++);
+            if (b == 0xFF) {
+                at = frw(fs, si);
+                si += 2;
+                if (at >= 0x3E80)
+                    break;
+                di = (uint16_t)(at + base);
+                b = frb(fs, si++);
+            }
+            if (b & 0x80) {
+                n = (b & 0x7F) + 2;
+                v = frb(fs, si++);
+                while (n--)
+                    vwb(seg, di++, v);
+            } else
+                for (n = b; n; n--)
+                    vwb(seg, di++, frb(fs, si++));
+        }
+    }
+    return MKFP(fs + (si >> 4), si & 0x0F);
+}
+
+/* T2728:000E: a box with a text (lines parted by '|') in the middle of
+ * the screen, what it covers kept in the page's list: the two colours of
+ * the box's edges, the text's, the fill's */
+void t2728_000e(fptr text, int keep_off, int keep_seg, int light, int dark, int colour, int fill)
+{
+    const char *s = fstr(text);
+    unsigned longest = 0, lines = 0, n, w, h;
+    int x1, y1;
+    uint16_t di;
+
+    /* T2723:000A: the longest line and its end, and the lines */
+    do {
+        for (n = 1; *s && *s != '|'; s++)
+            n++;
+        if (n > longest)
+            longest = n;
+        lines++;
+    } while (*s++);
+    w = 6 * longest;
+    h = 6 * (lines + 1);
+    y1 = (int)((GW(screen_height) - h) >> 1);
+    x1 = (int)((GW(screen_width) - w) >> 1);
+    pos((unsigned)x1, (unsigned)y1, &di);
+    keep_covered(w / GW(text_scale) + 1, h + 1, GW(page_drawn), di, (unsigned)keep_off, (unsigned)keep_seg);
+    t24a8_0008(x1, y1, x1 + (int)w, y1 + (int)h, light, dark, fill);
+    SW(draw_colour, colour);
+    draw_chars(x1 + 3, y1 + 3, text);
+}
+
+/* T262A:000E: a message in a box until a key is pressed */
+void t262a_000e(fptr text)
+{
+    if (GW(text_scale) == 1) {
+        set_dac_entry(0xFA, 0x36, 0x36, 0x36);
+        set_dac_entry(0xFB, 0x0C, 0x0C, 0x0C);
+        set_dac_entry(0xFC, 0x0C, 0x0C, 0x0C);
+        set_dac_entry(0xFD, 0x20, 0x20, 0x20);
+        t2728_000e(text, 1, 0, 0xFA, 0xFB, 0xFC, 0xFD);
+    } else
+        t2728_000e(text, 1, 0, 0x0F, 0, 4, 7);
+    flip_page();
+    while (!GW(key_there)) {
+        bi_at("box_key");
+        clock_idle();
+    }
+    SW(key_there, 0);
+    flip_page();
+    restore_sprites();
+}

@@ -22,9 +22,9 @@ map's setup and the map's loop with the cursors on the map (a unit's
 line, a unit chosen, its reach and targets, an attack order, the
 overview), the screens over a window (status, a unit, a building with
 its slots), a move carried out, the change of phase with the fights and
-their scene, the statistics after a map. Not yet (`todo.c`: the program
-ends with the routine's name): the films, the computer player, saving
-and loading, the credits.
+their scene, the films, a game saved and loaded, a map's end with the
+statistics, the last map's ending and the credits. Not yet (`todo.c`:
+the program ends with the routine's name): the computer player.
 
 | File | The original's | What |
 |---|---|---|
@@ -47,6 +47,9 @@ and loading, the credits.
 | `move.c` | T122D | a move: the way marked, the steps, what arriving does, taken back |
 | `phase.c` | T0408 | the change of phase, the score |
 | `fight.c` | T1F3C..T223C | the fight: its reckoning, the scene with the units and the shots |
+| `anim.c` | T2248 | the films of ANIM\ with their sounds (the frames' decoder is gfx.c's) |
+| `save.c` | T13CA | a game saved and loaded |
+| `credits.c` | T25A6 | the text typed after the last map's end |
 | `after.c` | T15AC | the numbers of units kept at each change, the statistics after a map |
 | `battle.c` | T0708 | main: the start, a map's setup, the map's loop, after a map |
 | `todo.c` | - | what is not translated yet |
@@ -217,6 +220,28 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   unit that holds others, a target that cannot answer, the other
   grounds' pieces and scripts (tools/scene.py did those from runs of the
   original before).
+- A game saved (both players ask for the change, D, a key, the digit 0;
+  the keys of the two waits by the passes of their loops): the file
+  `00.DAT` the port wrote is the original's byte for byte (37815 bytes),
+  the memory and the video memory after it the same. Loaded again from
+  the menus (DISK, LOAD, 0, a key at PLEASE INSERT DISK, a key at the
+  message box): at the map's 10th pass the same.
+- A map's end, on map 03 with a unit poked beside player 1's
+  headquarters and moved onto it: the change of phase with the film of
+  the building taken (ANIM\br; the 2nd and 25th frame), the message and
+  the key, the film of the headquarters blown up (ANIM\qa), the
+  statistics (`after_map`), the name for the scores, the scores, the
+  menu again: at each of these places the whole video memory and the
+  program's memory the same but for the kinds of differences above, and
+  the scores' file written the same. For the scores' picture the port
+  got the name's Enter a pass of the name's loop earlier than the
+  original: at the same pass the two pages come out exchanged (when a
+  key is seen by a loop that makes a picture a pass is a matter of a
+  tick). With the last map's end poked in at the same place (game_flags
+  24FDh before after_map): the ending's film (ANIM\es; its 150th frame
+  overall) and the credits (the 1st and the 200th letter typed) the same
+  but for the C library's jmp_buf; the port then went on to the menu
+  (the original was not run that far).
 - The window build was started for 8 s and ran (nothing looked at or
   heard: nobody was there).
 

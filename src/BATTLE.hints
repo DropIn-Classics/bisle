@@ -2122,6 +2122,39 @@ name F2D37:0284 scene_b_silent
 name F2D5F:0000 scene_pieces
 name F2D65:000E scene_ground_bonus
 name F2D66:0000 scene_scripts
+; the films' values (play_anim): where on the screen, the buffers, the
+; frame to come, the folder, whether the files are loaded, the path made,
+; the files' names
+name F2D7A:0006 anim_y
+name F2D7A:0008 anim_work
+name F2D7A:000C anim_count
+name F2D7A:000E anim_frame
+name F2D7A:0012 anim_dir
+name F2D7A:0016 anim_load
+name F2D7A:0018 anim_path
+name F2D7A:004A anim_palette
+name F2D7A:004E anim_data
+name F2D7A:0052 anim_x
+name F2D7A:0054 anim_names
+; the credits' values (end_credits): the cursor's blinking, where the next
+; letter goes, the page kept, where the cursor is, the sounds' file, the
+; text
+name F2D88:0000 credits_blink
+name F2D88:0002 credits_count
+name F2D88:0004 credits_x
+name F2D88:000A credits_page
+name F2D88:000C credits_y
+name F2D88:0022 credits_cursor_x
+name F2D88:0024 credits_cursor_y
+name F2D88:0026 credits_name
+name DATA:0DEC credits_text
+; the computer player's state that a saved game holds besides computer_state:
+; a record of 9 bytes a unit for the move phase and for the attack phase,
+; the keys' scripts (20h a player), the commands' queues (49h a player)
+name F2C0A:00BA computer_move_units
+name F2C0A:0934 computer_attack_units
+name F2C0A:11AE computer_scripts
+name F2C0A:11FE computer_queues
 ; the ticks a pass of the map's loop takes (4; also the number of the
 ; scores' file after a map), the position LOAD was given, the name made
 ; of a number (T26EA:000F writes it: a saved game, a map's files), the

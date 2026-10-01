@@ -154,6 +154,8 @@ fptr load_file(fptr dest, fptr name, fptr work);
 /* load_file and file_size: the pointer and the length */
 long t2624_0006(fptr dest, fptr name, fptr work, fptr *loaded);
 int save_file(fptr name, fptr from, uint32_t count);
+int t264b_0000(int handle, fptr to, uint32_t count);
+int t26de_0008(int handle, fptr from, uint32_t count);
 fptr make_path(int unused, int dir, fptr name, int ext);
 void t164d_0482(int disk);
 void fatal_error(int number);
@@ -180,6 +182,9 @@ void t2590_000a(void);
 void t2592_0002(void);
 void t24d3_0000(fptr item);
 void t24a8_0008(int x1, int y1, int x2, int y2, int light, int dark, int fill);
+fptr t24c5_002e(int x, int y, fptr frame);
+void t2728_000e(fptr text, int keep_off, int keep_seg, int light, int dark, int colour, int fill);
+void t262a_000e(fptr text);
 void draw_entry(int x, int y, fptr entry, unsigned keep_off, unsigned keep_seg, int base);
 void draw_chars(int x, int y, fptr text);
 fptr store_part(fptr entry);
@@ -310,20 +315,23 @@ void move_undo(int unit, fptr map, int side);
 int count_slots(int side, fptr rec, int used);
 void cargo_move(int side, fptr from, fptr to);
 
-/* ---- not translated yet (todo.c) ---- */
-int change_phase(fptr buffer, fptr libs, fptr pmp, fptr palette);
+/* ---- fight.c, anim.c, save.c, credits.c: T1F3C..T223C, T2248, T13CA, T25A6 ---- */
 int fight_step(fptr rec);
+void play_anim(int number, fptr buffer, int x, int y, int load_files, fptr dir);
+int save_game(fptr palette);
+void load_game(fptr palette);
+void end_credits(fptr work, fptr dir);
+
+/* ---- phase.c, after.c: T0408, T15AC ---- */
+int change_phase(fptr buffer, fptr libs, fptr pmp, fptr palette);
 long score(void);
 void history_add(int units0, int units1);
 void after_map(fptr buffer);
-int save_game(fptr buffer);
-void load_game(fptr buffer);
-void play_anim(int number, fptr buffer, int a, int b, int c, fptr path);
-void end_credits(fptr work, fptr path);
+
+/* ---- not translated yet (todo.c) ---- */
 void computer_start(int side);
 void computer_step(int side);
 void computer_unit_new(int unit);
-void t262a_000e(fptr text);
 
 /* ---- battle.c: T0708, the program ---- */
 void battle_main(int argc, char **argv);

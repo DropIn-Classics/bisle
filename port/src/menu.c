@@ -22,6 +22,7 @@
 int t0d36_0c85(void)
 {
     while (GBO(input0_events, 4) || GW(key_there) == 1) {
+        bi_at("key_clear");
         SBO(input0_events, 4, 0);
         SW(key_there, 0);
         t0d36_000f(3);
@@ -29,6 +30,7 @@ int t0d36_0c85(void)
     SBO(input0_events, 4, 0);
     SW(key_there, 0);
     while (!GBO(input0_events, 4) && !GW(key_there)) {
+        bi_at("key_wait");
         SBO(input0_events, 4, 0);
         SW(key_there, 0);
         t0d36_000f(3);
@@ -157,8 +159,10 @@ int ask_position(void)
     for (;;) {
         unsigned c;
 
-        while (!GW(key_there))
+        while (!GW(key_there)) {
+            bi_at("ask_key");
             clock_idle();
+        }
         c = GB(key_char);
         SW(key_there, 0);
         if (c >= 0x30 && c <= 0x39) {
