@@ -559,10 +559,25 @@ games, each its own folder mounted as C: and started there:
   code (T0D36:10D4, 1484..158B; not checked beyond the run): the cursor
   record's +1Bh 2 and then state +17h 4 come from fire with down when the
   cursor's +1Ch has bit 4 (set with 0Eh when +18h is 1); the map's loop
-  calls the routine at T0708:25FF. What each number is and where it comes
-  from is not read; screens.py does not draw it yet. The other callers of
-  draw_shop_window (T1479:0AA6 and T13CA:002E, the save and load
-  messages) are not run yet. MOON.hints did not get the name (not mapped).
+  calls the routine at T0708:25FF. `tools/screens.py --unit RAM --vram
+  VRAM` draws it from the game's files and a run's memory (the same
+  moment, -ram and -vram at 55 s; with player 1's keys added `-key 48 d
+  -key 49 d -key 50 lctrl+ -key 50.6 c+ -key 51.5 lctrl- -key 52 c-`):
+  the window, two boxes, the numbers (T1479:030A: the type's hit values
+  against land, air and sea, the unit's +0 halved, the armour, the
+  ranges less 1, as the code reads them; whether they are what the
+  manual calls them is not checked), the big picture and the name
+  (T1479:0C93), the ground's hexagon with the unit over it and the
+  cursor. All 24160 pixels drawn were in the video memory on both
+  pages, for player 0's T-3 SCORPION (ground 3) and player 1's SC-T
+  PROVIDER (ground 64); player 1's screen is 160 pixels to the right,
+  as the status screen. Not run: a unit of the other player (text 1
+  instead of the numbers), a unit that holds others (the word +4 with
+  bit 40h), the message line at the bottom (T11FD:0103). The other
+  callers of draw_shop_window (T1479:0AA6 and T13CA:002E, the save and
+  load messages) are not run yet. MOON.hints did not get the name (not
+  mapped). mapfiles.py's sorted_entries stops before BIGUNIT.DAT's MAA
+  now (the loader's list does).
 - The cursor and the map's clock (BATTLE.hints at copy_page): at the end
   of each pass of the map's loop (T0708:4385) each player's cursor is
   drawn, CURSOR.LIB's entry of the cursor record's +1Bh at its +10h,
@@ -610,9 +625,10 @@ games, each its own folder mounted as C: and started there:
    (`mapfiles.py --png`), CODES.DAT and AMOK.DAT are read, the .PMP is
    the map's overview, the texts and the small font are read
    (`txtfiles.py`), the status screen is drawn in full
-   (`screens.py`); next in screens.py the other screens of SHOP.LIB's
-   window (the callers of draw_shop_window and draw_box in T1479: the
-   buildings' screens, by the texts 03h..09h), the menus' texts (T1090,
+   (`screens.py`: the status screen and the unit's); next in screens.py
+   the other screens of SHOP.LIB's window (the callers of
+   draw_shop_window and draw_box in T1479: T1479:0AA6, the buildings'
+   screens, by the texts 03h..09h), the menus' texts (T1090,
    in the program's data by the looks, drawn by draw_text24), who draws
    BB.DAT's sprites, then the rest of the screen: the cursor's entries, the overview's frame, the
    frame's texts, what the windows show of a map (scrolling, the units'

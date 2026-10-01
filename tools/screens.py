@@ -3,6 +3,7 @@
 as BATTLE.EXE draws them, and compared with the run's video memory.
 
     screens.py --status RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
+    screens.py --unit RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
 
 RAM is a run's memory (run.py -ram), VRAM its video memory (run.py
 -vram), both of the same moment.  --status draws the status screen of
@@ -11,6 +12,9 @@ pixels the video memory has; --png writes the pictures
 (DIR/status<player>.png, in 00.PAL's colours, what is not drawn clear).
 --game names the game's folder (default ISLE), --load the segment the
 runner loaded the program at (its report's "load ... at"; default 0077).
+
+--unit draws the unit's screen (below) of each player whose cursor has
+the state 4 (the record's +17h) in the run's memory.
 
 The status screen (draw_status, T1479:0DC5, one argument: the player),
 read from the code; x0 is 0 for player 0 and 160 for player 1:
@@ -54,6 +58,16 @@ Before it calls draw_status, T0708 puts the cursor's place (its record's
 CURSOR.LIB's entry 1 was there with colour base 0; which routine draws
 it is not read, the tool draws it last.
 
+The unit's screen was checked the same way (BATTLE.EXE, ISLE's first
+map, the cursor one up from each player's start onto a unit of the
+player's own, fire with down held, -ram and -vram at 55 s): player 0's
+T-3 SCORPION (ground 3) and player 1's SC-T PROVIDER (ground 64), all
+24160 pixels drawn for each in the video memory, on both pages.  Not run:
+a unit of the other player (the numbers' place then holds text 1 of
+GAME.TXT, T1479:030A, or nothing when the type's word +6 has bit 4), a
+unit that holds others (the word +4 with bit 40h, T1479:070B), the
+message line (T11FD:0103) at the bottom.
+
 Checked against a run (BATTLE.EXE, ISLE's first map, fire and down on an
 empty square with each player's keys, -ram and -vram at 61 s): all 24160
 pixels drawn for each player were in the video memory, on both pages
@@ -72,6 +86,7 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, '..', 'doskit', 'tools'))
 from kit import game_dir  # noqa: E402
 import libfiles  # noqa: E402
+import mapfiles  # noqa: E402
 import palfiles  # noqa: E402
 import png  # noqa: E402
 import tpwmfiles  # noqa: E402
@@ -90,6 +105,9 @@ COUNTS_REC = 0x17
 # AMOK.DAT's colours
 C_ONE, C_TWO, C_TEXT, C_WINDOW, C_BOX, C_LIGHT, C_DARK = 0x09, 0x0A, 0x0D, 0x0E, 0x10, 0x11, 0x12
 FRAME_BASE = 0x40
+UNITS, UNIT_REC = 0x2898, 0x1A          # F27EE: the units' records
+TYPES, TYPE_REC = 0x001F, 0x44          # F27EE: the unit types' records
+MAP_PTR = 0x1334                        # F27EE: far pointer to the map's squares
 
 
 def unpacked(path):
@@ -114,6 +132,9 @@ class Files:
         self.texts = txtfiles.read_texts(unpacked(find(game, 'GAME.TXT')))
         self.shop = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'SHOP.LIB')))]
         self.cursor = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'CURSOR.LIB')))]
+        self.bigunit = mapfiles.sorted_entries(game, 'BIGUNIT')
+        self.unit = mapfiles.sorted_entries(game, 'UNIT')
+        self.ground = mapfiles.ground_images(game)
 
 
 class Screen:
@@ -145,6 +166,15 @@ class Screen:
                 px, py = x + e['dx'] + i, y + e['dy'] + j
                 if vals[j * w + i] >= 0 and x1 <= px < x2 and y1 <= py < y2:
                     self.put(px, py, vals[j * w + i] + base)
+
+    def hexagon(self, x, y, img):
+        """draw_hexagon (T24DF:0002): a ground's picture as
+        mapfiles.ground_images has it, at x, y, colour base 0"""
+        w, h, px = img
+        for j in range(h):
+            for i in range(w):
+                if px[j * w + i] >= 0:
+                    self.put(x + i, y + j, px[j * w + i])
 
     def chars(self, x, y, lines):
         """draw_chars (T2525:000A) for each line, 6 rows a line, in the
@@ -186,6 +216,14 @@ class Ram:
     def word(self, off):
         return struct.unpack_from('<h', self.data, self.base + off)[0]
 
+    def bytes(self, off, n):
+        return self.data[self.base + off:self.base + off + n]
+
+    def far(self, seg, off):
+        """a byte at a segment of the run (as stored in the memory, the
+        load segment in it) and an offset"""
+        return self.data[seg * 16 + off]
+
     def clip(self):
         """the drawing record's clipping, None when it is off"""
         on, _, x1, y1, x2, y2 = struct.unpack_from('<6h', self.data, (self.load + DATA) * 16 + RECORD + 0x0E)
@@ -206,18 +244,23 @@ def status_values(ram, player):
     }
 
 
+def window(s, files, x0):
+    """draw_shop_window (T1479:0004)"""
+    a = files.amok
+    s.entry(x0, 0, files.shop[0], FRAME_BASE)
+    s.entry(x0, 0, files.shop[3], FRAME_BASE)
+    s.entry(x0 + 0x8E, 0, files.shop[1], FRAME_BASE)
+    s.entry(x0, 0xA6, files.shop[2], FRAME_BASE)
+    s.fill(x0 + 8, 0x0C, x0 + 0x8E, 0xA6, a[C_WINDOW])
+
+
 def draw_status(files, player, v, clip=None):
     """the status screen of a player as draw_status draws it, and the
     cursor in its place there"""
     s = Screen(files, clip)
     a = files.amok
     x0 = WINDOW * player
-    # T1479:0004, the window
-    s.entry(x0, 0, files.shop[0], FRAME_BASE)
-    s.entry(x0, 0, files.shop[3], FRAME_BASE)
-    s.entry(x0 + 0x8E, 0, files.shop[1], FRAME_BASE)
-    s.entry(x0, 0xA6, files.shop[2], FRAME_BASE)
-    s.fill(x0 + 8, 0x0C, x0 + 0x8E, 0xA6, a[C_WINDOW])
+    window(s, files, x0)
     x, y = x0 + 0x1D, 0x12
     s.box(x, y, 0x60, 0x2B, a[C_BOX])
     s.text(x, y, 0x0A, a[C_TEXT])
@@ -246,6 +289,82 @@ def draw_status(files, player, v, clip=None):
     return s.pix
 
 
+def unit_values(ram, player):
+    """what draw_unit_info shows for a player, from the run's memory: the
+    unit's record (1Ah bytes at F27EE:2898), its type's (44h bytes at
+    F27EE:001F) and the ground under the cursor"""
+    rec = PLAYERS + PLAYER_REC * player
+    pos, unit = struct.unpack_from('<H', ram.bytes(rec, 2))[0], ram.byte(rec + 0x1E)
+    u = ram.bytes(UNITS + UNIT_REC * unit, UNIT_REC)
+    t = ram.bytes(TYPES + TYPE_REC * u[8], TYPE_REC)
+    seg, off = struct.unpack_from('<HH', ram.bytes(MAP_PTR, 4))[::-1]
+    return {'state': ram.byte(rec + 0x17), 'cursor': ram.byte(rec + 0x1B), 'unit': unit, 'rec': u, 'type': t,
+            'ground': ram.far(seg, off + pos), 'player': player}
+
+
+def draw_unit_info(files, v, clip=None):
+    """the unit's screen (T1479:05AF) for a unit that holds no others
+    (the record's +4 without bit 40h; the other case is not read), as
+    its routines draw it:
+
+      the window, a box (30, 20, 96, 96) for the picture and a box
+      (43, 124, 70, 40) for the numbers (draw_box, filled with AMOK's
+      +10h).  The numbers (T1479:030A), for a unit of the viewer's: the
+      rectangle (43, 124) to (43 + 45h, 124 + 27h) filled again, SHOP.LIB's
+      entry 6 at (49, 127), text 0 of GAME.TXT at (91, 126), the numbers in
+      AMOK's +0Dh at x 73 and y 126, 132, 138, 147, 153: the type's +0Ah,
+      +9, +0Bh (the hit values against land, air and sea: datfiles.py),
+      the record's +0 halved (the move), the type's +1 (the armour); and
+      at x 97: y 126
+      the type's +8 less 1 when its word +5 has bit 4, else 0, y 138 the
+      same with bit 8, y 132 the type's +7 less 1.
+      The picture (T1479:0C93): BIGUNIT.LIB's entry (the type's +19h, in
+      the .DAT's order) at (30, 20 + the type's +18h), colour base 30h when
+      the unit's word +4 has bit 1 or 2 set (bit 1: player 1's), else
+      20h; the type's name (+1Ah) centred on x 78, 3 pixels a character
+      a side (6 wide), at y 106, in AMOK's +0Dh.
+      SHOP.LIB's entry 5 at (116, 134) and at (15, 134) (the second is
+      the frame of the unit's square), in it at (16, 135) the ground's
+      hexagon (PART.LIB, by the map's byte) and over it the unit's entry
+      (UNIT.LIB's, type * 6 + the record's +0Fh + player), base 30h when
+      the record's word +4 has bit 1, else 20h."""
+    s = Screen(files, clip)
+    a = files.amok
+    x0 = WINDOW * v['player']
+    u, t = v['rec'], v['type']
+    word4 = u[4] | u[5] << 8
+    window(s, files, x0)
+    s.box(x0 + 30, 20, 96, 96, a[C_BOX])
+    s.box(x0 + 43, 124, 70, 40, a[C_BOX])
+    # T1479:030A
+    x, y = x0 + 43, 124
+    s.fill(x, y, x + 0x45, y + 0x27, a[C_BOX])
+    x, y = x + 6, y + 2
+    s.entry(x, y + 1, files.shop[6], 0)
+    s.text(x + 0x2A, y, 0, a[C_TEXT])
+    s.colour = a[C_TEXT]
+    for dy, n in ((0, t[0x0A]), (6, t[9]), (0x0C, t[0x0B]), (0x15, u[0] >> 1), (0x1B, t[1])):
+        s.number(n, x + 0x18, y + dy)
+    t5 = t[5] | t[6] << 8
+    s.number(t[8] - 1 if t5 & 4 else 0, x + 0x30, y)
+    s.number(t[8] - 1 if t5 & 8 else 0, x + 0x30, y + 0x0C)
+    s.number(t[7] - 1, x + 0x30, y + 6)
+    # T1479:0C93
+    x, y = x0 + 30, 20
+    base = 0x30 if word4 & 3 else 0x20
+    s.entry(x, y + t[0x18], files.bigunit[t[0x19]], base)
+    name = t[0x1A:0x2B].split(b'\0')[0]
+    s.colour = a[C_TEXT]
+    s.chars(x + 0x30 - 3 * len(name), y + 0x56, [name])
+    # T1479:05AF
+    s.entry(x0 + 0x74, 0x86, files.shop[5], 0)
+    s.entry(x0 + 15, 0x86, files.shop[5], 0)
+    s.hexagon(x0 + 16, 0x87, files.ground[v['ground']])
+    s.entry(x0 + 16, 0x87, files.unit[u[8] * 6 + u[0x0F + v['player']]], 0x30 if word4 & 1 else 0x20)
+    s.entry(x0 + 0x75, 0x87, files.cursor[v['cursor']], 0)
+    return s.pix
+
+
 def compare(pix, vram, page=0):
     """(pixels drawn, those the video memory has, the box of the others
     or None)"""
@@ -265,9 +384,39 @@ def to_png(path, game, pix):
     png.write_indexed(path, WIDTH, HEIGHT, bytes((clear or 0) if p < 0 else p for p in pix), rgb, clear)
 
 
+def report(pix, vram):
+    for page in (0, 1):
+        n, same, box = compare(pix, vram, page)
+        print('  page %d: %d pixels drawn, %d as in the video memory%s' % (
+            page, n, same, '' if box is None else ', the others within x %d..%d, y %d..%d' % (
+                box[0], box[2], box[1], box[3])))
+
+
+def unit_main(a, files, ram, vram, game):
+    shown = 0
+    for player in (0, 1):
+        v = unit_values(ram, player)
+        if v['state'] != 4:
+            continue
+        shown += 1
+        t = v['type']
+        print('player %d: unit %d, type %d %s, ground %d' % (
+            player, v['unit'], v['rec'][8], t[0x1A:0x2B].split(b'\0')[0].decode('latin-1'), v['ground']))
+        pix = draw_unit_info(files, v, ram.clip())
+        if vram:
+            report(pix, vram)
+        if a.png:
+            os.makedirs(a.png, exist_ok=True)
+            to_png(os.path.join(a.png, 'unit%d.png' % player), game, pix)
+    if not shown:
+        print('no player has the state 4')
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
-    ap.add_argument('--status', metavar='RAM', required=True, help="draw the status screens from a run's memory")
+    ap.add_argument('--status', metavar='RAM', help="draw the status screens from a run's memory")
+    ap.add_argument('--unit', metavar='RAM', help="draw the unit's screens from a run's memory")
     ap.add_argument('--vram', help="compare with the run's video memory")
     ap.add_argument('--png', metavar='DIR', help='write the pictures here')
     ap.add_argument('--game', help="the game's folder (default ISLE)")
@@ -275,8 +424,12 @@ def main():
     a = ap.parse_args()
     game = a.game or os.path.join(game_dir(), 'ISLE')
     files = Files(game)
-    ram = Ram(open(a.status, 'rb').read(), int(a.load, 16))
+    if bool(a.status) == bool(a.unit):
+        ap.error('one of --status and --unit')
+    ram = Ram(open(a.status or a.unit, 'rb').read(), int(a.load, 16))
     vram = open(a.vram, 'rb').read() if a.vram else None
+    if a.unit:
+        return unit_main(a, files, ram, vram, game)
     for player in (0, 1):
         v = status_values(ram, player)
         pix = draw_status(files, player, v, ram.clip())

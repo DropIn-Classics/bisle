@@ -292,7 +292,7 @@ def find(d, name):
 
 def sorted_entries(game, lib):
     """a library's entries in its .DAT's order, as load_lib sorts them;
-    without a .DAT in the library's own"""
+    without a .DAT in the library's own; it ends before a name the library lacks"""
     libdir = find(game, 'LIB')
     entries = libfiles.read(unpacked(find(libdir, lib + '.LIB')))
     dat = find(libdir, lib + '.DAT')
@@ -300,7 +300,12 @@ def sorted_entries(game, lib):
         return [e for _, e in entries]
     by_name = dict(entries)
     names = unpacked(dat)
-    return [by_name[names[k:k + 8]] for k in range(0, len(names), 8)]
+    out = []
+    for k in range(0, len(names), 8):
+        if names[k:k + 8] not in by_name:      # BIGUNIT.DAT's last, MAA: the loader's list ends there
+            break
+        out.append(by_name[names[k:k + 8]])
+    return out
 
 
 def ground_images(game):

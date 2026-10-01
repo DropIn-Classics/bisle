@@ -692,20 +692,31 @@ name T2649:0006 put_pixel
 ; to but not +18h. In the run the rectangle was 0, 0, 320, 179: the last
 ; row of SHOP.LIB's entry 2 (row 179) was not drawn. draw_entry_p's
 ; clipping is not read.
-; T1479:05AF (player, type, far pointers; called at T0708:25FF in the map's
-; loop when the cursor record's +17h is 4 and +18h is 0): the screen of a
-; unit: draw_shop_window, two boxes (T1479:0130; the first with the unit's
-; picture, the second with the numbers), the type's big picture and name
-; (T1479:0C93), SHOP.LIB entries at +74h, 86h and more. A run (first map
-; of ISLE, cursor one up from the start onto a unit, fire held 50 s to 51.5 s
-; with down pressed at 50.6 s: `-key 48 up -key 49 up -key 50 space+ -key
-; 50.6 down+ -key 51.5 space- -key 52 down-`) reached it once (-log) and
-; the shot at 55 s shows the picture of the T-3 SCORPION, its name, a column
-; of numbers with icons and a small unit; draw_status did not run (down
-; with fire on an empty square gives that). That the cursor's +1Bh 2 (the
-; unit's own) and state 4 are set by fire and down on a unit of the player
-; is read from T0D36:1484..158B and T0D36:10D4, not checked; what each
-; number is and where it comes from is not read yet.
+; T1479:05AF (player, position, unit, far pointer to the map's squares;
+; called at T0708:25FF in the map's loop when the cursor record's +17h is 4
+; and +18h is 0): the screen of a unit. A run (first map of ISLE, the cursor
+; one up from the start onto a unit, `-key 48 up -key 49 up -key 50 space+
+; -key 50.6 down+ -key 51.5 space- -key 52 down-`) reached it once (-log);
+; draw_status did not run (down with fire on an empty square gives that).
+; Read from the code and drawn by tools/screens.py --unit: all 24160 pixels
+; of the window as the video memory had them (player 0's T-3 SCORPION and
+; player 1's SC-T PROVIDER, both on both pages, -ram and -vram at 55 s).
+; draw_shop_window, two boxes (T1479:0130: 30, 20, 96, 96 for the picture,
+; 43, 124, 70, 40 for the numbers), the numbers by T1479:030A (SHOP.LIB's
+; entry 6, text 0 and the type's hit values against land, air and sea, the
+; unit's +0 halved (the move), the armour, the ranges less 1, in AMOK's
+; +0Dh), the type's big picture and name by T1479:0C93 (BIGUNIT.LIB's
+; entry of the type's +19h, base 20h or 30h by the unit's +4; a packed
+; entry is unpacked first, T2701:000E, as in MOON), SHOP.LIB's entry 5 at
+; 116, 134 and 15, 134, in the second the square's ground (the map's byte
+; at the cursor's position, the far pointer at F27EE:1334; PART.LIB's
+; hexagon) and the unit over it (UNIT.LIB type * 6 + the unit's +0Fh + the
+; player), and the cursor at 117, 135. Not run: a unit of the other player
+; (T1479:030A shows text 1 instead of the numbers), a unit that holds
+; others (the word +4 with bit 40h: T1479:070B and on), the message line
+; at the bottom (T11FD:0103). That fire and down on a unit set state 4
+; (the cursor image +1Bh 2, T0D36:1484..158B and 10D4) is read, not
+; checked beyond the run.
 ; (not mapped) name T1479:05AF draw_unit_info
 name T154F:0DBB draw_status
 name T154F:0008 draw_shop_window
