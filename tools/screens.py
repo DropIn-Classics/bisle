@@ -4,7 +4,7 @@ as BATTLE.EXE draws them, and compared with the run's video memory.
 
     screens.py --status RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
     screens.py --unit RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
-    screens.py --building RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
+    screens.py --building RAM [--line N|clear] [--vram VRAM] [--png DIR] ...
     screens.py --menu RAM [--id N] [--sel N] [--vram VRAM] [--png DIR] ...
     screens.py --menu RAM --message position|insert [--vram VRAM] ...
     screens.py --menu RAM --message name [--typed TEXT] [--vram VRAM] ...
@@ -75,6 +75,28 @@ PART), both players' headquarters at once, player 0's depot (an R-1 DEMON
 in slot 0) and a factory of nobody's (a T-3 SCORPION): all 24160 pixels
 drawn for each were in the video memory, on both pages.
 
+The building's screen is drawn as its loop (T0708:2928..3C75,
+BATTLE.hints at draw_building) leaves it: the chosen slot's unit, FREE
+PART for an empty slot, the cursor's picture for the choice made with
+fire held, and with the list of types up (the cursor record's +18h 0Ch)
+that list in the slots' place, the type's big picture and PRODUCT ENERGY
+with its cost.  The message line below the window is drawn with it: the
+unit's line (unit_line, T11FD:0103) for a unit of the viewer's, cleared
+for an empty slot.  A message there (show_message) is not in the run's
+memory beyond the player's bit of F27EE:250C: with that bit set the line
+is drawn only when --line names the text (its number in hex); after the
+message's time the line is clear until the slot changes, which --line
+clear draws.  Checked against 14 runs (ISLE's map 03, each player's depot;
+map 14, code DEMON, player 1's factory; HANDOFF.md has the keys), all
+25312 pixels drawn in the video memory on both pages in each but one (a
+dump with fire and left held in the list: one page had them all, the
+other not the list's column, a pass under way presumably): a slot chosen
+by down, fire held with up (picture 4), down (8) and left (7), a repair
+refused (--line 1E, and --line clear 3 s later), the list, moved by two
+and scrolled by two, a unit built (in its slot, the energy less its
+cost), the list left by right.  Not seen: an entry of EXP.LIB on the
+unit's line (all units had 0 at +1), a record with +22h 2.
+
 The status screen (draw_status, T1479:0DC5, one argument: the player),
 read from the code; x0 is 0 for player 0 and 160 for player 1:
 
@@ -124,8 +146,10 @@ T-3 SCORPION (ground 3) and player 1's SC-T PROVIDER (ground 64), all
 24160 pixels drawn for each in the video memory, on both pages.  Not run:
 a unit of the other player (the numbers' place then holds text 1 of
 GAME.TXT, T1479:030A, or nothing when the type's word +6 has bit 4), a
-unit that holds others (the word +4 with bit 40h, T1479:070B), the
-message line (T11FD:0103) at the bottom.
+unit that holds others (the word +4 with bit 40h, T1479:070B).  The
+unit's line below the window (unit_line, T11FD:0103, which T1479:030A
+calls) is drawn too: checked against the same run for player 0 (25312
+pixels with it).
 
 Checked against a run (BATTLE.EXE, ISLE's first map, fire and down on an
 empty square with each player's keys, -ram and -vram at 61 s): all 24160
@@ -168,6 +192,11 @@ FRAME_BASE = 0x40
 UNITS, UNIT_REC = 0x2898, 0x1A          # F27EE: the units' records
 TYPES, TYPE_REC = 0x001F, 0x44          # F27EE: the unit types' records
 MAP_PTR = 0x1334                        # F27EE: far pointer to the map's squares
+SUFFIXES = 0x0013                       # F27EE: st, nd, rd, th, 3 bytes each
+MAKEABLE = 0x4136                       # F27EE: the types list_makeable found
+MESSAGE_SEG, MESSAGES_AT, MESSAGE_REC = 0x2789, 8, 0x18  # show_message's texts
+C_LINE = 0x0F                           # AMOK.DAT: the message line's background
+LINE_Y = 0xBD                           # the message line's row
 
 
 def unpacked(path):
@@ -194,6 +223,7 @@ class Files:
         self.cursor = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'CURSOR.LIB')))]
         self.char24 = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'CHAR24.LIB')))]
         self.patt = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'PATT.LIB')))]
+        self.exp = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'EXP.LIB')))]
         self.bigunit = mapfiles.sorted_entries(game, 'BIGUNIT')
         self.unit = mapfiles.sorted_entries(game, 'UNIT')
         self.ground = mapfiles.ground_images(game)
@@ -289,6 +319,11 @@ class Ram:
         load segment in it) and an offset"""
         return self.data[seg * 16 + off]
 
+    def message(self, n):
+        """show_message's text n (F2789:0008, 18h bytes each)"""
+        at = (self.load + MESSAGE_SEG) * 16 + MESSAGES_AT + MESSAGE_REC * n
+        return self.data[at:at + MESSAGE_REC].split(b'\0')[0]
+
     def drawn_page(self):
         """the page the program draws to, 0 or 1 (DATA:0350: A000 or A400);
         the other is shown"""
@@ -369,12 +404,49 @@ def unit_values(ram, player):
     t = ram.bytes(TYPES + TYPE_REC * u[8], TYPE_REC)
     seg, off = struct.unpack_from('<HH', ram.bytes(MAP_PTR, 4))[::-1]
     return {'state': ram.byte(rec + 0x17), 'cursor': ram.byte(rec + 0x1B), 'unit': unit, 'rec': u, 'type': t,
-            'ground': ram.far(seg, off + pos), 'player': player}
+            'ground': ram.far(seg, off + pos), 'player': player, 'suffixes': ram.bytes(SUFFIXES, 12)}
 
 
-def unit_numbers(s, a, x, y, u, t):
+def message_line(s, a, player, text=None):
+    """show_message (T11FD:0004: number, player): the line below a
+    player's window, x0 + 5 .. x0 + 148 and y 189 .. 196, filled with AMOK's
+    +0Fh, and a text (none for the number -1) centred on x0 + 76 (3 pixels
+    a character a side) in colour 3 for player 0, 12h for player 1"""
+    x0 = WINDOW * player
+    s.fill(x0 + 5, LINE_Y, x0 + 0x94, LINE_Y + 7, a[C_LINE])
+    if text is not None:
+        s.colour = 0x12 if player else 3
+        s.chars(x0 + 0x4C - 3 * len(text), LINE_Y, [text])
+
+
+def unit_line(s, a, player, u, t, suffixes):
+    """T11FD:0103 (unit, player), which T1479:030A calls after the numbers
+    of a unit of the viewer's: the message line cleared, then in the
+    player's colour from x = x0 + 5: at x + 6 the unit's +2 (its +3 for a
+    type whose word +0Eh has bit 4), at x + 14 EXP.LIB's entry of the
+    unit's +1 less 1 (none for 0, the sixth above 6; drawn with the
+    clipping's last row at 200), and unless the unit's word +4 has bit 2
+    its +9 ending before x + 38 with st, nd, rd or th (F27EE:0013) at
+    x + 38, and the type's second name (+2Bh) at x + 52"""
+    message_line(s, a, player)
+    x = WINDOW * player + 5
+    s.colour = 0x12 if player else 3
+    s.number(u[3] if (t[0x0E] | t[0x0F] << 8) & 4 else u[2], x + 6, LINE_Y)
+    if u[1]:
+        clip, s.clip = s.clip, s.clip and s.clip[:3] + (HEIGHT,)
+        s.entry(x + 0x0E, LINE_Y, s.f.exp[min(u[1], 6) - 1], 0)
+        s.clip = clip
+    if not (u[4] | u[5] << 8) & 2:
+        s.number(u[9], x + 0x20 - 6 * (u[9] >= 10) - 6 * (u[9] >= 100), LINE_Y)
+        k = 3 if u[9] > 3 else (u[9] - 1) & 0xFF
+        s.chars(x + 0x26, LINE_Y, [suffixes[3 * k:].split(b'\0')[0]])
+    s.chars(x + 0x34, LINE_Y, [t[0x2B:].split(b'\0')[0]])
+
+
+def unit_numbers(s, a, x, y, u, t, line=None):
     """T1479:030A for a unit of the viewer's: the rectangle at x, y (70 by
-    40) filled again, the icon, the labels and the numbers"""
+    40) filled again, the icon, the labels and the numbers, and the unit's
+    line below the window (line: the player and the suffixes)"""
     s.fill(x, y, x + 0x45, y + 0x27, a[C_BOX])
     x, y = x + 6, y + 2
     s.entry(x, y + 1, s.f.shop[6], 0)
@@ -386,6 +458,8 @@ def unit_numbers(s, a, x, y, u, t):
     s.number(t[8] - 1 if t5 & 4 else 0, x + 0x30, y)
     s.number(t[8] - 1 if t5 & 8 else 0, x + 0x30, y + 0x0C)
     s.number(t[7] - 1, x + 0x30, y + 6)
+    if line:
+        unit_line(s, a, line[0], u, t, line[1])
 
 
 def unit_picture(s, a, x, y, t, base):
@@ -430,7 +504,7 @@ def draw_unit_info(files, v, clip=None):
     window(s, files, x0)
     s.box(x0 + 30, 20, 96, 96, a[C_BOX])
     s.box(x0 + 43, 124, 70, 40, a[C_BOX])
-    unit_numbers(s, a, x0 + 43, 124, u, t)
+    unit_numbers(s, a, x0 + 43, 124, u, t, (v['player'], v['suffixes']))
     unit_picture(s, a, x0 + 30, 20, t, 0x30 if word4 & 3 else 0x20)
     # T1479:05AF
     s.entry(x0 + 0x74, 0x86, files.shop[5], 0)
@@ -451,13 +525,21 @@ def building_values(ram, player):
     b = [ram.far(seg, off + k) for k in range(0x1A)]
     slots = [ram.far(seg, off + 7 * player + i) for i in range(7)]
     units = {n: ram.bytes(UNITS + UNIT_REC * n, UNIT_REC) for n in slots if n <= 0xF0}
-    sel = ram.word(rec + 0x0E)
+    mode = ram.byte(rec + 0x18)
+    # with the list of types up (+18h 0Ch) +0Eh is the place in the list and
+    # +0Ah the slot it was called from
+    sel = ram.word(rec + (0x0A if mode == 0x0C else 0x0E))
     sel_unit = ram.bytes(UNITS + UNIT_REC * slots[sel], UNIT_REC) if slots[sel] <= 0xF0 else None
-    return {'state': ram.byte(rec + 0x17), 'mode': ram.byte(rec + 0x18), 'flags': b[0x19], 'slots': slots,
+    first = ram.word(rec + 0x20)
+    listed = ram.byte(MAKEABLE + first + ram.word(rec + 0x0E))
+    return {'state': ram.byte(rec + 0x17), 'mode': mode, 'flags': b[0x19], 'slots': slots,
             'units': units, 'player': player, 'kind': ram.word(rec + 0x22), 'sel': sel, 'value': b[0x16 + player],
             'cursor': ram.byte(rec + 0x1B), 'cursor_at': (ram.word(rec + 0x10), ram.word(rec + 0x12)),
             'shown': ram.word(STATE) & (8 if player else 4) == 0,
-            'type': ram.bytes(TYPES + TYPE_REC * sel_unit[8], TYPE_REC) if sel_unit else None}
+            'type': ram.bytes(TYPES + TYPE_REC * sel_unit[8], TYPE_REC) if sel_unit else None,
+            'suffixes': ram.bytes(SUFFIXES, 12), 'line': None,
+            'list': list(ram.bytes(MAKEABLE + first, 7)), 'list_second': player,
+            'listed': listed, 'listed_type': ram.bytes(TYPES + TYPE_REC * listed, TYPE_REC) if listed != 0xFF else None}
 
 
 def bar(s, x, y, colour, back, h, value, size):
@@ -501,10 +583,16 @@ def draw_building(files, v, clip=None):
       entry of +1Bh at the record's +10h, +12h.  In the numbers' place,
       filled again (T1479:028E: 70 by 40 in AMOK's +10h): GAME.TXT's text
       2 (FREE PART) for an empty slot, text 8 or 9 for a unit whose word
-      +4 has bit 400h or 800h (read, not seen in a run).  Not drawn: the
-      records with +22h 2 (with list_makeable; not seen: the
-      headquarters, a depot and a factory all had 1), the loop's later
-      states."""
+      +4 has bit 400h or 800h (read, not seen in a run).  The message
+      line: unit_line for the unit (by T1479:030A), cleared for an empty
+      slot or such a unit; v['line'] (a text, or b'' for none) instead
+      when given.  With the list of types up (v['mode'] 0Ch; T1479:0B9B and
+      T0708:37AA): the seven slots again with the types from F27EE:4136
+      (UNIT.LIB's entry type * 6 + 1, base 30h for player 1), the big box
+      filled, and for the type at the cursor the numbers' place filled,
+      text 7 there, the type's +3Eh as a number at +1Eh, +18h and the big
+      picture.  Not seen: a record with +22h 2 (a unit that holds
+      others; the headquarters, the depots and the factories had 1)."""
     s = Screen(files, clip)
     a = files.amok
     x0 = WINDOW * v['player']
@@ -537,19 +625,42 @@ def draw_building(files, v, clip=None):
         if word4 & 0xC00:
             s.fill(x0 + 0x38, 0x7D, x0 + 0x38 + 0x45, 0x7D + 0x27, a[C_BOX])
             s.text(x0 + 0x38, 0x7D, 8 if word4 & 0x400 else 9, a[C_TEXT])
-        elif v['shown']:
-            unit_numbers(s, a, x0 + 0x38, 0x7D, u, t)
+            message_line(s, a, v['player'])
+        else:
+            # with a message up (the player's bit of F27EE:250C) the numbers are
+            # not drawn again, and neither is the unit's line: drawn here as
+            # left from the pass before
+            unit_numbers(s, a, x0 + 0x38, 0x7D, u, t, (v['player'], v['suffixes']) if v['shown'] else None)
         flag = 1 if word4 & 1 else v['player'] if word4 & 2 else 0
         unit_picture(s, a, x0 + 0x2C, 0x16, t, 0x30 if flag else 0x20)
     else:
         s.fill(x0 + 0x38, 0x7D, x0 + 0x38 + 0x45, 0x7D + 0x27, a[C_BOX])
         s.text(x0 + 0x38, 0x7D, 2, a[C_TEXT])
+        message_line(s, a, v['player'])
+    if v['line'] is not None:
+        message_line(s, a, v['player'], v['line'] or None)
     if v['kind'] == 1:
         x = x0 + 0x2C
         bar(s, x + 0x7A - 0x2C, 0x0D, a[0x13], a[0x14], 5, v['value'] // 7 + 1, 0x23)
         bar(s, x + 0x32, 0x0D, a[0x0E], a[0x0E], 6, 0x1E, 0x23)
         s.colour = a[0x13]
         s.number(v['value'], x + 0x32, 0x0D)
+    if v['mode'] == 0x0C:
+        # the list of types (T1479:0B9B) over the slots, and what T0708:37AA
+        # draws for the type at the cursor
+        y = 0x0C
+        for n in v['list']:
+            s.entry(x0 + 0x10, y, files.shop[4], FRAME_BASE)
+            if n != 0xFF:
+                s.entry(x0 + 0x10, y, files.unit[n * 6 + 1], 0x30 if v['list_second'] else 0x20)
+            y += 0x18
+        s.fill(x0 + 0x2C, 0x16, x0 + 0x8B, 0x75, a[C_BOX])
+        if v['listed'] != 0xFF:
+            t = v['listed_type']
+            s.fill(x0 + 0x38, 0x7D, x0 + 0x38 + 0x45, 0x7D + 0x27, a[C_BOX])
+            s.text(x0 + 0x38, 0x7D, 7, a[C_TEXT])
+            s.number(t[0x3E], x0 + 0x38 + 0x1E, 0x7D + 0x18)
+            unit_picture(s, a, x0 + 0x2C, 0x16, t, 0x30 if v['player'] & 1 else 0x20)
     s.entry(*v['cursor_at'], files.cursor[v['cursor']], 0)
     return s.pix
 
@@ -750,6 +861,8 @@ def building_main(a, files, ram, vram, game):
         v = building_values(ram, player)
         if v['state'] != 2:
             continue
+        if a.line is not None:
+            v['line'] = b'' if a.line == 'clear' else ram.message(int(a.line, 16))
         shown += 1
         print('player %d: slots %s, flags %02X' % (player, ' '.join('%02X' % n for n in v['slots']), v['flags']))
         pix = draw_building(files, v, ram.clip())
@@ -811,6 +924,8 @@ def main():
     ap.add_argument('--sel', type=int, help='the chosen item: draw the picture behind and the cursor too')
     ap.add_argument('--message', choices=sorted(MESSAGES),
                     help="with --menu: one of LOAD's messages or the scores' name instead of a menu")
+    ap.add_argument('--line', metavar='N', help="with --building: the message line holds show_message's text N "
+                                                "(hex), or nothing (clear)")
     ap.add_argument('--typed', metavar='TEXT', help='with --message name: the letters typed so far')
     ap.add_argument('--map', type=int, metavar='N', help="with --scores: the map whose code is shown (default F27EE:2523)")
     ap.add_argument('--vram', help="compare with the run's video memory")

@@ -41,7 +41,11 @@ beyond the segments and a few routines; the port is the template's.
   of build/BATTLE.ASM with the compiler's table indexing folded
   (utype, unit, ground, shop, player), `uses.py BASE SIZE` lists the
   code lines naming F27EE addresses in a range, `rwfields.py LOG` sorts
-  a `-rwatch` report by table field and routine.
+  a `-rwatch` report by table field and routine; `brun.py NAME UNTIL
+  EVENT..` runs a map (CODE=demon for another than MARSS) with keys
+  given as T:KEY or T:fire:DIR and leaves build/NAME.ram, .vram and a
+  shot, `cur.py RAM..` prints both cursor records and the building's
+  record, `bld.py NN` lists a map's buildings.
 - A build of BATTLE.hints takes about 15 s once it is identical, 30 to
   60 s while build.py still has rounds to go.
 
@@ -779,6 +783,55 @@ games, each its own folder mounted as C: and started there:
   fire does there (the loop from T0708:2A4C: not read), a unit with bit
   400h or 800h (texts 8, 9), +22h 2, HIDE SHOP, how a unit is built or
   taken out.
+- The building's screen in use (BATTLE.hints at draw_building has the
+  loop, T0708:2928..3C75, state by state; `screens.py --building` draws
+  what it leaves): up and down choose a slot; fire held shows what a
+  direction would do by the cursor's picture, and fire let go with the
+  direction still held does it: right leaves; up, in the move phase,
+  takes the slot's unit out onto the map to be moved (while the player
+  has turns left: message 21h otherwise, read); down, in the attack
+  phase, repairs the unit for 3 of the building's energy (19h for some
+  units; the number by the title is that energy, the record's +16h +
+  player); left, in the attack phase on an empty slot of a factory the
+  player owns, opens the list of the types the energy pays for
+  (list_makeable), where up and down move and scroll, fire and left
+  builds the type into the slot for its cost and fire and right goes
+  back. Runs: ISLE's map 03 as before (player 0, in the move phase, at
+  his depot: 52..56 down, 57 right, fire with left at 59; player 1, in
+  the attack phase, at his, (20, 14): 52..56 c, 57, 57.5, 58 v, lctrl with
+  x at 60) and map 14 (code DEMON; player 1's factory at (43, 32): x at
+  52, 52.5 .. 54.5, c at 55 .. 57, lctrl with x at 59; a key held 0.06 s
+  each). Then: down twice (slot 2, FREE PART); fire at 64 with up: +1Ch
+  12h and picture 4 while held, then the unit out (its slot FFh, state 0,
+  +18h 16h); with right: the map again; with down in the move phase:
+  nothing; player 1's lctrl with c: +1Ch 102h, picture 8, and for a whole
+  unit message 1Eh NOT DAMAGED ! (on the line when c and lctrl are let go
+  together; with c still held the slot moves and the line is cleared);
+  in the factory c at 64 (an empty slot), lctrl with x at 66: the list
+  (ten types for the energy 15), c twice or eight times (scrolled by 2),
+  lctrl with x at 70: the unit built (make_unit once, unit ACh in slot 1,
+  the energy 5, the player's units 54h from 53h, no type left for 5),
+  lctrl with v at 70: back, nothing changed. `screens.py --building` had
+  all 25312 pixels of each of 14 dumps in the video memory (the message
+  line with them now; one dump taken with fire held had one page in the
+  middle of a pass). A message's text is not in the memory, only the
+  player's bit 4 or 8 of F27EE:250C while it is up (about 1.4 s: 19h
+  passes, presumably; the bit was set 0.5 s and clear 1.5 s after):
+  `--line 1E` names it, `--line clear` draws the empty line after it.
+  A slot of a building is two bytes, one for each player's window (+0..6
+  and +7..13): a unit built or taken out changed only the acting
+  player's; what the other's is for is not read. A new unit has 11 at
+  +9 (the number before "th" on its line), the maps' units 1, 3, 11.
+  Not run: a repair that repairs (messages 18h, 1Fh), no turn left
+  (21h), a unit that holds others (+22h 2), the unit moved after it is
+  out (+18h 16h on), EXP.LIB's entries on the unit's line (+1 of a unit
+  not 0), the same in DESERT and MOON (MOON.hints got unit_line,
+  draw_type_list and draw_unit_numbers by xfer.py; their beginnings
+  looked at in MOON.ASM: the same routines).
+- The runner writes no shot asked for at the time of `-until` itself
+  (seen again: `-shot 70` with `-until 70` gave no file, `-shot 69.8`
+  did): the run ends before the shot's turn, presumably. Open question
+  15 is that.
 
 ## Next
 
@@ -803,9 +856,9 @@ games, each its own folder mounted as C: and started there:
    (`screens.py`: the status screen and the unit's); next in screens.py
    the other screens of SHOP.LIB's window (the callers of
    draw_shop_window and draw_box in T1479: the buildings' screens are
-   drawn as they open, by keys; left there the loop from T0708:2A4C, the
-   choice among the slots, building and taking out a unit, the message
-   line; the menus, a code typed, LOAD's
+   drawn as they open and in use, by keys, with the message line; left
+   there a repair that repairs, a unit that holds others, and the unit
+   moved once it is out; the menus, a code typed, LOAD's
    messages, the scores with a file and their name are drawn in full
    now), then the rest of the screen: the cursor's entries, the overview's frame, the
    frame's texts, what the windows show of a map (scrolling, the units'

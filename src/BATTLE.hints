@@ -316,10 +316,30 @@ name T2354:008A timer_keys
 ; function 2, which showed the status screen (runs of the first map: the
 ; save run's keys with right or down for left; shots at 55 s); 1, up,
 ; showed nothing on an empty square (function 4 or 0 by +1Ch, not read).
-; T11FD:0004 (player, number) shows a message of the table at F2789:0008
+; T11FD:0004 (number, player) shows a message of the table at F2789:0008
 ; (records of 18h bytes: 0Ch QUIT THE GAME, 28h SAVE ABORTED, 29h GAME
-; SAVED, 2Ah GAME NOT SAVED, 2Bh GAME NOT LOADED; -1 clears, presumably).
+; SAVED, 2Ah GAME NOT SAVED, 2Bh GAME NOT LOADED) on the line below the
+; player's window: x0 + 5 .. x0 + 94h, y BDh .. C4h filled with AMOK's
+; +0Fh (x0 0 or A0h), the text by draw_chars centred on x0 + 4Ch in colour
+; 3 for player 0, 12h for player 1, and the player's bit 4 or 8 of
+; F27EE:250C set; the number -1 only clears the line. The callers set bit
+; 8 or 10h of F27EE:2510 with a message: the map's loop (T0708:42A0) then
+; starts timer 1 or 2 of T0D36:0165 with 19h, and T0D36:0241 clears the
+; line and the bit of 250C when it has run. Seen in runs (the buildings'
+; screens below): message 1Eh on the line with bit 8 of 250C 0.5 s after
+; it was asked for, the line clear and the bit off 1.5 s after.
+; T11FD:0103 (unit, player), the line of a unit, called by T1479:030A
+; after the numbers of a unit of the viewer's: the line cleared, then in
+; the player's colour from x = x0 + 5: the unit's +2 (its +3 when the
+; type's word +0Eh has bit 4) at x + 6, EXP.LIB's entry of the unit's +1
+; less 1 (F27EE:0AF3; none for 0, the sixth above 6) at x + 0Eh, unless
+; the unit's word +4 has bit 2 its +9 ending before x + 26h and st, nd, rd
+; or th (F27EE:0013) there, the type's second name (+2Bh) at x + 34h.
+; Drawn by tools/screens.py with the unit's and the buildings' screens:
+; all pixels of the line in the video memory (units with 0 at +1 and 1,
+; 3 or 11 at +9; an entry of EXP.LIB was not seen).
 name T11FD:0004 show_message
+name T11FD:0103 unit_line
 ; T164D:0363 (?, dir, name far, ext) writes a path into F27E6:0077: a
 ; directory of F27E6:0023 (6 bytes each: LIB\, MAP\, FX\, ANIM\; -1 none),
 ; the name, an extension of F27E6:003B (5 bytes each: .FIN .PMP .SHP .LIB
@@ -653,7 +673,72 @@ name T1479:0130 draw_box
 ; becomes 2 is not read). The record was F27EE:24B0 for the
 ; headquarters, 259C + 1Ch * n for the depot (flags +19h 10h, title text
 ; 4) and 2780 + 1Ch * n for the factory (flags 0Ah, title text 5), +22h 1
-; in all three. Not run: +22h 2 (list_makeable), the later states.
+; in all three.
+; The screen's loop (T0708:2928..3C75, the cursor record's +18h and +19h;
+; DI the keys: 1 up, 2 down, 4 left, 8 right, 10h fire; SI the player):
+; +18h 9 opens it: the cursor's place kept in +4, +6, the slot (+0Eh) the
+;   first with a unit, else 3, the cursor at 10h (+A0h), 0Ch + 18h * slot,
+;   draw_building, and for +22h 1 in the attack phase (+16h bit 2)
+;   list_makeable with the record's +16h + player (held to FAh), which is
+;   the building's energy: the number by the title. Then +18h 0Ah.
+; +18h 0Ah: up and down choose the slot (0..6), each change redraws (+1Ah
+;   1; a sound, F27EE:2512 the player with bit 100h of 2510); fire gives
+;   +18h 0Bh, +19h 1.
+; +18h 0Bh, +19h 1: what fire and a direction may do, into +1Ch: 2 always
+;   (right: leave). A unit in the slot that is the player's (T0D36:00F5)
+;   and has none of 100h, 200h, 2 in its +4: in the move phase 10h (up:
+;   out of the building) unless F27EE:2510 has bit 80h; in the attack
+;   phase 100h (down: repair) unless the unit's +6 has bit 4. An empty
+;   slot in the attack phase, when the record's +19h has bit 8 and not 2
+;   (a factory with an owner), it is the player's and list_makeable found
+;   a type: 80h (left: build). +22h 2 takes 80h and 100h off again.
+; +19h 2, fire held: the cursor's picture (+1Bh) shows the choice: 1 for
+;   right, 8 for down, 7 for left, 4 for up, else 5; up only when the
+;   player's turns (F27EE:2453 + 17h * player) are below the limit (2454)
+;   or the player is the computer, else message 21h. Fire let go:
+;   4: the unit leaves: its slot FFh, its place (+0Bh + 2 * player) the
+;     building's (the record's +0Eh, one less with bit 20h of +19h) plus
+;     1, bit 100h in its +4, T0BA0:0323 (the squares it can reach,
+;     presumably), the map drawn again, state 0 with +18h 16h and +19h 3:
+;     the unit is being moved.
+;   8: repair, for 3 of the building's energy (19h for a unit with 4000h
+;     in its +6): message 18h when the energy is short, 1Eh when the unit
+;     has its type's count (+2; with 4000h also +0Ah 2), else the count is
+;     the type's again, the unit's +4 gets 0A00h, list_makeable anew,
+;     message 1Fh.
+;   7: +18h 0Ch, +19h 1, the list of types. 1: +18h 8, leave. Else back.
+; +18h 0Ch: the list of the types list_makeable found (F27EE:4136, their
+;   number F27EE:1338) in the slots' place (T1479:0B9B: x, y, player, the
+;   first shown, +20h): seven of them, UNIT.LIB's entry type * 6 + 1. Up
+;   and down move (+0Eh, and +20h past the ends); each change draws the
+;   list, the type's big picture and in the numbers' place text 7 and the
+;   type's cost (+3Eh) at +1Eh, +18h. Fire and left (picture 7) builds:
+;   a free unit record (T169E:01A9), make_unit with the type, the
+;   building's square and owner (bit 1 of the record's +19h), 4600h into
+;   its +4, the two records of 9 bytes at F2C0A:00BA and 0934 cleared, the
+;   unit into the slot the list was called from (kept in +0Ah), F27EE:2514
+;   and the owner's count of units (F27EE:2440) one more, the cost off the
+;   energy, list_makeable anew. Fire and right (picture 1) leaves the list.
+;   Both go on at +18h 0Dh, which puts the cursor back to the slot.
+; +18h 8: the cursor's place back from +4, +6, state 0 with +18h 19h, the
+;   message line cleared, the map drawn again.
+; Runs (HANDOFF.md has the keys; ISLE's map 03, player 0 in the move
+; phase at his depot, player 1 in the attack phase at his; map 14, player
+; 1's factory at 43, 32): the slot chosen by down; fire with up held:
+; +1Ch 12h and picture 4, let go: the unit out (slot FFh, its +4 with
+; 100h, T0BA0:0323 once, state 0, +18h 16h, +19h 3); fire and right:
+; state 0; fire and down in the move phase: nothing; in the attack phase
+; +1Ch 102h and picture 8, let go on a whole unit: message 1Eh and nothing
+; changed; fire and left on an empty slot of the factory: the list (+1Ch
+; 82h), moved and scrolled by down (+20h 2 after eight), fire and left
+; there: make_unit once, the new unit ACh in the slot, the energy 15 less
+; the type's 10, the owner's units one more, no type left to make with 5;
+; fire and right there: back with nothing changed. tools/screens.py
+; --building draws all of these with the message line: every pixel drawn
+; was in the video memory. Not run: a repair that repairs (messages 18h,
+; 1Fh), message 21h, +22h 2 (a unit that holds others), a unit with 400h
+; or 800h, what the other player's seven bytes of the record are for (a
+; unit built or moved out changed only the player's own seven).
 ; T1479:0931 (x, y, player, far pointer to the record): the seven slots,
 ; 24 pixels apart in y: SHOP.LIB's entry 4 (base 40h), the unit named by
 ; the record's byte (+7 * player + slot, F0h or less) as UNIT.LIB's entry
@@ -665,6 +750,8 @@ name T1479:0130 draw_box
 name T1479:0AA6 draw_building
 name T1479:0931 draw_slots
 name T164D:028D draw_bar
+name T1479:0B9B draw_type_list
+name T1479:030A draw_unit_numbers
 ; The menus (T1090, tools/screens.py --menu): F2740:0079 holds the menus'
 ; records (6 bytes: item numbers, +5 their count), F2740:00A3 the items
 ; (2Eh bytes: a flags word, bit 20h not drawn; texts of 10 bytes from +2,
