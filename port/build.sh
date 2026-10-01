@@ -18,7 +18,7 @@ fi
 if [ -n "$PORT_UPDATE_URL" ]; then
     CFLAGS="$CFLAGS -DPORT_UPDATE_URL=\"$PORT_UPDATE_URL\""
 fi
-GAME="src/main.c src/dos.c src/timer.c src/files.c src/gfx.c src/sound.c src/audio.c src/text.c src/lib.c src/title.c src/menu.c src/map.c src/cursor.c src/units.c src/reach.c src/orders.c src/todo.c src/phase.c src/battle.c"
+GAME="src/main.c src/dos.c src/timer.c src/files.c src/gfx.c src/sound.c src/audio.c src/text.c src/lib.c src/title.c src/menu.c src/map.c src/cursor.c src/units.c src/reach.c src/orders.c src/shop.c src/todo.c src/phase.c src/battle.c"
 RUNTIME="$RT/sys.c $RT/cdimage.c $RT/inno.c $RT/textmode.c $RT/pad.c $RT/sha256.c $RT/rmem.c $RT/vga.c $RT/frame.c $RT/modplay.c $RT/audiofx.c $RT/fli.c $RT/shot.c $RT/opl.c $RT/update.c $RT/launcher.c"
 
 mkdir -p build

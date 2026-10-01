@@ -1508,6 +1508,17 @@ compared):
 - The map's loop in the port is the original's pass for pass: keys given
   by the loop's passes (T0708:135C) gave the same memory and video
   memory after 60 passes with the cursor moved.
+- Keys by the map loop's passes: a direction pressed at a pass and let go
+  at the next moves the cursor one square (held three passes: two); fire
+  pressed at a pass, the direction four passes later, fire let go ten
+  passes after that opens a screen. Map 03 by passes of the menus' loop
+  (T1090:058B): down 30, enter 40, enter 60, m a r s s at 70 to 110,
+  enter 120, down 130, 140, 150, enter 160, enter 180.
+- T2701:000E unpacks a packed entry in memory as load_file does a file,
+  a byte more than the length says; draw_packed (T24D8:0008) draws from
+  the buffer when it returns 0. Above 64 KB, or when the buffer's offset
+  would wrap, it runs a second loop with its counts in its code segment
+  (not translated apart: the port's one loop does both).
 - Scratch (build/scratch): `rl.py LABEL [LINES]` prints a routine folded,
   `BATTLE.fold` is all of build/BATTLE.ASM folded so (rd.py 1 65518; made
   again after names change), `pb.sh` builds the port with MSVC, `pcmp.py
@@ -1520,8 +1531,8 @@ compared):
 ## Next
 
 0. The port: the sound, the menus, a map's setup and its loop with the
-   cursors are done; next what port/src/todo.c lists, a module at a
-   time: T1479 (the screens over a window), T122D (a move), T0408 (the
+   cursors and the screens over a window (T1479) are done; next what
+   port/src/todo.c lists, a module at a time: T122D (a move), T0408 (the
    change of phase), T1F3C..T2190 (the fight), T178C..T1ED2 (the
    computer), T13CA, T15AC, T2248. Each step compared with the runner as
    port/README.md says.

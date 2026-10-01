@@ -10,16 +10,6 @@ int t122d_05b8(fptr cur, int side) { (void)cur, (void)side; TODO(t122d_05b8); re
 void unit_release(fptr cur, fptr map, int side, int kind) { (void)cur, (void)map, (void)side, (void)kind; TODO(unit_release); }
 void move_step(void) { TODO(move_step); }
 int stop_check(int off, int side, fptr map) { (void)off, (void)side, (void)map; TODO(stop_check); return 0; }
-void draw_shop_window(int side) { (void)side; TODO(draw_shop_window); }
-void draw_unit_info(int side, int square, int unit, fptr map) { (void)side, (void)square, (void)unit, (void)map; TODO(draw_unit_info); }
-void draw_status(int side) { (void)side; TODO(draw_status); }
-void draw_building(int side, fptr rec) { (void)side, (void)rec; TODO(draw_building); }
-void list_makeable(int energy) { (void)energy; TODO(list_makeable); }
-void draw_slots(int x, int y, int side, fptr rec) { (void)x, (void)y, (void)side, (void)rec; TODO(draw_slots); }
-void draw_unit_numbers(int x, int y, int unit, int side) { (void)x, (void)y, (void)unit, (void)side; TODO(draw_unit_numbers); }
-void draw_type_list(int x, int y, int side, int first) { (void)x, (void)y, (void)side, (void)first; TODO(draw_type_list); }
-void t1479_028e(int x, int y) { (void)x, (void)y; TODO(t1479_028e); }
-void t1479_0c93(int x, int y, int type, int side, int owner) { (void)x, (void)y, (void)type, (void)side, (void)owner; TODO(t1479_0c93); }
 int change_phase(fptr a, fptr b, fptr c, fptr d) { (void)a, (void)b, (void)c, (void)d; TODO(change_phase); return -1; }
 void history_add(int units0, int units1) { (void)units0, (void)units1; TODO(history_add); }
 void after_map(fptr buffer) { (void)buffer; TODO(after_map); }

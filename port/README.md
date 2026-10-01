@@ -20,9 +20,9 @@ with its running lines, the sound (the songs and the effects on the
 AdLib), the menus with the code typed, the scores and their name, a
 map's setup and the map's loop with the cursors on the map (a unit's
 line, a unit chosen, its reach and targets, an attack order, the
-overview). Not yet (`todo.c`: the program ends with the routine's name):
-the screens over a window (status, unit, building), a move carried out,
-the change of phase with the fights, the computer player, saving and
+overview), the screens over a window (status, a unit, a building with
+its slots). Not yet (`todo.c`: the program ends with the routine's name):
+a move carried out, the change of phase with the fights, the computer player, saving and
 loading, the animations, what follows a map.
 
 | File | The original's | What |
@@ -42,6 +42,7 @@ loading, the animations, what follows a map.
 | `units.c` | T169E | units' and buildings' records made and given up |
 | `reach.c` | T0BA0 | where a unit can move and fire, the way to a square |
 | `orders.c` | T0B70, T11FD | an attack order, the line below a window |
+| `shop.c` | T1479, T24D8, T2701 | the screens over a window: status, a unit, a building |
 | `phase.c` | T0408 | the score (the change of phase not yet) |
 | `battle.c` | T0708 | main: the start, a map's setup, the map's loop, after a map |
 | `todo.c` | - | what is not translated yet |
@@ -162,6 +163,21 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   compared: fire and what it chooses (a unit's reach, an order, the
   overview; cursor.c and reach.c are translated, tools/moves.py did them
   again from runs of the original before), player 1's keys.
+- The screens over a window, the keys by the map loop's passes, the
+  original and the port stopped at the same pass with the screen open:
+  the status screen (ISLE's first map, fire and down on the empty start
+  square), the unit's screen (one up, fire and down on the T-3
+  SCORPION), and on map 03 (the code MARSS typed in the menus, which
+  compares the code menu as well: the first pass of the map was the
+  same) the headquarters' screen (one up, fire and left: seven empty
+  slots) and the depot's (five down, one right, fire and left: a unit in
+  the first slot, its big picture unpacked and its numbers). In all four
+  the whole video memory and the program's memory were the same but for
+  the kinds of differences above; `tools/screens.py` found each screen
+  in the port's video memory. Not compared: the list of types in a
+  factory (`list_makeable`, `draw_type_list`: the attack phase is not
+  reached yet), a unit of two squares, another player's unit, player 1's
+  window.
 - The window build was started for 8 s and ran (nothing looked at or
   heard: nobody was there).
 

@@ -283,22 +283,27 @@ void draw_number(int n, int x, int y);
 void draw_bar(int x, int y, int front, int back, int rows, int n, int full);
 void check_vga_disk(void);
 
+/* ---- shop.c: T1479, the screens over a window; T24D8, T2701 ---- */
+void draw_packed(int x, int y, fptr entry, unsigned keep_off, unsigned keep_seg, int base, fptr work);
+void draw_shop_window(int side);
+void draw_box(int x, int y, int w, int h, int side, int colour);
+void t1479_028e(int x, int y);
+void draw_unit_numbers(int x, int y, int unit, int side);
+void draw_unit_info(int side, int square, int unit, fptr map);
+void draw_slots(int x, int y, int side, fptr rec);
+void draw_building(int side, fptr rec);
+void draw_type_list(int x, int y, int side, int first);
+void t1479_0c93(int x, int y, int type, int side, int owner);
+void draw_status(int side);
+void list_makeable(int energy);
+int cargo_size(fptr rec, int side);
+
 /* ---- not translated yet (todo.c) ---- */
 int move_aim(fptr cur, fptr map, int side);
 int t122d_05b8(fptr cur, int side);
 void unit_release(fptr cur, fptr map, int side, int kind);
 void move_step(void);
 int stop_check(int off, int side, fptr map);
-void draw_shop_window(int side);
-void draw_unit_info(int side, int square, int unit, fptr map);
-void draw_status(int side);
-void draw_building(int side, fptr rec);
-void list_makeable(int energy);
-void draw_slots(int x, int y, int side, fptr rec);
-void draw_unit_numbers(int x, int y, int unit, int side);
-void draw_type_list(int x, int y, int side, int first);
-void t1479_028e(int x, int y);
-void t1479_0c93(int x, int y, int type, int side, int owner);
 int change_phase(fptr a, fptr b, fptr c, fptr d);
 long score(void);
 void history_add(int units0, int units1);
