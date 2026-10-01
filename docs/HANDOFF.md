@@ -40,7 +40,8 @@ games, each its own folder mounted as C: and started there:
 | `*.IFF`, `*.LBM`, `*.PAL`, `NN.PAL` | pictures and palettes by their names; not looked at |
 | `*.SND`, `*.PND`, `*.FXX`, `*.PXX` | sound or animation data by their names; not looked at |
 | `UNIT.DAT`, `GROUND.DAT` | the tables of unit types and ground, packed (`tools/datfiles.py`) |
-| other `*.DAT`, `*.TXT` | tables and texts (`CODES.DAT`, `AMOK.DAT`, `CHAR6.DAT`, `BB.DAT`, `GAME.TXT`, `TITEL.TXT`; MOON's `MAPINFO.DAT`, `MAP02.DAT`, `MAP04.DAT`; DESERT's `UNITU.DAT`, `UNITP.DAT`, which begin INFO DEPO as a .PMP begins INFO ILBM); not looked at |
+| `CODES.DAT` | the maps' codes and order, packed (`tools/datfiles.py`) |
+| other `*.DAT`, `*.TXT` | tables and texts (`AMOK.DAT`, `CHAR6.DAT`, `BB.DAT`, `GAME.TXT`, `TITEL.TXT`; MOON's `MAPINFO.DAT`, `MAP02.DAT`, `MAP04.DAT`; DESERT's `UNITU.DAT`, `UNITP.DAT`, which begin INFO DEPO as a .PMP begins INFO ILBM); not looked at |
 | `*.pdf`, `goggame-*` | GOG's manuals and metadata |
 
 ## What was learned
@@ -390,6 +391,16 @@ games, each its own folder mounted as C: and started there:
   a type and the names' last bytes were read by nothing, a ground's
   second cost not in this run (no air unit moved, presumably). Not
   checked against what the game shows on its screens.
+- CODES.DAT (`tools/datfiles.py --codes`): 34 records of 10 bytes, a
+  map each: its code (5 letters, each less 30h), +6 the players (2, or
+  1: the menu's T1090:110F then sets F27EE:250C bit 400h, a map against
+  the computer; in each game the maps with 1 are those with a .COM
+  file), +7 what after_map adds to the map's number after a win (1; 0
+  in the last map of a row), +8 bit 0 the last map, which sets bit 20h
+  (the ending). The menu looks the typed code up there and the record's
+  number is the map (F27EE:2523). +5 (2) and +9 (0) have no reader in
+  the code as far as read. All read from the code; no run made for it
+  (the CONRA run of earlier steps went this way).
 - The maps drawn (`tools/mapfiles.py --png DIR`, all 103): `draw_window`
   (T0E9B:0A9B) draws a player's window column by column, a square 24x24
   at x = 16 * column and y = 24 * row, 12 further down in the odd
@@ -441,9 +452,12 @@ games, each its own folder mounted as C: and started there:
    palettes, the pictures, the libraries, the maps and the tables of
    unit types and ground are done (`tpwmfiles.py --out build/unpacked`
    gives the unpacked files), and the maps are drawn as a run shows them
-   (`mapfiles.py --png`); next the other tables and texts (`CODES.DAT`:
-   the maps' records of 10 bytes, by its size, presumably; `AMOK.DAT`,
-   `CHAR6.DAT`, `GAME.TXT`), then the rest of the screen: the cursor,
+   (`mapfiles.py --png`), CODES.DAT is read; next the other tables and
+   texts (`AMOK.DAT`: 36 bytes loaded to F27EE:24E8, numbers the code
+   takes from there: values put into a map's squares at +0..+7, values
+   set before texts are drawn at +0Bh..+13h, colours presumably; not
+   read through; `CHAR6.DAT`, `GAME.TXT`), then the rest of the
+   screen: the cursor,
    the frame's texts, what the windows show of a map (scrolling, the
    units' directions, a unit hidden from the other player).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
@@ -467,7 +481,7 @@ understanding the programs, the third hardly.
 For the port (behaviour):
 
 1. The game's state flags: F27EE:250C (bits 1, 2, 4, 8, 40h, 80h, 100h,
-   200h, 400h, 1000h beside the known 10h, 20h, 2000h, 4000h), F27EE:250E
+   200h, 1000h beside the known 10h, 20h, 400h, 2000h, 4000h), F27EE:250E
    (bit 1 set against the computer, presumably; bit 2) and F27EE:243E
    bit 2 (which player the computer is, presumably). BATTLE.hints at
    play_anim.
@@ -496,8 +510,7 @@ For the port (behaviour):
 9. The maps (mapfiles.py): which building kind (ground flag 400h,
    100h, 40h; the tables F27EE:2780, 259C, 24B0, and the .SHP's kind 3,
    F27EE:0B64) is which; the .SHP's bytes +3, +4 and its 27 bits; the
-   .COM's records and why the loader swaps their bytes 2 and 3; when
-   F27EE:250C bit 400h is set; whether owner/player 0 is the player of
+   .COM's records and why the loader swaps their bytes 2 and 3; whether owner/player 0 is the player of
    the arrow keys; what reads the .PMP and what its bytes are; MOON.EXE's
    loader (MOON's 16.FIN has a two-square unit without its second half).
 

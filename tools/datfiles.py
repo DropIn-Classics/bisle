@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""Battle Isle's tables of unit types and ground (UNIT.DAT, GROUND.DAT):
-read them, write them back, show them.
+"""Battle Isle's tables of unit types, ground and maps (UNIT.DAT,
+GROUND.DAT, CODES.DAT): read them, write them back, show them.
 
-    datfiles.py [GAMEDIR ...] [--ground] [--raw]
+    datfiles.py [GAMEDIR ...] [--ground] [--codes] [--raw]
 
 Without GAMEDIR the folder of each game in the game's folder (ISLE,
 DESERT, MOON) is taken.  Per folder: UNIT.DAT's types, one line each,
-then one line for GROUND.DAT (its records by building flag and owner),
-and whether each file, parsed and written back, gives the (unpacked)
-file's bytes.  --ground prints GROUND.DAT's records, one line each;
---raw adds a unit type's bytes that have no column, in hex.
+then one line for GROUND.DAT (its records by building flag and owner)
+and one for CODES.DAT, and whether each file, parsed and written back,
+gives the (unpacked) file's bytes.  --ground prints GROUND.DAT's
+records, one line each, --codes CODES.DAT's; --raw adds a unit type's
+bytes that have no column, in hex.
 
-Both files are packed (see tpwmfiles.py).  BATTLE.EXE's T0708 loads them
+All three files are packed (see tpwmfiles.py).  BATTLE.EXE's T0708 loads them
 with load_file when a map starts (seen with -dos), UNIT.DAT to
 F27EE:001F and GROUND.DAT to F27EE:0751, over the same tables in the
 program's own data: BATTLE.EXE holds ISLE's two files byte for byte
@@ -121,6 +122,26 @@ ground values of a map's squares:
                   a table at F2D65:000E; seen): the background,
                   presumably
 
+CODES.DAT: records of 10 bytes, one a map in the maps' order (the menu,
+T1090, loads it and takes the length / 10 for their number: 34 in each
+game; after_map loads it again):
+
+    +0 code       5 letters, each less 30h (A is 11h).  The menu looks
+                  for the code typed among them (T1090:0B2F) and the
+                  record's number becomes the map (F27EE:2523);
+                  after_map shows the next map's code
+    +5            2 in all records; no reader found in the code
+    +6 players    2: T1090:110F clears bit 400h of F27EE:250C, else
+                  sets it (1 in the files): with that bit T0708 loads
+                  the map's .COM (mapfiles.py), so 1 is a map against
+                  the computer, 2 one of two players.  In each game the
+                  maps with 1 are those that have a .COM file
+    +7 step       added to the map's number after a map that was won
+                  (T15AC:03EB): 1, and 0 in the last map of a row
+    +8 last       bit 0: after_map sets bit 20h of F27EE:250C, which
+                  plays the ending (HANDOFF.md)
+    +9            0 in all records; no reader found in the code
+
 MOON's files are read here as BATTLE.EXE reads ISLE's; MOON.EXE is not
 compared.
 """
@@ -151,6 +172,10 @@ UNIT_FIELDS = (
     ('cost', 0x3E, 'B'), ('room', 0x3F, 'B'), ('size', 0x40, 'B'), ('fight', 0x41, '3s'),
 )
 GROUND_FIELDS = (('flags', 0, '<H'), ('units', 2, 'B'), ('cost', 3, 'b'), ('cost2', 4, 'b'), ('scene', 5, 'B'))
+CODE_REC = 10
+CODE_FIELDS = (('code', 0, '5s'), ('b5', 5, 'B'), ('players', 6, 'B'), ('step', 7, 'B'),
+               ('last', 8, 'B'), ('b9', 9, 'B'))
+CODE_LETTER = 0x30                      # a code's bytes are its letters less this
 BUILDING_FLAGS = (0x40, 0x400, 0x100)
 
 
@@ -188,6 +213,37 @@ def read_ground(data):
 
 def write_ground(recs):
     return write_records(recs, GROUND_REC, GROUND_FIELDS)
+
+
+def read_codes(data):
+    return read_records(data, CODE_REC, CODE_FIELDS)
+
+
+def write_codes(recs):
+    return write_records(recs, CODE_REC, CODE_FIELDS)
+
+
+def code_text(code):
+    return ''.join(chr(c + CODE_LETTER) for c in code)
+
+
+def ranges(numbers):
+    """'0..15, 32, 33' of sorted numbers"""
+    out = []
+    for n in numbers:
+        if out and out[-1][1] == n - 1:
+            out[-1][1] = n
+        else:
+            out.append([n, n])
+    return ', '.join('%d' % a if a == b else '%d..%d' % (a, b) if b > a + 1 else '%d, %d' % (a, b)
+                     for a, b in out) or 'none'
+
+
+def codes_summary(recs):
+    return '%d maps, against the computer %s, without a next one %s, the last %s' % (
+        len(recs), ranges([n for n, r in enumerate(recs) if r['players'] != 2]),
+        ranges([n for n, r in enumerate(recs) if not r['step']]),
+        ranges([n for n, r in enumerate(recs) if r['last'] & 1]))
 
 
 def text(b):
@@ -239,6 +295,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     ap.add_argument('dirs', nargs='*', metavar='GAMEDIR')
     ap.add_argument('--ground', action='store_true', help="print GROUND.DAT's records")
+    ap.add_argument('--codes', action='store_true', help="print CODES.DAT's records")
     ap.add_argument('--raw', action='store_true', help="add a unit type's other bytes in hex")
     a = ap.parse_args()
     root = game_dir()
@@ -246,7 +303,8 @@ def main():
     for d in a.dirs or list(game_dirs(root)):
         rel = d if a.dirs else os.path.relpath(d, root)
         for name, read, write in (('UNIT.DAT', read_units, write_units),
-                                  ('GROUND.DAT', read_ground, write_ground)):
+                                  ('GROUND.DAT', read_ground, write_ground),
+                                  ('CODES.DAT', read_codes, write_codes)):
             total += 1
             try:
                 data = unpacked(find(d, name))
@@ -261,6 +319,12 @@ def main():
                 for n, t in enumerate(recs):
                     print(unit_line(n, t, a.raw))
                 line = '%d types' % len(recs)
+            elif name == 'CODES.DAT':
+                if a.codes:
+                    for n, r in enumerate(recs):
+                        print('%2d %s +5 %d players %d step %d last %d +9 %d' % (
+                            n, code_text(r['code']), r['b5'], r['players'], r['step'], r['last'], r['b9']))
+                line = codes_summary(recs)
             else:
                 if a.ground:
                     for n, r in enumerate(recs):
