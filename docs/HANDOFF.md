@@ -11,10 +11,10 @@ their programs byte for byte
 intro, then BATTLE.EXE); of BATTLE.EXE the data formats, the screens,
 the menus, the fight's reckoning, a unit's reach, path and targets, the
 carrying out of a move, the change of phase and a map's end, and the
-computer player's assessment, plan and commands are read and checked
-against runs (below); how the computer steers its cursor to carry the
-commands out, the fight scene and the animations are not; the port is
-the template's.
+computer player's assessment, plan and commands, and how it steers its
+cursor to carry the commands out, are read and checked against runs
+(below); the fight scene and the animations are not; the port is the
+template's.
 
 ## Start here (next session)
 
@@ -1071,13 +1071,62 @@ games, each its own folder mounted as C: and started there:
   6 not looked for), what the computer builds (the random choice: no
   factory was the computer's with energy in the attack phase as far as
   seen), ships and aircraft, the tasks 5 and 6 (units in buildings).
-  Not read: the cursor's steering (T1938:0480..17A6: the seven commands
-  as rows of directions and fire, F2D33:0006 and 0010 the directions'
-  and rows' tables), what the human's request for the change does to it
-  (F27EE:250E bit 80h, T0708:1480). MOON.hints got the names by xfer.py
+  The cursor's steering is the next item. Read, not run: what the
+  human's request for the change does to it (F27EE:250E bit 80h,
+  T0708:1480: computer_step in a loop of its own, BATTLE.hints). MOON.hints got the names by xfer.py
   (computer_step, computer_assess, computer_plan, computer_hand_out and
   their helpers, in MOON's own segments in the same order; not looked
   at).
+- How the computer carries its commands out (`tools/computer.py --carry`
+  and `--script`, BATTLE.hints at command_step; the tool's docstring has
+  the seven commands step by step). A command is a row of steps, one a
+  call of `command_step` (T1938:012F), each of which waits or writes
+  keys into the player's script; `script_step` (T1938:000F) plays the
+  script a byte a pass into the word the map's loop takes as that
+  player's keys (T0708:155C: bits 1, 2, 4, 8 up, down, left, right, 10h
+  fire; a script byte 80h..83h is fire with a direction for one pass and
+  a pass of nothing). The cursor goes to a square step by step, left or
+  right and up or down at once (`cursor_steer`, T1938:157E); to a square
+  five or more columns or rows away by the overview: fire with right,
+  the overview's window steered until the square is in its middle, fire
+  (T1938:1245, 140D). A unit is moved as a player moves it (fire with up
+  on it, the square, fire twice), fires the same way, comes out of a
+  building by the building's screen (fire with left, its slot, fire with
+  up, the first square list_reach gives, fire twice, fire with right), is
+  repaired there (fire with down) and made there (a free slot, fire with
+  left, down the list to the type, fire with left); for the change of
+  phase the cursor goes to the square below the own headquarters and
+  fire with left asks for it. A choice that cannot be made (the square
+  not in reach, stop_check's message, the target not marked, no square
+  to stop on) sets bit 8 of the player's record. Two things read on the
+  way: computer_step's stages follow one another within a call (a
+  command handed out is begun and its first key played in the same
+  pass), and it sets the script's place to 0 before script_step.
+  Checked, a call each, the memory at the routine's entry against the
+  one at its end (the scripts and keys, both players' records, both
+  cursors, the commands, their own values at F2D33:001F, the aims, the
+  marks, the units, the move's record): 48 calls of command_step in the
+  first battle (fights.keys; the calls 1, 2, 4, 5, 7, 8, 30, 416..431,
+  465..490, 1089..1103, 2676..2690, 2984, 3013, 3421, 3422, 3567) and 25
+  in the second (magic.keys; 454..458, 844..853, 2384, 2494, 3989..4050,
+  4471, 5485, 5499), chosen from a log of every step's label
+  (`build/scratch/cslog.py`) so that each step of each command is among
+  them: the commands 1, 2, 3, 4 and 6 in the first battle, 7 in the
+  second (the computer made a unit in a factory at about 350 s, four
+  times in 600 s: what the item above had not seen), every step of
+  theirs and of the cursor's way by the overview but those named below;
+  and 18 calls of script_step (the first battle's 1, 2, 440..453, 1150,
+  1151: directions, fire, a row of fire with up, the script's end). All
+  as the game's in every byte. Not seen: command 2's step 4 (a target
+  not marked) and any choice given up (bit 8 was set in none of the
+  calls), command 5 (no caller hands it out as far as read), a holder
+  not found, the script bytes 6..9 and 84h (in the tables, written by
+  no step). Only single calls are done again: between two the map's loop
+  moves the cursor. xfer.py carried command_move, command_fire,
+  cursor_steer and find_holder to MOON.hints (their beginnings looked at
+  in MOON.ASM: routine starts); five others it put 8 to 10h bytes before
+  MOON's routines and are left without a name in BATTLE.hints (the
+  comment there has both programs' addresses).
 - A real end of a map and the statistics (BATTLE.hints at after_map; the
   run above with two changes first, so that a round is played: `64:phase
   76:phase`, the cursor's keys from 88, the change at 113, space at 140

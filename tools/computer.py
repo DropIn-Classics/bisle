@@ -2,8 +2,8 @@
 """Battle Isle's computer player: BATTLE.EXE's routines done again from a
 run's memory and compared with what the game made of it.
 
-    computer.py --assess|--plan|--handout ENTRY [EXIT] [--calls N]
-                [--player N] [--load SEG] [-v]
+    computer.py --assess|--plan|--handout|--carry|--script ENTRY [EXIT]
+                [--calls N] [--player N] [--load SEG] [-v]
 
 ENTRY and EXIT are a run's memory (run.py -ram) stopped at a routine's
 entry and at its end; the tool does on a copy of ENTRY what the routine
@@ -32,8 +32,11 @@ step of one of five stages, by the word at F2C0A:00A2 + 0Ch * player:
     2    carry out T1938:012F the commands, as directions and fire for
     1             T1938:000F  the player's own cursor (F2C0A:11EE): the
                               computer moves and fires through the same
-                              routines as a player with keys (not done
-                              by the tool)
+                              routines as a player with keys
+
+(a pass goes on from a stage that is through to the next: a command
+handed out is begun, and the script's first byte played, in the same
+pass.)
 
 Its state, all in the frame F2C0A: the .COM file's 27 records of 6 bytes
 at 0000 (a type's worth +0, flags +2); the player's record at 00A2 (+0
@@ -170,6 +173,50 @@ carried out:
   the way that unit faces: the command 1, and for the attack phase the
   task 2 with an enemy beside that square the type can fire at; no
   square: the task 1 with the unit's square.
+
+--carry: one call of T1938:012F (`-break command_step#N`, the end `-break
+LT1938_0374#N`): a step (the queue's +47h) of the command that runs (its
++46h).  A step either waits, or puts keys into the player's script
+(F2C0A:11AE + 20h * player, ended by FFh), which T1938:000F then plays,
+one byte a pass; computer_step sets the script's place to its start
+before.  A script byte: 1 up, 2 down, 3 left, 4 right, 5 fire; 80h..83h
+fire with up, down, left, right for one pass and a pass of nothing.
+Only one call is done: between two the map's loop moves the cursor.
+
+    go to a square (T1938:1245, its steps in +48h): when the cursor is
+       in a building's screen or less than 5 columns and rows away:
+       steered there, a step a call (left or right, and up or down,
+       both in one call; T1938:157E).  Else by the overview: fire with
+       right, the overview's window moved until the square is in its
+       middle (T1938:140D: column - 5 and row - 4, held within the map
+       and made even), fire, then steered.
+    1  a unit to a square: wait while a move runs; go to the unit; fire
+       with up; steer to the square; fire (the choice is given up, bit
+       8 of the player's record, when the square is not in reach or
+       stop_check has a message); a call of nothing; fire.
+    2  a unit fires at a unit: go to the unit; fire with up; steer to
+       the target; fire, and if the target's square is not marked a
+       target: given up, and fire once more.
+    3  the change of phase: go to the own headquarters, steer to the
+       square a row below (two bytes a square: width * 2 on), fire with
+       left when no move runs, then wait for bit 4 of the stage's word.
+    4  a unit out of its building: the record that holds it (the
+       factories, the depots, the units that hold others, the
+       headquarters: T1938:16C1; none: the command is over); go to its
+       square; fire with left; up or down to the unit's slot; wait
+       while a move runs; fire with up; the squares the unit may stop
+       on (list_reach, into the list of aims): steer to the first (none:
+       the building's own square, and given up); fire; fire; fire with
+       right.
+    5  the cursor to a square (no caller hands it out as far as read).
+    6  a repair: as 4 to the slot, then fire with down, fire with right.
+    7  a type made in a factory: go to the factory; fire with left; to
+       the last free slot; fire with left; down to the type's line of
+       the list (list_makeable's, as the screen made it); fire with
+       left; fire with right.
+
+--script: one call of T1938:000F (`-break script_step#N`, the end
+`-break LT1938_0128#N`).
 
 Checked against runs: docs/HANDOFF.md says which.
 """
@@ -487,14 +534,15 @@ def unit_reach(mem, n, player, plain=False):
     set_marks(mem, buf, 2 if player else 1)
 
 
-def list_reach(mem, player, n):
+def list_reach(mem, player, n, lst=None):
     """T0BA0:1391: the squares in reach on which the unit may stop, into
-    the player's list, counted in F27EE:0B62"""
+    the player's list (or the list given), counted in F27EE:0B62"""
     F = mem.F
     w, h = mem.size()
     squares = mem.squares(player)
     bit = 2 if player else 1
-    lst = mem.paths(player)
+    if lst is None:
+        lst = mem.paths(player)
     count = 0
     mem.sb(F + turn.REC, n)
     for x in range(w):
@@ -1469,9 +1517,369 @@ def plan(mem, player, say):
     return 0
 
 
+def script_put(mem, player, *keys):
+    """bytes onto the keys' script and FFh after them"""
+    S = mem.A + 0x11AE + 0x20 * player
+    for k in keys:
+        i = mem.b(S + 0x1E)
+        mem.sb(S + 0x1E, i + 1)
+        mem.sb(S + i, k)
+    mem.sb(S + mem.b(S + 0x1E), 0xFF)
+
+
+def toward(mem, player, x, y, ax, ay):
+    """the directions from x, y to ax, ay into the script -> 1 when there"""
+    if x == ax and y == ay:
+        return 1
+    keys = []
+    if x != ax:
+        keys.append(3 if x > ax else 4)
+    if y != ay:
+        keys.append(1 if y > ay else 2)
+    script_put(mem, player, *keys)
+    return 0
+
+
+def steer(mem, player, cur, aim):
+    """T1938:157E: a step of the cursor towards the square -> 1 when it is
+    there (or the square is none of the map's, or in its last column or
+    row)"""
+    F = mem.F
+    w, h = mem.size()
+    if s16(aim) < 0 or s16(mem.w(F + 0x246C)) < s16(aim):
+        return 1
+    cur, aim = s16(cur) >> 1, s16(aim) >> 1
+    ax, ay = aim % w, aim // w
+    if w - 1 <= ax or h - 1 <= ay:
+        return 1
+    return toward(mem, player, cur % w, cur // w, ax, ay)
+
+
+def scroll(mem, player, x, y):
+    """T1938:140D: a step of the overview's window towards the one with
+    the square x, y in its middle -> 1 when it is there"""
+    C = mem.F + turn.CURSORS + 0x31 * player
+    w, h = mem.size()
+    if w <= x or h <= y:
+        return 1
+    x = 0 if x < 5 else min(x - 5, w - 10)
+    y = 0 if y < 4 else min(y - 4, h - 8)
+    x &= ~1
+    y &= ~1
+    return toward(mem, player, s16(mem.w(C + 0x0C)), s16(mem.w(C + 0x0E)), x, y)
+
+
+def go_to(mem, player, cur, aim, Q):
+    """T1938:1245: the cursor to a square, in steps (the commands' +48h):
+    a square five or more away by the overview (fire with right, its
+    window moved, fire), then step by step -> 1 when it is there"""
+    F = mem.F
+    C = F + turn.CURSORS + 0x31 * player
+    w, h = mem.size()
+    if s16(aim) < 0 or s16(mem.w(F + 0x246C)) < s16(aim):
+        return 1
+    c, a = s16(cur) >> 1, s16(aim) >> 1
+    step = mem.b(Q + 0x48)
+    if step == 0:
+        near = abs(c % w - a % w) < 5 and abs(c // w - a // w) < 5
+        mem.sb(Q + 0x48, 4 if mem.b(C + 0x18) or near else 1)
+    elif step == 1:
+        script_put(mem, player, 0x83)
+        mem.sb(Q + 0x48, 2)
+    elif step == 2:
+        if scroll(mem, player, a % w, a // w):
+            mem.sb(Q + 0x48, 3)
+    elif step == 3:
+        script_put(mem, player, 5)
+        mem.sb(Q + 0x48, 4)
+    elif step == 4:
+        if steer(mem, player, cur, aim):
+            mem.sb(Q + 0x48, 5)
+    else:
+        mem.sb(Q + 0x48, 0)
+        return 1
+    return 0
+
+
+def find_holder(mem, player, n):
+    """T1938:16C1 -> the record of the building or unit that holds unit n
+    in one of its slots: the factories, the depots, the units that hold
+    others, the headquarters; None when none does"""
+    for table, count in ((turn.FACTORIES, 10), (turn.DEPOTS, 10), (turn.CARGO, 0x46), (turn.HQS, 2)):
+        for k in range(count):
+            B = mem.F + table + 0x1C * k
+            if mem.w(B + 0x19) & 0x8002:
+                continue
+            if n in mem.m[B + 7 * player:B + 7 * player + 7]:
+                return B
+    return None
+
+
+def to_slot(mem, player, slot):
+    """up or down in a building's screen -> 1 when the cursor is on the slot"""
+    at = s16(mem.w(mem.F + turn.CURSORS + 0x31 * player + 0x0E))
+    if at == slot:
+        return 1
+    script_put(mem, player, 2 if at < slot else 1)
+    return 0
+
+
+def carry_out(mem, player, say):
+    """T1938:012F: a step of the command that runs -> what it returns"""
+    F, A = mem.F, mem.A
+    Q = A + 0x11FE + 0x49 * player
+    C = F + turn.CURSORS + 0x31 * player
+    P = F + turn.PLAYERS + 0x17 * player
+    D = (mem.load + ORDER) * 16
+    w, h = mem.size()
+    cmd = Q + 7 * mem.b(Q + 0x46)
+    kind = mem.b(cmd)
+    if kind == 0xFF or not 1 <= kind <= 7:
+        mem.sb(Q, 0xFF)
+        mem.sb(Q + 0x46, 0)
+        return 0xFFFF if kind == 0xFF else 0
+    cur = mem.w(C)
+    step = mem.b(Q + 0x47)
+    moving = mem.w(F + 0x2510) & 0x80
+    say('command %d (%02X %04X %04X), step %d, go_to\'s %d' % (
+        kind, mem.b(cmd + 1), mem.w(cmd + 3), mem.w(cmd + 5), step, mem.b(Q + 0x48)))
+
+    def pos(n):
+        return (mem.w(mem.unit(n) + 0x0B + 2 * player) - 1) & 0xFFFF
+
+    def mark(sq):
+        sq = s16(sq) >> 1
+        return mem.b(F + turn.MARKS + sq % w + 64 * (sq // w))
+
+    def give_up():
+        mem.sw(P, mem.w(P) | 8)
+
+    def nxt(key=None):
+        if key is not None:
+            script_put(mem, player, key)
+        mem.sb(Q + 0x47, step + 1)
+
+    def done():
+        mem.sb(Q + 0x47, 0)
+        return 1
+
+    def holder(at):
+        B = find_holder(mem, player, mem.b(cmd + 1))
+        if B is None:
+            mem.sw(D + at, 0xFFFF)
+            mem.sw(D + at + 2, 0xFFFF)
+        else:
+            mem.sfar(D + at, B)
+        return B
+
+    def slot_of(B, n):
+        slot = 0
+        for i in range(7):
+            if mem.b(B + 7 * player + i) == n:
+                slot = i
+        return slot
+
+    r = 0
+    if kind == 1:                               # a unit to a square
+        n, aim = mem.b(cmd + 1), mem.w(cmd + 3)
+        if step == 0:
+            if not moving:
+                nxt()
+            mem.sb(Q + 0x48, 0)
+        elif step == 1:
+            if go_to(mem, player, cur, pos(n), Q):
+                nxt()
+        elif step == 2:
+            nxt(0x80)
+        elif step == 3:
+            if steer(mem, player, cur, aim):
+                nxt()
+        elif step == 4:
+            mem.sb(F + turn.REC, n)
+            if not mark(cur) & (2 if player else 1):
+                give_up()
+            elif turn.stop_check(mem, cur, player, mem.squares(player)):
+                give_up()
+            nxt(5)
+        elif step == 5:
+            nxt()
+        elif step == 6:
+            nxt(5)
+        else:
+            r = done()
+    elif kind == 2:                             # a unit fires at a unit
+        n, target = mem.b(cmd + 1), mem.b(cmd + 3)
+        if step == 0:
+            if go_to(mem, player, cur, pos(n), Q):
+                nxt()
+        elif step == 1:
+            nxt(0x80)
+        elif step == 2:
+            if steer(mem, player, cur, pos(target)):
+                nxt()
+        elif step == 3:
+            script_put(mem, player, 5)
+            if mark(pos(target)) & (8 if player else 4):
+                mem.sb(Q + 0x47, 5)
+            else:
+                nxt()
+                give_up()
+        elif step == 4:
+            nxt(5)
+        else:
+            r = done()
+    elif kind == 3:                             # the change of phase
+        hq = mem.hq_square(player)
+        if step == 0:
+            if go_to(mem, player, cur, hq, Q):
+                nxt()
+        elif step == 1:
+            if steer(mem, player, cur, (hq + 2 * w) & 0xFFFF):
+                nxt()
+        elif step == 2:
+            if not moving:
+                nxt(0x82)
+        elif step == 3:
+            S = mem.state(player)
+            if mem.w(S) & 4:
+                mem.sw(S, mem.w(S) & 0xFFFB)
+                nxt()
+        else:
+            r = done()
+    elif kind == 4:                             # a unit out of its building
+        n = mem.b(cmd + 1)
+        B = mem.ptr(D + 0x1F) if step else None
+        if step == 0:
+            if holder(0x1F) is None:
+                r = done()
+            else:
+                nxt()
+        elif step == 1:
+            if go_to(mem, player, cur, mem.w(B + 0x0E), Q):
+                nxt()
+        elif step == 2:
+            nxt(0x82)
+        elif step == 3:
+            if to_slot(mem, player, slot_of(B, n)):
+                nxt()
+        elif step == 4:
+            if not moving:
+                nxt()
+        elif step == 5:
+            nxt(0x80)
+        elif step == 6:
+            nxt()
+        elif step == 7:
+            lst = mem.aims(player)
+            list_reach(mem, player, n, lst)
+            if mem.w(F + 0x0B62) == 0:
+                mem.sw(D + 0x23, mem.w(B + 0x0E))
+                give_up()
+            else:
+                mem.sw(D + 0x23, mem.w(lst))
+            mem.sw(F + 0x0B62, 0)
+            nxt()
+        elif step == 8:
+            if steer(mem, player, cur, mem.w(D + 0x23)):
+                nxt()
+        elif step in (9, 10):
+            nxt(5)
+        else:
+            if step == 11:
+                script_put(mem, player, 0x83)
+            r = done()
+    elif kind == 5:                             # the cursor to a square
+        if go_to(mem, player, cur, mem.w(cmd + 1), Q):
+            r = 1
+    elif kind == 6:                             # a repair
+        n = mem.b(cmd + 1)
+        B = mem.ptr(D + 0x25) if step else None
+        if step == 0:
+            if holder(0x25) is None:
+                r = done()
+            else:
+                nxt()
+        elif step == 1:
+            if go_to(mem, player, cur, mem.w(B + 0x0E), Q):
+                nxt()
+        elif step == 2:
+            nxt(0x82)
+        elif step == 3:
+            if to_slot(mem, player, slot_of(B, n)):
+                nxt()
+        elif step == 4:
+            nxt(0x81)
+        else:
+            if step == 5:
+                script_put(mem, player, 0x83)
+            r = done()
+    else:                                       # a type made in a factory
+        t = mem.b(cmd + 1)
+        B = F + turn.FACTORIES + 0x1C * mem.b(cmd + 3)
+        if step == 0:
+            mem.sfar(D + 0x29, B)
+            if go_to(mem, player, cur, mem.w(B + 0x0E), Q):
+                nxt()
+        elif step in (1, 3, 5):
+            nxt(0x82)
+        elif step == 2:
+            if to_slot(mem, player, slot_of(B, 0xFF)):
+                nxt()
+        elif step == 4:
+            line = 0
+            for i in range(mem.b(F + 0x1338)):
+                if mem.b(F + 0x4136 + i) == t:
+                    line = i
+            if s16((mem.w(C + 0x0E) + mem.w(C + 0x20)) & 0xFFFF) < line:
+                script_put(mem, player, 2)
+            else:
+                nxt()
+        elif step == 6:
+            nxt(0x83)
+        else:
+            r = done()
+    if r:
+        mem.sb(Q + 0x46, mem.b(Q + 0x46) + 1)
+    return 0
+
+
+def play_script(mem, player, say):
+    """T1938:000F: the next byte of the keys' script into the player's
+    directions and fire -> 1 at the script's end"""
+    A = mem.A
+    S = A + 0x11AE + 0x20 * player
+    D = (mem.load + ORDER) * 16
+    keys = A + 0x11EE + 4 * player
+    mem.sw(keys, 0)
+    k = mem.b(S + mem.b(S + 0x1E))
+    if k != 0xFF:
+        if k & 0x80:
+            v = mem.b(D + 0x10 + 3 * (k & 0x7F) + mem.b(S + 0x1F))
+            if v != 0xFF:
+                mem.sw(keys, v)
+                mem.sb(S + 0x1F, mem.b(S + 0x1F) + 1)
+            else:
+                mem.sb(S + 0x1F, 0)
+                mem.sb(S + 0x1E, mem.b(S + 0x1E) + 1)
+        else:
+            mem.sw(keys, mem.b(D + 6 + k))
+            mem.sb(S + 0x1E, mem.b(S + 0x1E) + 1)
+    say('script byte %02X: keys %04X' % (k, mem.w(keys)))
+    if mem.b(S + mem.b(S + 0x1E)) == 0xFF:
+        mem.sb(S, 0xFF)
+        mem.sb(S + 0x1E, 0)
+        mem.sb(S + 0x1F, 0)
+        return 1
+    return 0
+
+
 def regions(mem, player):
     F, A = mem.F, mem.A
-    return [('the players\' records (F2C0A:00A2)', A + 0xA2, 0x18),
+    return [('the keys\' scripts and the keys (F2C0A:11AE, 11EE)', A + 0x11AE, 0x48),
+            ('the players (F27EE:243E)', F + turn.PLAYERS, 0x2E),
+            ('the cursors (F27EE:26B4)', F + turn.CURSORS, 0x62),
+            ('the commands\' own values (F2D33:001F)', (mem.load + ORDER) * 16 + 0x1F, 0x0E),
+            ('the players\' records (F2C0A:00A2)', A + 0xA2, 0x18),
             ('the units\' records of the move phase (00BA)', A + 0xBA, 0xF1 * 9),
             ('the units\' records of the attack phase (0934)', A + 0x934, 0xF1 * 9),
             ('the aims', mem.aims(player), 6 * 0x40),
@@ -1494,6 +1902,8 @@ def main():
     g.add_argument('--assess', action='store_true')
     g.add_argument('--handout', action='store_true')
     g.add_argument('--plan', action='store_true')
+    g.add_argument('--carry', action='store_true')
+    g.add_argument('--script', action='store_true')
     ap.add_argument('--player', type=int, default=1)
     ap.add_argument('--load', default='0077')
     ap.add_argument('-v', action='store_true', help='the bytes that differ')
@@ -1501,7 +1911,10 @@ def main():
     load = int(a.load, 16)
     mem, was = Mem(a.entry, load), Mem(a.entry, load)
     moving = bool(mem.w(mem.F + 0x2510) & 0x80)
-    stage = assess if a.assess else plan if a.plan else hand_out
+    stage = (assess if a.assess else plan if a.plan else carry_out if a.carry
+             else play_script if a.script else hand_out)
+    if a.carry or a.script:
+        a.calls, moving = 1, False              # one call: the map's loop moves the cursor between two
     say = print if a.calls == 1 or a.v else (lambda t: None)
     calls = 0
     while calls < a.calls:

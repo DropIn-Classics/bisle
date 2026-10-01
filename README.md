@@ -38,7 +38,7 @@ Python 3 with `capstone` (`pip install capstone`).
   (a fight's outcome), `moves.py` (where a unit can move and fire, the
   path it takes), `turn.py` (a move carried out, the change of phase,
   a map's end) and `computer.py` (the computer player's assessment, plan
-  and commands), each done again from a run's memory and compared with
+  and commands, and the keys it carries them out with), each done again from a run's memory and compared with
   what the game made of it.
 - `port/`: the implementation in C (its README says how far it is).
 - `docs/HANDOFF.md`: state, what was learned, what is next.

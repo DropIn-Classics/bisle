@@ -747,9 +747,12 @@ name CODE:263F rand
 ;   40h T1C04:000D (messages 30h, 31h in turn), then 8
 ;   8   T17C0:0004 (message 2Eh), then 2
 ;   2   T1938:012F: a step of the command that runs; when it returns not
-;       0 (no command left) the stage is 8 again, else 1
+;       0 (no command left) the stage is 8 again, else 1 and the
+;       script's place (+1Eh) 0
 ;   1   T1938:000F: the next byte of the keys' script; at its end 2
-; (message 1Ch else, 1Dh in the stages 2 and 1). T178C:01B6 (player), at
+; (message 1Ch else, 1Dh in the stages 2 and 1). The tests follow one
+; another in a call: a stage that is through hands on to the next in the
+; same pass (a command handed out is begun, and its first key played). T178C:01B6 (player), at
 ; a map's start: the stage 20h, the records cleared.
 ; T17C0:0A0D, the first stage, by the record's +5 (the table
 ; T17C0:1783): the strengths, the threats, the aims; tools/computer.py
@@ -783,21 +786,36 @@ name T1B01:0C27 square_crowded
 name T1938:0388 command_add
 name T1938:012F command_step
 name T1938:000F script_step
-; How the commands are carried out (T1938, read in outline, not run by a
-; tool): command_step calls the command's routine (the table
+; How the commands are carried out (T1938; tools/computer.py --carry and
+; --script do a call again from a run's memory: the same bytes as the
+; game's, HANDOFF.md has the runs): command_step calls the command's
+; routine (the table
 ; T1938:037A: 1 T1938:0480, 2 06D3, 3 08D8, 4 0A08, 5 1245, 6 0D59, 7
 ; 0F7A), each a row of steps (the command record's +47h) that wait for a
-; running move to end, take the cursor to a square (T1938:1245 and
-; 157E: directions into the script until the cursor's square is the
-; aim's) and put fire into the script: the script's byte 5 is fire, 1
-; and 2 up and down (the slots of a building's screen), 80h..83h fire
+; running move to end (F27EE:2510 bit 80h), take the cursor to a square
+; and put fire into the script: the script's byte 5 is fire, 1
+; and 2 up and down (the slots of a building's screen), 3 and 4 left and
+; right, 80h..83h fire
 ; with up, down, left, right (as a player chooses a unit, opens a
-; building, asks for the change), by the two tables F2D33:0006 and 0010.
-; Command 1: to the unit, fire with up, to the aim's square, then fire
-; twice when the square has the mark of reach and stop_check allows it,
-; else bit 8 of the player's record's +0 (the choice is given up, as
+; building, asks for the change) for a pass and a pass of nothing, by the
+; two tables F2D33:0006 and 0010. The map's loop takes the word as the
+; keys T0D36:04D8 gives it for a player (T0708:155C).
+; T1938:157E (player, the cursor's square, a square) -> 1 when the cursor
+; is there (or the square is none of the map, or in its last column or
+; row), else left or right and up or down into the script. T1938:1245
+; (player, the cursor's square, a square, the commands far), by +48h: in
+; a building's screen (the cursor's +18h) or less than 5 columns and rows
+; away 157E alone; else fire with right (the overview), T1938:140D
+; (player, column, row: the overview's window, the cursor's +0Ch, +0Eh,
+; steered to column - 5, row - 4, held within the map, made even), fire,
+; then 157E.
+; Command 1: to the unit, fire with up, to the aim's square, then fire,
+; a pass, fire; when the square has not the mark of reach or stop_check
+; has a message, bit 8 of the player's record's +0 before the first (the
+; choice is given up, as
 ; T0D36:0731 reads it). 2: to the unit, fire with up, the target's
-; square: fire if it is marked a target, else bit 8. 3: the cursor to
+; square, fire; if it is not marked a target, bit 8 and fire once more.
+; 3: the cursor to
 ; the own headquarters' square and one row on, fire with left when no
 ; move runs, then it waits for the stage record's bit 4 (set by the
 ; map's loop at the change). 4, 6: T1938:16C1 finds the building that
@@ -805,8 +823,20 @@ name T1938:000F script_step
 ; unit's slot, then for 4 fire with up, a square it can stop on
 ; (list_reach; none: bit 8), fire twice, fire with right; for 6 fire
 ; with down, fire with right. 7: the cursor to the factory, fire with
-; left, to a free slot, fire with left, down the list to the type, fire
-; with left, fire with right.
+; left, to the last free slot, fire with left, down the list to the type,
+; fire with left, fire with right. T1938:17A6 (player, unit, records far,
+; how many) -> the record with the unit in one of the player's slots,
+; FFFFh none.
+; Not named: T1938:08D8, 0D59, 0F7A, 1245 and 140D (the commands 3, 6, 7,
+; the cursor to a square, the overview's window): xfer.py carries a name
+; there to MOON.EXE 8 to 10h bytes before its routine (T1A3E:08EC, 0D87,
+; 0FB7, 128D, 1463 by MOON.ASM's routine starts, in the same order).
+name T1938:0480 command_move
+name T1938:06D3 command_fire
+name T1938:0A08 command_out
+name T1938:157E cursor_steer
+name T1938:16C1 find_holder
+name T1938:17A6 find_in_slots
 ; T1ABC:0008 (unit, far three words): the unit's strength against land,
 ; sea and air: the type's hit value (+0Ah, +0Bh, +9) * (count / 2 + 1) *
 ; (the unit's +1 + 1) * (armour / 8) / 32.
