@@ -2086,6 +2086,12 @@ name F2740:0065 text_for_top
 name F2740:006F text_four
 name F2740:0079 menus
 name F2740:00A3 menu_items
+; the statistics after a map (after_map): the picture's and the library's
+; name, the two songs' names
+name F27E3:0008 name_stats
+name F27E3:000E name_winner
+name F27E3:0015 name_looser
+name F27E3:001C lib_stats
 ; the ticks a pass of the map's loop takes (4; also the number of the
 ; scores' file after a map), the position LOAD was given, the name made
 ; of a number (T26EA:000F writes it: a saved game, a map's files), the
@@ -2099,6 +2105,7 @@ name F27EE:2593 score_best
 ; the key set), the ordinals st, nd, rd, th (3 bytes each), the tables of
 ; unit types and ground (UNIT.DAT, GROUND.DAT loaded over them).
 name F27EE:000C version
+name F27EE:000E flank_bonus
 name F27EE:0013 ordinals
 name F27EE:001F unit_types
 name F27EE:0751 ground

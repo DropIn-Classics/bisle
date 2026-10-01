@@ -311,7 +311,8 @@ int count_slots(int side, fptr rec, int used);
 void cargo_move(int side, fptr from, fptr to);
 
 /* ---- not translated yet (todo.c) ---- */
-int change_phase(fptr a, fptr b, fptr c, fptr d);
+int change_phase(fptr buffer, fptr libs, fptr pmp, fptr palette);
+int fight_step(fptr rec);
 long score(void);
 void history_add(int units0, int units1);
 void after_map(fptr buffer);

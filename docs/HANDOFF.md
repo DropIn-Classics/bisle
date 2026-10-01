@@ -1522,6 +1522,28 @@ compared):
   30 s unless `-until` says more (pcmp.py: UNTIL, 120 by default).
 - move_arrive's kind 5 draws the square + 1 again (redraw_square without
   the - 1 the other kinds have); the port does the same.
+- change_phase (read in full for the port): T0408 runs with DS F2736,
+  not F27E3 as the modules around it. Its arguments are the buffer of
+  the players' lists (the fight scene's libraries go there, FIGHT, BUM
+  and RAND, 2710h bytes in for the scene's own buffer, the fight
+  record's +46h), the place of the cursors' library, the overview's and
+  the palette's buffer: with game_flags' bit 1000h (a fight or a film
+  was shown) the overview, the palette, CURSOR, SHOP and BIGUNIT, the
+  song and the effects are loaded again. The attacker's bonus in a fight
+  is summed from the five bytes at F27EE:000E (flank_bonus) for the
+  helpers around the defender, the defender's is 50h for a helper on
+  each side (at most 96h); both 0 over a distance. The unit's byte of
+  the map is written from the unit's +0Bh (player 0's place) for every
+  unit, whoever's map it is. A unit with 8000h in its +6 mends itself a
+  point a change and what is in its first seven slots (player 0's).
+  After the fights' loop nothing sets the tick count back: the waits of
+  the explosions end at once but for the first.
+- The statistics after a map (after_map, T15AC:000B): STATS.LBM, the
+  palette, WINNER or LOOSER as song, STATS.LIB (two entries, one a
+  player, drawn along the curves), the codes' file (ten bytes a map: the
+  code's five digits less 30h, +7 how many maps on, +8 bit 1 the last
+  map). The curves are the units' numbers of history_add, scaled by
+  400000h / the largest (16.16), 4, 8 or 16 pixels a number.
 - T2701:000E unpacks a packed entry in memory as load_file does a file,
   a byte more than the length says; draw_packed (T24D8:0008) draws from
   the buffer when it returns 0. Above 64 KB, or when the buffer's offset
@@ -1539,9 +1561,10 @@ compared):
 ## Next
 
 0. The port: the sound, the menus, a map's setup and its loop with the
-   cursors, the screens over a window (T1479) and a move (T122D) are
-   done; next what port/src/todo.c lists, a module at a time: T0408 (the
-   change of phase), T1F3C..T2190 (the fight), T178C..T1ED2 (the
+   cursors, the screens over a window (T1479), a move (T122D), the change
+   of phase (T0408) and T15AC are done; next what port/src/todo.c lists,
+   a module at a time: T1F3C..T2190 (the fight scene), T2248 (the
+   films), T178C..T1ED2 (the
    computer), T13CA, T15AC, T2248. Each step compared with the runner as
    port/README.md says.
 1. BATTLE.EXE's last 4.1 KB: menus, a map, saving, loading, battles

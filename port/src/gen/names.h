@@ -365,12 +365,17 @@
     X(F2740, menus, 0x0079) \
     X(F2740, menu_items, 0x00A3) \
     X(F2789, messages, 0x0008) \
+    X(F27E3, name_stats, 0x0008) \
+    X(F27E3, name_winner, 0x000E) \
+    X(F27E3, name_looser, 0x0015) \
+    X(F27E3, lib_stats, 0x001C) \
     X(F27E6, name_bidisk, 0x0000) \
     X(F27E6, disk_names, 0x000B) \
     X(F27E6, path_dirs, 0x0023) \
     X(F27E6, path_exts, 0x003B) \
     X(F27E6, path_made, 0x0077) \
     X(F27EE, version, 0x000C) \
+    X(F27EE, flank_bonus, 0x000E) \
     X(F27EE, ordinals, 0x0013) \
     X(F27EE, unit_types, 0x001F) \
     X(F27EE, ground, 0x0751) \
