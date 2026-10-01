@@ -8,8 +8,11 @@ to 98%, the intros' to 92%.
 `src/MOON.hints`, `src/INTVGA.hints` and `src/INTEGA.hints` rebuild
 their programs byte for byte
 (`doskit/tools/check.py`: all ok). BI.EXE is read in full (which
-intro, then BATTLE.EXE); the others are not understood yet
-beyond the segments and a few routines; the port is the template's.
+intro, then BATTLE.EXE); of BATTLE.EXE the data formats, the screens,
+the menus, the fight's reckoning and a unit's reach, path and targets
+are read and checked against runs (below), the computer player, the
+fight scene, the animations and the carrying out of a move are not; the
+port is the template's.
 
 ## Start here (next session)
 
@@ -832,6 +835,91 @@ games, each its own folder mounted as C: and started there:
   (seen again: `-shot 70` with `-until 70` gave no file, `-shot 69.8`
   did): the run ends before the shot's turn, presumably. Open question
   15 is that.
+- The fight (`tools/fight.py`, BATTLE.hints at fight_reckon): the formula
+  is read in full and done again by the tool from a run's memory. When
+  the phase changes, T0408:000B goes through a player's attack orders,
+  fills the fight record F27EE:2716 (the two units, their types, the
+  ground records of their squares, whether they stand next to each
+  other, two percentages) and runs the fight scene (`fight_step`,
+  T1F3C:000A), whose first call reckons the outcome (`fight_reckon`,
+  T2190:000D). Each side has an attack (its count times its type's hit
+  value against the other's class) and a defence (count times armour),
+  both raised by the unit's experience (+1) and moved by the ground it
+  stands on (two signed bytes a ground scene at F2D65:000E); the
+  attacker's attack less the target's defence, divided by the target's
+  armour times a factor of the attacker's experience, is what the target
+  loses, and the other way round; at least 1 when the attack is above
+  what one of the other's withstands, at most twice the firing side's
+  count, then one more or less by a random number (srand with the two
+  units' addresses XOR the count of the map loop's passes, so the same
+  for the same units in the same pass). The target's defence is reckoned
+  with a divisor of 512 where the three others have 256 (kept as it is).
+  A target that is not next to the attacker, cannot fire at its class or
+  has 40h or 80h in its targets word does not answer: the attacker loses
+  nothing. The two percentages (`fight_bonus`, T0408:29C6) are for units
+  standing around: the attacker's hit value rises by the bytes
+  F27EE:000E.. for each unit of its side beside the target that can fire
+  at it, the target's armour by 80 (at most 150) for each unit of its
+  side on the two squares beside both. After the fight a unit left with
+  0 is taken off the map, a unit that holds others passes its losses on
+  to those inside, and the experience rises by one for losses caused and
+  by one more for an enemy destroyed, to 6 at most. Checked: the battle
+  against the computer (the CONRA keys, the change of phase asked for
+  every 20 s; ten fights in 600 s, at 154, 158, 194, 198, 202, 294, 374,
+  454, 458 and 494 s), each fight stopped at fight_reckon's entry and at
+  its end (`-break fight_reckon#N`, `-break LT2190_0ABA#N`, -ram):
+  all ten give both units' counts and both percentages as the tool
+  reckons them (losses of 0 to 6, percentages 0, 25, 50, 75 and 80,
+  three units destroyed; the units T-3 SCORPION, T-4 GLADIATOR and R-1
+  DEMON, all on ground of scene 6, all next to each other and
+  answering). Not seen: a
+  target that does not answer, air or sea units, ships (the count in
+  +3), other ground scenes, a unit that holds others in a fight. ISLE's
+  armours are 20 to 100, so the divisor 0 (armour 0, or 1 against an
+  attacker of experience 6: a divide error) does not come up there.
+- Moving and firing (`tools/moves.py`, BATTLE.hints at T0BA0): a type's
+  move is points, not squares. `reach` (T0BA0:0323) gives each square of
+  the map a cost for the unit (`cost_map`, T0BA0:098F: the ground's +3,
+  or +4 for an air unit, never where the type's ground mask and the
+  ground's do not meet, never onto a unit of the other side or of
+  nobody, 2 into a unit of the own side that holds others) and spreads
+  the unit's points from its square; a square beside an enemy is entered
+  with nothing left, so a unit stops there. The squares with 0 or more
+  left are marked in F27EE:1339 (68 rows of 64 bytes: bit 1 or 2 in
+  reach by side, 4 or 8 a target). `find_path` (T0BA0:0E2E) then finds
+  the way over the marked squares, best first by the distance to the aim
+  and the ground's cost with the type's two weights. `fire_reach`
+  (T0BA0:05C8) marks the units of the other side within the range (one
+  less than the type's number) whose class the type's targets name; a
+  type with 40h there cannot fire at the six squares around it. All
+  three are done again by moves.py from a run's memory: reach in two
+  runs (a unit out of the depot on map 03; fire with up on a unit of the
+  first map: `-key 48 up -key 49 up -key 50 space+ -key 50.6 up+ -key
+  51.5 space- -key 52 up-`, -ram at 56 s), the buffer's 1104h bytes and
+  all marks the game's; find_path in six calls of the battle against the
+  computer (`-break LT0BA0_138A#N` for N 1, 2, 3, 6, 7, 12; paths of 2
+  to 14 squares), fire_reach in six (`-break fire_reach#N` and
+  `-break LT0BA0_0988#N`, N 1..6), each as the game's. So fire with up on
+  a unit of one's own in the move phase chooses it to be moved. Not
+  seen: an air unit, a unit of two squares, a path not found, a range
+  above 2. Read, not run: `stop_check` (T122D:0F50; BATTLE.hints has it
+  in full), which says what stopping on a square would be: a plain move,
+  taking a unit in, going into a unit of the own side that holds others
+  or into a building (by the slots free and the types' sizes and room),
+  taking a building that is not the side's, or a message why not. Not
+  read: how the move itself is carried out along the path (T122D:0002), what the ground flags 3 and 6 that reach's callers give stand
+  for (the other player's buildings, presumably).
+- xfer.py carried the new names to DESERT.hints (all) and MOON.hints
+  (neighbours64, cost_map, reach, fire_reach, find_path, list_reach,
+  fight_step, flankers, mod6, srand, rand, count_slots; not mapped
+  there: clear_marks, neighbours, off_map, square_distance, fight_bonus,
+  same_side, random, stop_check, cargo_size, find_building). MOON's were not looked at beyond the first lines
+  of reach, find_path and flankers (the same stack frames).
+- Scratch scripts of this step (build/scratch, ignored): `fights.py log
+  UNTIL` and `fights.py N ..` (the battle with the fights logged, or
+  stopped at the Nth fight and fight.py run on it), `paths.py N ..` and
+  `fires.py N ..` the same for find_path and fire_reach. A run to 600 s
+  takes about 140 s here.
 
 ## Next
 
@@ -926,11 +1014,12 @@ For the port (behaviour):
    and cursor; the unit flag 200h (+4) that gives a dot AMOK's +20h
    colour; why the status screen counts 6 units where the .FIN has 5.
 
-10. The tables (datfiles.py): the fight's formula (fight_reckon,
-    T2190:000D: how the counts, armour, hit values, the units' +1, the
-    two percentages and the ground's kind give the losses); what a type's
-    move counts (squares or the path's cost) and how find_path's result
-    limits a move; the targets word's bits 40h, 80h and above; flag 1 of
+10. The tables (datfiles.py): the fight's formula, what a type's move
+    counts and the targets word's bits 40h and 80h are answered (above:
+    fight.py, moves.py); left of them: a fight of units the runs did not
+    have (no answer, air, sea, ships, other ground), stop_check in a
+    run and how a move is carried out (T122D:0002); the
+    targets word's bits above 80h; flag 1 of
     a type's +0Eh; the low bits and 1000h, 2000h, 8000h of its +10h; its
     +16h (a sound, presumably) and +41h..+43h (the fight scene); the
     ground's flags besides the buildings' and 4000h; the tables as the

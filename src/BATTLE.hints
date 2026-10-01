@@ -370,28 +370,163 @@ name T0E9B:007B load_shp
 ; F27EE:0B64 (1Ch bytes; T169E:04A0 fills it) for a type of class 1000h,
 ; 2 for a type with 4000h in +10h, else FFh, +0Bh and +0Dh the square.
 name T169E:000E make_unit
-; T0BA0:098F fills a map of 1104h bytes for a unit: per square the
-; ground's cost negated (+4 for a unit with 10h in its +4; else +3 where
-; the type's +4 AND the ground's +2 is not 0, B0h where it is 0; FEh in
-; place of the cost for a unit with 10h in its +6). Not named.
-; T0BA0:0E2E: a path for a unit: a list of squares (10 bytes each) kept
-; in the order of a key, the distance to the aim (T0E9B:1E90) times the
-; type's +14h plus the ground's cost (+3, or +4 for a unit with 10h in
-; its +4) times the type's +15h; the six neighbours of a square from
-; F27EE:41A2 (as read; not followed to the end).
+; T0BA0, where a unit can move and fire. The squares' marks are 1104h
+; bytes at F27EE:1339, 68 rows of 64 (a square at column + 40h * row,
+; whatever the map's width): bits 1 and 2 in reach of the unit player 0
+; or 1 moves, 4 and 8 a target of the unit that fires, 40h and 80h used by
+; find_path and by T0408:000B. The buffers the routines fill are laid out
+; the same way.
+; T0BA0:0003 (mask): clears the mask's bits in all marks, FFh all bits.
+name T0BA0:0003 clear_marks
+; T0BA0:0053 (column, row): the six squares around one into F27EE:41A2 as
+; offsets in a buffer: up, right up, right down, down, left down, left up
+; (a square of an odd column lies half a row lower); off_map then puts
+; FFFFh for those off the map. T0BA0:0116 (offset) does the same for the
+; map's squares (two bytes a square, the row 2 * width).
+name T0BA0:0053 neighbours64
+name T0BA0:0116 neighbours
+name T0BA0:020A off_map
+; T0BA0:098F (buffer far, unit, side, ground flags, squares far): the cost
+; of entering each square for that unit, negated, B0h for never; 9Ah or
+; 9Bh on the squares around a unit of the other side. tools/moves.py has
+; the rules in full.
+name T0BA0:098F cost_map
+; T0BA0:0323 (square, buffer far, unit, points, side, ground flags, squares
+; far): keeps its arguments at F273A:0006 (T0D36:0927 calls it again with
+; them), cost_map, then spreads the points from the unit's square: each
+; square reached keeps what is left after its cost, a square beside an
+; enemy (9Ah, 9Bh) is reached with 0 left. Marks the squares with 0 or
+; more left with 1 (2 for side 1) and returns their number. The points
+; are the unit's +0 (T0D36:0F51, the player's choice of a unit to move).
+; tools/moves.py does it again from a run's memory: in two runs (a unit
+; taken out of a depot on map 03; a unit chosen with fire and up on the
+; first map) every byte of the buffer and every mark was the game's.
+name T0BA0:0323 reach
+; T0BA0:05C8 (buffer far, square, range, side, unit, targets, squares far)
+; -> the number of targets: the squares less than `range` squares away
+; (the range is one more than the distance: the unit's screen shows it
+; less 1), without the six around the unit when the targets word has 40h;
+; of those the ones holding a unit of the other side (not one with 2 in
+; its +4) whose class (+4 AND 3Ch) the targets name, or with 2 in its +6
+; when the targets have 2, are marked 4 (8 for side 1). tools/moves.py
+; --fire does it again: buffer and marks the game's in six calls of the
+; computer's units (all of range 2; none with 40h or a range above 2).
+name T0BA0:05C8 fire_reach
+; T0BA0:0E2E (list far, unit, from, to, side, squares far) -> 0, or FFFFh
+; when there is none: a path over the squares marked in reach. The list
+; holds nodes of 10 bytes (column, row, +2 the node it was reached from,
+; +4 a key, +6 and +8 the nodes before and after in the key's order), node
+; 0 the list's head, 1 the start (key 0), 2 the end (key 7530h). The
+; routine goes along the list from the start; each node's neighbours in
+; reach and not yet taken (mark 40h, 80h for side 1) become nodes, put in
+; after the current node before the first node of a greater key; the key
+; is the distance to the aim (square_distance) times the type's +14h plus
+; the ground's cost (+3, or +4 for a unit with 10h in its +4) times the
+; type's +15h, 0 on the aim. At the aim's node the path is written at the
+; list's +1F40h as words, the squares' offsets from the aim back to the
+; start, their number in F27EE:0B62. More than 316h nodes or squares: no
+; path. tools/moves.py --path does it again from a run's memory at the
+; routine's end: the same squares in six calls of a battle against the
+; computer (paths of 2 to 14 squares, all of side 1 and found; none that
+; failed was seen).
 name T0BA0:0E2E find_path
-; T0E9B:1E90 (x1, y1, x2, y2): a distance of two squares, the columns
-; halved into the rows as on a map of hexagons (the first half read, the
-; rest presumably).
+; T0BA0:1391 (list far, side, unit): the squares in reach on which
+; stop_check lets the unit (kept at F27EE:1326) stop, as words into the
+; list, their number in F27EE:0B62 (the computer player's callers).
+name T0BA0:1391 list_reach
+; T122D:0F50 (square, side, squares far) -> 0, or the number of the
+; message that says why not: what the unit F27EE:1326 would do by
+; stopping on the square, into the record there: +1 the unit on the
+; square, +4 a slot, +5 far a cargo or building record, +9 its number,
+; +0Ah the square, +0Ch the kind. Read, not run:
+;   a unit u on the square (the first half's record for a second half):
+;     the mover takes u in, kind 1, when u's +6 has 20h and the mover's
+;     1000h, or u's 4 and the mover's 2000h: the first free slot of the
+;     mover's cargo record (its +0Ah; 7 slots a side), if the sizes (the
+;     types' +40h) of what is inside (T1479:12B5) and u's are no more
+;     than the mover's type's room (+3Fh); else message 9.
+;     Else message 5 for a unit not of the side (same_side), 7 for one
+;     that does not hold others (1000h in its +4), 8 when the mover's +6
+;     AND the cargo record's +19h has none of 0FC0h or u has 200h in its
+;     +4; else the mover goes into u, kind 2: a free slot, the mover's
+;     size plus what it holds itself plus what u holds within u's room,
+;     and for a mover that holds others more free slots in u than the
+;     mover has units; else message 9.
+;   an empty square of a building (the ground's flags 400h: the record of
+;     F27EE:2780 that names the square, T0E9B:1587; 100h: of F27EE:259C;
+;     40h: F27EE:24B0, the second with the ground's flag 1): kind 4 when
+;     the building's +19h is not of the side or has 2 (taken over,
+;     presumably), else kind 5 with a free slot (for a mover that holds
+;     others more free slots than it has units), else message 9.
+;   any other empty square: kind 3; message 0Eh when the type's +4 AND
+;     the ground's +2 is 0, or for an air unit (10h in its +4) on ground
+;     of flag 4000h.
+name T122D:0F50 stop_check
+; T1479:12B5 (cargo far, side) -> the sizes (types' +40h) of the units in
+; a record's seven slots; T122D:18A9 (side, cargo far, used) -> how many
+; of the slots are used (free with used 0); T0E9B:1587 (square, table
+; far) -> which of ten records of 1Ch bytes has the square among its
+; four at +0Eh, FFFFh none.
+name T1479:12B5 cargo_size
+name T122D:18A9 count_slots
+name T0E9B:1587 find_building
+; T0E9B:1E90 (x1, y1, x2, y2): the distance of two squares in squares on
+; the map of hexagons: the upper one first; the columns' difference plus
+; what the rows differ beyond what the columns give (each row less half
+; its column, rounded down when the lower square is right of the upper
+; one, else up and with the columns exchanged). Read; tools/moves.py has
+; it, and find_path's keys made with it gave the game's paths.
 name T0E9B:1E90 square_distance
-; T2190:000D: the fight's reckoning from the record at the far pointer
-; F2D37:000A (+0 and +4 the two units, +0Ah and +0Eh their types, +12h a
-; ground record, +24h and +25h two percentages, +5Eh a routine): each
-; side's count (the unit's +2, or +3 with the type's flag 4; 1..6), its
-; type's +1 and the hit value against the other's class (+9 for 10h, +0Bh
-; for 8, else +0Ah), the unit's +1 plus 1, the ground's +5 through a
-; table at F2D65:000E. The formula itself is not read yet.
+; The fights. T0408:000B, called when the phase changes, goes through the
+; attack orders of a player (a far list of unit numbers at F27EE:244F +
+; 17h * player, their number at +2453h; the target is the unit on the
+; square the attacker's +11h names) and fills the fight record
+; F27EE:2716 for each (tools/fight.py has its fields), then calls
+; T1F3C:000A in every pass until it returns not 0: the fight scene
+; (T2112, T1F5A; not read), which reckons the outcome once, at its first
+; call. After it (T0408:09F7 on): a unit left with a count of 0 is taken
+; off the map (T0408:2415); what a unit that holds others (1000h in its
+; +4) lost, each unit inside loses too (T0408:28EA: one with no more than
+; that is taken out of its slot and gets 4 in its +14h); then the units'
+; +1, the experience, at most 6: one more for a unit whose enemy lost
+; something (unless the enemy has 20h in its +6), one more when the enemy
+; is gone. Read; the +1 was seen to go from 0 to 1 between two fights of
+; a unit. The rest of the routine (0C04 on: the squares' animation by
+; F27EE:2472, 7 bytes each) is not read.
+; T2190:000D: the fight's outcome from the record at the far pointer
+; F2D37:000A: the two units' counts are written back. The formula, the
+; random part (srand with the units' addresses XOR the count of the map
+; loop's passes, two numbers of random) and the rule for a target that
+; cannot answer are in tools/fight.py, which does the reckoning again
+; from a run's memory at the routine's entry and compares the counts at
+; its end: the same in the fights of a battle against the computer
+; (HANDOFF.md says how many). A divisor of 0 (an armour of 0, or the
+; target's of 1 with the attacker's +1 at 6) would end the program with a
+; divide error; not seen.
 name T2190:000D fight_reckon
+name T1F3C:000A fight_step
+; T0408:29C6 (attacker, target, squares far, window): the record's two
+; percentages, +24h on the attacker's hit value for the attacker's side's
+; units around the target (the bytes F27EE:000E.. by where they stand
+; from the attacker), +25h on the target's armour for the target's side's
+; units on the two squares beside both; tools/fight.py reckons them again
+; (the same in those fights). T0408:2BBD (unit, other, squares far,
+; window) -> the direction of `unit` from `other`, and in F27EE:41A2 a 1
+; for each square around `other` with a unit of `unit`'s side that can
+; fire at `other`. T0408:2B8C (n) -> n mod 6.
+name T0408:29C6 fight_bonus
+name T0408:2BBD flankers
+name T0408:2B8C mod6
+; T0D36:00F5 (a, b; two units' +4) -> whether b is of a's side: b has bit
+; 1 when a has it, else bit 2 when a has that, else b has not bit 1 (so
+; for a unit of player 0 one of neither player counts as its side).
+name T0D36:00F5 same_side
+; T0D36:05FF (lo, hi) -> rand() mod (hi - lo + 1) + lo, hi at most 7FFFh.
+; CODE:2627 (seed) and CODE:263F are the library's srand and rand (the
+; long DATA:1938 times 15A4E35h plus 1, bits 16..30).
+name T0D36:05FF random
+name CODE:2627 srand
+name CODE:263F rand
 ; T1479:11B4 (energy): the types that can be made, into F27EE:4136 and
 ; their count into F27EE:1338: cost (+3Eh) no more than the argument,
 ; flag 2 of +0Eh clear (a map's .SHP sets it), and for a type that holds

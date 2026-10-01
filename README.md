@@ -34,7 +34,10 @@ Python 3 with `capstone` (`pip install capstone`).
   maps and their overviews; `datfiles.py`: the tables of unit types,
   ground, maps' codes and AMOK.DAT; `txtfiles.py`: the texts and the
   small font; `screens.py`: the game's screens drawn from a run's memory
-  and compared with its video memory).
+  and compared with its video memory), and for the rules: `fight.py`
+  (a fight's outcome) and `moves.py` (where a unit can move and fire,
+  the path it takes), each done again from a run's memory and compared
+  with what the game made of it.
 - `port/`: the implementation in C (its README says how far it is).
 - `docs/HANDOFF.md`: state, what was learned, what is next.
 - `AGENTS.md`: the rules for working on this; `PROVENANCE.md`: where the

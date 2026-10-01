@@ -28,12 +28,16 @@ UNIT.DAT: 27 records of 44h bytes, the unit types (a map's unit byte
 >> 1, see mapfiles.py):
 
     +00 move      copied to the unit's record (+0) when a unit is made
-                  (T169E:000E make_unit, seen); the computer player
+                  (T169E:000E make_unit, seen): the points the unit has
+                  for a move, of which each square entered takes its
+                  ground's cost (reach, T0BA0:0323; moves.py); the
+                  unit's screen shows half of it.  The computer player
                   compares it with distances (T17C0:10E4, T1C04:1041,
-                  seen): how far the unit moves, presumably
-    +01 armour    the fight's reckoning (T2190:000D, seen) takes it of
-                  both sides beside the attacker's hit value: what a
-                  unit withstands, presumably (the formula is not read);
+                  seen)
+    +01 armour    what a unit withstands in a fight: with the count and
+                  the unit's +1 it makes a side's defence, and the
+                  difference of attack and defence is divided by it
+                  (fight_reckon, T2190:000D; fight.py has the formula);
                   T0408:2E7A adds it up over a player's units (seen)
     +02 count     how many the unit has when whole (make_unit copies it
                   to the unit's +2): T0408:2087, run over all units,
@@ -47,8 +51,10 @@ UNIT.DAT: 27 records of 44h bytes, the unit types (a map's unit byte
                   unit with it; both seen)
     +05 targets   a word.  AND 3Ch against the other type's class (+0C):
                   which classes it can fire at (T2190, T0D36:1275, seen);
-                  bits 40h and 80h are tested in the fight (not read
-                  further)
+                  2: at a unit with 2 in its +6 as well; with 40h or
+                  80h the unit does not answer an attack (fight.py), and
+                  with 40h it cannot fire at the six squares around it
+                  (fire_reach, T0BA0:05C8) and gives no flank bonus
     +07 range_air how far it fires at class 10h: T0D36:12F5 marks the
                   targets of (targets AND FFD3h) within it, when above 1
     +08 range     the same for the other classes (targets AND FFEFh)
