@@ -77,6 +77,12 @@ static inline fptr hnorm(fptr p) { return hadd(p, 0); }
 /* a far pointer into the megabyte as a C string or bytes */
 static inline char *fstr(fptr p) { return (char *)mem + flin(p); }
 
+/* the records of the map: a unit, a unit type, a ground, a cursor */
+#define UNIT(n) MKFP(S_units, A_units + 0x1A * (n))
+#define TYPE(n) MKFP(S_unit_types, A_unit_types + 0x44 * (n))
+#define GROUND(n) MKFP(S_ground, A_ground + 6 * (n))
+#define CURSOR(n) MKFP(S_cursors, A_cursors + 0x31 * (n))
+
 /* ---- dos.c: what the program got from DOS and the PC ---- */
 
 /* the folder the program runs in (the game's ISLE) and the one its saved
@@ -135,6 +141,7 @@ void t2354_056f(void);              /* and off */
 /* a timer's handler that is a C function: timer.c calls `fn` for the far
  * pointer `handler` */
 void timer_handler(fptr handler, void (*fn)(void));
+void t265e_000e(void);
 
 /* ---- files.c: T2619..T2728, files and memory ---- */
 fptr t2619_0004(uint32_t size);     /* a block from DOS */
@@ -169,6 +176,9 @@ void draw_row(void);
 void draw_column(void);
 void draw_line(void);
 void put_pixel(void);
+void t2590_000a(void);
+void t2592_0002(void);
+void t24d3_0000(fptr item);
 void t24a8_0008(int x1, int y1, int x2, int y2, int light, int dark, int fill);
 void draw_entry(int x, int y, fptr entry, unsigned keep_off, unsigned keep_seg, int base);
 void draw_chars(int x, int y, fptr text);
@@ -204,6 +214,103 @@ void show_scores(fptr scores, int map, fptr codes);
 void load_scores(fptr scores, fptr work, int n);
 int t0d36_0c85(void);
 fptr t26ea_000f(long value, fptr dest, int digits, int flags);
+
+/* ---- map.c: T0E9B ---- */
+void t0e9b_000b(void);
+int load_shp(fptr path, fptr dest, fptr work);
+int load_fin(fptr path, fptr dest, fptr work);
+void draw_overview(int player, int x, int y, fptr pmp);
+void draw_window(int first, int player);
+void draw_marks(int first, int player);
+void redraw_cursor_square(fptr cursor, int player);
+void undraw_marks(int first, int player, int bits);
+void redraw_square(int player, int off);
+int find_building(int square, fptr table);
+void t0e9b_15dd(int player, int off);
+int t0e9b_1704(int off, fptr map);
+void four_squares(int off);
+void t0e9b_19ab(fptr from, fptr to);
+void unit_flag(int unit, int flags, int player, int set);
+void t0e9b_1e0d(int channel);
+void t0e9b_1b9d(int a, int b);
+void t0e9b_1cb2(void);
+int square_distance(int x1, int y1, int x2, int y2);
+
+/* ---- cursor.c: T0D36 ---- */
+void t0d36_0044(fptr cur, int player);
+int same_side(int a, int b);
+void timer_set(int kind, int delay, int arg);
+void timer_due(int kind, int arg);
+void t0d36_032c(fptr cur, int back);
+int t0d36_04d8(fptr in, fptr cur);
+void bi_srand(unsigned seed);
+int bi_rand(void);
+int bi_random(int lo, int hi);
+int t0d36_0642(fptr cur, fptr in, int bits, fptr map, int side);
+void t0d36_0bb6(fptr cur);
+void t0d36_0d82(fptr cur, int side, int bits);
+void t0d36_15e9(fptr from, fptr to, uint32_t count);
+
+/* ---- units.c: T169E ---- */
+void make_unit(int number, int type, int square, int player);
+int t169e_01a9(int mask);
+int t169e_01f5(int mask);
+void t169e_0244(int n, int sq, int owner);
+void t169e_0324(int n, int sq, int owner);
+void t169e_0401(int sq, int owner);
+void t169e_04a0(int n, int sq, int type, int player, int unit);
+void unit_remove(int unit, int side);
+void cargo_follow(int unit, int side);
+
+/* ---- reach.c: T0BA0 ---- */
+void clear_marks(int mask);
+void neighbours64(int col, int row);
+void neighbours(int off);
+int reach(int square, fptr buf, int unit, int points, int side, int flags, fptr map);
+int fire_reach(fptr buf, int square, int range, int side, int unit, int targets, fptr map);
+int find_path(fptr list, int unit, int from, int to, int side, fptr map);
+void list_reach(fptr list, int side, int unit);
+
+/* ---- orders.c: T0B70, T11FD ---- */
+void show_message(int number, int side);
+void unit_line(int unit, int side);
+int give_order(fptr cur, fptr map, int side);
+void order_release(fptr cur, int side);
+
+/* ---- text.c ---- */
+void draw_text(int x, int y, int n, int colour);
+void draw_number(int n, int x, int y);
+void draw_bar(int x, int y, int front, int back, int rows, int n, int full);
+void check_vga_disk(void);
+
+/* ---- not translated yet (todo.c) ---- */
+int move_aim(fptr cur, fptr map, int side);
+int t122d_05b8(fptr cur, int side);
+void unit_release(fptr cur, fptr map, int side, int kind);
+void move_step(void);
+int stop_check(int off, int side, fptr map);
+void draw_shop_window(int side);
+void draw_unit_info(int side, int square, int unit, fptr map);
+void draw_status(int side);
+void draw_building(int side, fptr rec);
+void list_makeable(int energy);
+void draw_slots(int x, int y, int side, fptr rec);
+void draw_unit_numbers(int x, int y, int unit, int side);
+void draw_type_list(int x, int y, int side, int first);
+void t1479_028e(int x, int y);
+void t1479_0c93(int x, int y, int type, int side, int owner);
+int change_phase(fptr a, fptr b, fptr c, fptr d);
+long score(void);
+void history_add(int units0, int units1);
+void after_map(fptr buffer);
+int save_game(fptr buffer);
+void load_game(fptr buffer);
+void play_anim(int number, fptr buffer, int a, int b, int c, fptr path);
+void end_credits(fptr work, fptr path);
+void computer_start(int side);
+void computer_step(int side);
+void computer_unit_new(int unit);
+void t262a_000e(fptr text);
 
 /* ---- battle.c: T0708, the program ---- */
 void battle_main(int argc, char **argv);

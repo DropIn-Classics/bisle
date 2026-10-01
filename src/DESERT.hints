@@ -2095,6 +2095,122 @@ name F2740:00A3 menu_items
 ; of a number (T26EA:000F writes it: a saved game, a map's files), the
 ; highest of the map's four scores
 name F27EE:251B pass_ticks
-name F27EE:2512 load_position
+name F27EE:2512 number_asked
 name F27EE:249C save_name
 name F27EE:2593 score_best
+; the map's data (port/src/map.c, cursor.c, units.c, reach.c, battle.c).
+; F27EE begins with the program's version (two bytes, shown by a key of
+; the key set), the ordinals st, nd, rd, th (3 bytes each), the tables of
+; unit types and ground (UNIT.DAT, GROUND.DAT loaded over them).
+name F27EE:000C version
+name F27EE:0013 ordinals
+name F27EE:001F unit_types
+name F27EE:0751 ground
+; the squares around a square by column and row, for even and for odd
+; columns: ten (a building site's; ten x offsets, then ten y offsets) and
+; four (a building's squares; four and four)
+; (not mapped) name F27EE:09E5 around10_even
+; (not mapped) name F27EE:09F9 around10_odd
+; (not mapped) name F27EE:0A0D around4_even
+; (not mapped) name F27EE:0A15 around4_odd
+; the libraries' records (14h bytes each, as lib_char24): unit, part,
+; cursor, patt, shop, bigunit, rand, bum, fight, char24, exp; then the
+; names CHAR6, AMOK, GAME, FIGHT, UNIT, GROUND
+; (not mapped) name F27EE:0A1D lib_unit
+name F27EE:0A31 lib_part
+name F27EE:0A45 lib_cursor
+name F27EE:0A59 lib_patt
+name F27EE:0A6D lib_shop
+name F27EE:0A81 lib_bigunit
+name F27EE:0A95 lib_rand
+name F27EE:0AA9 lib_bum
+name F27EE:0ABD lib_fight
+name F27EE:0AE5 lib_exp
+name F27EE:0AFF name_amok
+name F27EE:0B04 name_game
+name F27EE:0B09 name_fight
+name F27EE:0B0F name_unit
+name F27EE:0B14 name_ground
+; a path's length (find_path, list_reach), the records of the units that
+; hold others (46h of 1Ch bytes), the windows' rows on the screen (even
+; columns), the record of a move (stop_check; its first byte the unit),
+; the map of the player whose pass it is (a far pointer), the number of
+; types list_makeable found, the marks
+name F27EE:0B62 path_count
+name F27EE:0B64 cargo
+name F27EE:130C window_y_even
+name F27EE:1326 move_record
+name F27EE:1334 loop_map
+name F27EE:1338 types_listed
+name F27EE:1339 marks
+; the map's size (bytes, width, height), the squares' explosions (4 of 7
+; bytes), two bytes and two buffers of the change of phase (not read
+; yet), the headquarters' records, AMOK.DAT
+name F27EE:246C map_bytes
+name F27EE:246E map_width
+name F27EE:2470 map_height
+name F27EE:2472 explosions
+name F27EE:248E state_248e
+name F27EE:248F buffer_248f
+name F27EE:2493 buffer_2493
+name F27EE:2497 state_2497
+name F27EE:24B0 hqs
+name F27EE:24E8 amok
+; the game's state after game_flags and menu_flags: more flags (2 a
+; window scrolled, 8 and 10h a player's message is up, 20h, 40h a move's
+; step is due, 80h, 100h a sound is asked for, 200h a key's message is
+; up, 400h a path is shown), a number (the sound asked for; LOAD's
+; position), the numbers of units, factories, depots and holders made,
+; the player of the loop's pass, the windows' last first column and row
+; by two, the round, the loop's passes (a long), the loop's timers (15:
+; a kind each, when due, an argument), a byte
+name F27EE:2510 game_flags2
+name F27EE:2514 units_made
+name F27EE:2515 factories_made
+name F27EE:2516 depots_made
+name F27EE:2517 cargo_made
+name F27EE:2518 loop_player
+name F27EE:2519 window_last_column
+name F27EE:251A window_last_row
+name F27EE:251D round
+name F27EE:251F passes
+name F27EE:2525 timer_kinds
+name F27EE:2534 timer_dues
+name F27EE:2570 timer_args
+name F27EE:2592 state_2592
+; the depots' records, the two cursors' (31h bytes each), the fight's
+; record, the factories', the units' (F1h of 1Ah bytes)
+name F27EE:259C depots
+name F27EE:26B4 cursors
+name F27EE:2716 fight_record
+name F27EE:2780 factories
+name F27EE:2898 units
+; the windows' columns on the screen, GAME.TXT (a far pointer), the list
+; of types list_makeable made, how deep unit_remove is, the two players'
+; maps (far pointers), a cursor's record kept, the windows' rows for odd
+; columns, the squares around one
+name F27EE:4112 window_x
+name F27EE:4132 game_txt
+name F27EE:4136 types_list
+name F27EE:4151 remove_depth
+name F27EE:4152 map0
+name F27EE:4156 map1
+name F27EE:415A cursor_kept
+name F27EE:4192 window_y_odd
+name F27EE:41A2 around
+; reach's arguments kept (9 words), the messages of the line below a
+; window (18h bytes each), the library's rand's seed, BIDISK.VGA's name,
+; the far pointer to effects_asked, the routine that gives a number
+; without its sign
+; (not mapped) name F273A:0006 reach_args
+; (not mapped) name F2789:0008 messages
+name DATA:1938 rand_seed
+; (not mapped) name F27E6:0000 name_bidisk
+name F2D8A:000C effects_ptr
+name CODE:2D44 abs_value
+; the computer player's data: the map's .COM (27 records of 6 bytes), its
+; state for each player (0Ch bytes each, a word of stages first), the
+; keys it presses and the message it shows (two words a player)
+name F2C0A:0000 computer_types
+name F2C0A:00A2 computer_state
+name F2C0A:11EE computer_keys

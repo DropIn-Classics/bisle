@@ -144,7 +144,7 @@ static void show_code(int n, fptr codes)
     }
 }
 
-/* SELECT POSITION 0 TO 9: the digit into load_position, 0; or 1 for the
+/* SELECT POSITION 0 TO 9: the digit into number_asked, 0; or 1 for the
  * key set's first key (Esc) */
 int ask_position(void)
 {
@@ -162,7 +162,7 @@ int ask_position(void)
         c = GB(key_char);
         SW(key_there, 0);
         if (c >= 0x30 && c <= 0x39) {
-            SW(load_position, c - 0x30);
+            SW(number_asked, c - 0x30);
             return 0;
         }
         if (GB(key_scan) == pb(GFP(key_set), 0))
@@ -407,7 +407,7 @@ int menu(fptr work)
                         draw_text24(0x57, 0x7F, FP(text_disk), 1, 0);
                         flip_page();
                         t0d36_0c85();
-                        path = make_path(2, -1, t26ea_000f((int16_t)GW(load_position), FP(save_name), 2, 4), 5);
+                        path = make_path(2, -1, t26ea_000f((int16_t)GW(number_asked), FP(save_name), 2, 4), 5);
                         SWO(disk_record, 0, 0);
                         i = file_open(0, path);
                         if (i) {

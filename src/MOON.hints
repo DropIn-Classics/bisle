@@ -2181,6 +2181,122 @@ name F2850:00A7 menu_items
 ; of a number (T26EA:000F writes it: a saved game, a map's files), the
 ; highest of the map's four scores
 name F2902:4164 pass_ticks
-name F2902:415B load_position
+name F2902:415B number_asked
 name F2902:0C5B save_name
 name F2902:41DC score_best
+; the map's data (port/src/map.c, cursor.c, units.c, reach.c, battle.c).
+; F27EE begins with the program's version (two bytes, shown by a key of
+; the key set), the ordinals st, nd, rd, th (3 bytes each), the tables of
+; unit types and ground (UNIT.DAT, GROUND.DAT loaded over them).
+name F2902:0006 version
+name F2902:000D ordinals
+name F2902:0019 unit_types
+name F2902:074B ground
+; the squares around a square by column and row, for even and for odd
+; columns: ten (a building site's; ten x offsets, then ten y offsets) and
+; four (a building's squares; four and four)
+; (not mapped) name F27EE:09E5 around10_even
+; (not mapped) name F27EE:09F9 around10_odd
+; (not mapped) name F27EE:0A0D around4_even
+; (not mapped) name F27EE:0A15 around4_odd
+; the libraries' records (14h bytes each, as lib_char24): unit, part,
+; cursor, patt, shop, bigunit, rand, bum, fight, char24, exp; then the
+; names CHAR6, AMOK, GAME, FIGHT, UNIT, GROUND
+; (not mapped) name F27EE:0A1D lib_unit
+name F2902:0B1B lib_part
+name F2902:0B2F lib_cursor
+name F2902:0B43 lib_patt
+name F2902:0B57 lib_shop
+name F2902:0B6B lib_bigunit
+name F2902:0B7F lib_rand
+name F2902:0B93 lib_bum
+name F2902:0BA7 lib_fight
+name F2902:0BCF lib_exp
+name F2902:0BE9 name_amok
+name F2902:0BEE name_game
+name F2902:0BF3 name_fight
+name F2902:0BF9 name_unit
+name F2902:0BFE name_ground
+; a path's length (find_path, list_reach), the records of the units that
+; hold others (46h of 1Ch bytes), the windows' rows on the screen (even
+; columns), the record of a move (stop_check; its first byte the unit),
+; the map of the player whose pass it is (a far pointer), the number of
+; types list_makeable found, the marks
+name F2902:0CB0 path_count
+name F2902:25C7 cargo
+name F2902:2FE7 window_y_even
+name F2902:0CCC move_record
+name F2902:0C83 loop_map
+name F2902:0C93 types_listed
+name F2902:300B marks
+; the map's size (bytes, width, height), the squares' explosions (4 of 7
+; bytes), two bytes and two buffers of the change of phase (not read
+; yet), the headquarters' records, AMOK.DAT
+name F2902:414F map_bytes
+name F2902:4151 map_width
+name F2902:4153 map_height
+name F2902:410F explosions
+; (not mapped: F2902:0D43 would be state_248e and factories) name F27EE:248E state_248e
+name F2902:0D44 buffer_248f
+name F2902:0D48 buffer_2493
+name F2902:0D4C state_2497
+name F2902:0C6F hqs
+name F2902:412B amok
+; the game's state after game_flags and menu_flags: more flags (2 a
+; window scrolled, 8 and 10h a player's message is up, 20h, 40h a move's
+; step is due, 80h, 100h a sound is asked for, 200h a key's message is
+; up, 400h a path is shown), a number (the sound asked for; LOAD's
+; position), the numbers of units, factories, depots and holders made,
+; the player of the loop's pass, the windows' last first column and row
+; by two, the round, the loop's passes (a long), the loop's timers (15:
+; a kind each, when due, an argument), a byte
+name F2902:4159 game_flags2
+name F2902:415D units_made
+name F2902:415E factories_made
+name F2902:415F depots_made
+name F2902:4160 cargo_made
+name F2902:4161 loop_player
+name F2902:4162 window_last_column
+name F2902:4163 window_last_row
+name F2902:4166 round
+name F2902:4168 passes
+name F2902:416E timer_kinds
+name F2902:417D timer_dues
+name F2902:41B9 timer_args
+name F2902:41DB state_2592
+; the depots' records, the two cursors' (31h bytes each), the fight's
+; record, the factories', the units' (F1h of 1Ah bytes)
+name F2902:41E5 depots
+name F2902:4243 cursors
+name F2902:0CD9 fight_record
+; (not mapped: F2902:0D43 would be state_248e and factories) name F27EE:2780 factories
+name F2902:0D4D units
+; the windows' columns on the screen, GAME.TXT (a far pointer), the list
+; of types list_makeable made, how deep unit_remove is, the two players'
+; maps (far pointers), a cursor's record kept, the windows' rows for odd
+; columns, the squares around one
+name F2902:2FF7 window_x
+name F2902:0C8F game_txt
+name F2902:0C94 types_list
+name F2902:0CAF remove_depth
+; (not mapped: F2902:0C8B would be map0 and cursor_kept) name F27EE:4152 map0
+name F2902:0C87 map1
+; (not mapped: F2902:0C8B would be map0 and cursor_kept) name F27EE:415A cursor_kept
+name F2902:2FD7 window_y_odd
+name F2902:0CB8 around
+; reach's arguments kept (9 words), the messages of the line below a
+; window (18h bytes each), the library's rand's seed, BIDISK.VGA's name,
+; the far pointer to effects_asked, the routine that gives a number
+; without its sign
+; (not mapped) name F273A:0006 reach_args
+; (not mapped) name F2789:0008 messages
+; (not mapped) name DATA:1938 rand_seed
+; (not mapped) name F27E6:0000 name_bidisk
+name F2EAB:0006 effects_ptr
+name CODE:1C14 abs_value
+; the computer player's data: the map's .COM (27 records of 6 bytes), its
+; state for each player (0Ch bytes each, a word of stages first), the
+; keys it presses and the message it shows (two words a player)
+name F2D2D:000A computer_types
+; (not mapped) name F2C0A:00A2 computer_state
+name F2D2D:128F computer_keys

@@ -17,8 +17,13 @@ that is not translated yet ends the program with a message that names it.
 
 Translated so far (2026-10-01): the start, the Blue Byte logo, the title
 with its running lines, the sound (the songs and the effects on the
-AdLib), the menus with the code typed, the scores and their name; START
-ends at the map's setup, which is not translated yet.
+AdLib), the menus with the code typed, the scores and their name, a
+map's setup and the map's loop with the cursors on the map (a unit's
+line, a unit chosen, its reach and targets, an attack order, the
+overview). Not yet (`todo.c`: the program ends with the routine's name):
+the screens over a window (status, unit, building), a move carried out,
+the change of phase with the fights, the computer player, saving and
+loading, the animations, what follows a map.
 
 | File | The original's | What |
 |---|---|---|
@@ -32,7 +37,14 @@ ends at the map's setup, which is not translated yet.
 | `text.c` | T164D | text in the large letters |
 | `title.c` | T1727 | the logo and the title |
 | `menu.c` | T1090 | the menus, a code typed, the scores, the name for them |
-| `battle.c` | T0708 | main, to the map's setup |
+| `map.c` | T0E9B | a map's files, the windows, squares drawn again, the overview |
+| `cursor.c` | T0D36 | the cursors: input, what fire offers, a unit chosen |
+| `units.c` | T169E | units' and buildings' records made and given up |
+| `reach.c` | T0BA0 | where a unit can move and fire, the way to a square |
+| `orders.c` | T0B70, T11FD | an attack order, the line below a window |
+| `phase.c` | T0408 | the score (the change of phase not yet) |
+| `battle.c` | T0708 | main: the start, a map's setup, the map's loop, after a map |
+| `todo.c` | - | what is not translated yet |
 | `sound.c` | CODE:0215..1B79 | the AdLib's driver, the songs' player, the effects |
 | `audio.c` | - | the values written to the AdLib into doskit's OPL and out |
 
@@ -137,6 +149,19 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   typed, LOAD, RATING, the name for the scores (their routines are
   translated; tools/screens.py drew those screens from runs of the
   original before).
+- A map: ISLE's first map (START at the title menu), the original
+  stopped at the loop's start (T0708:135C) and the port at the same
+  pass: at the first pass, after the whole setup (the libraries sorted
+  and the ground's parts stored, the map's files, the units and
+  buildings made, both windows drawn), and at the 60th pass with the
+  first player's cursor moved meanwhile (right held at the passes 20 to
+  23, down 30 to 33, up 40 to 42: keys by passes): all of the video
+  memory the same, all of the program's memory the same but for the
+  kinds of differences above (at the 60th pass of what goes with the time
+  only `input_divider`), the memory behind the program the same. Not
+  compared: fire and what it chooses (a unit's reach, an order, the
+  overview; cursor.c and reach.c are translated, tools/moves.py did them
+  again from runs of the original before), player 1's keys.
 - The window build was started for 8 s and ran (nothing looked at or
   heard: nobody was there).
 

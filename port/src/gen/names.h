@@ -181,6 +181,7 @@
     X(CODE, speaker_note, 0x1A67) \
     X(CODE, srand, 0x2627) \
     X(CODE, rand, 0x263F) \
+    X(CODE, abs_value, 0x2D44) \
     X(T0408, change_phase, 0x000B) \
     X(T0408, unit_explode, 0x2415) \
     X(T0408, sync_slots, 0x2730) \
@@ -347,6 +348,7 @@
     X(T2690, file_open, 0x0004) \
     X(T2695, load_file, 0x0004) \
     X(T26D2, save_file, 0x000A) \
+    X(F273A, reach_args, 0x0006) \
     X(F273B, fatal_messages, 0x0008) \
     X(F2740, name_menu, 0x0000) \
     X(F2740, name_codes, 0x000A) \
@@ -362,27 +364,101 @@
     X(F2740, text_four, 0x006F) \
     X(F2740, menus, 0x0079) \
     X(F2740, menu_items, 0x00A3) \
+    X(F2789, messages, 0x0008) \
+    X(F27E6, name_bidisk, 0x0000) \
     X(F27E6, disk_names, 0x000B) \
     X(F27E6, path_dirs, 0x0023) \
     X(F27E6, path_exts, 0x003B) \
     X(F27E6, path_made, 0x0077) \
+    X(F27EE, version, 0x000C) \
+    X(F27EE, ordinals, 0x0013) \
+    X(F27EE, unit_types, 0x001F) \
+    X(F27EE, ground, 0x0751) \
+    X(F27EE, around10_even, 0x09E5) \
+    X(F27EE, around10_odd, 0x09F9) \
+    X(F27EE, around4_even, 0x0A0D) \
+    X(F27EE, around4_odd, 0x0A15) \
+    X(F27EE, lib_unit, 0x0A1D) \
+    X(F27EE, lib_part, 0x0A31) \
+    X(F27EE, lib_cursor, 0x0A45) \
+    X(F27EE, lib_patt, 0x0A59) \
+    X(F27EE, lib_shop, 0x0A6D) \
+    X(F27EE, lib_bigunit, 0x0A81) \
+    X(F27EE, lib_rand, 0x0A95) \
+    X(F27EE, lib_bum, 0x0AA9) \
+    X(F27EE, lib_fight, 0x0ABD) \
     X(F27EE, lib_char24, 0x0AD1) \
+    X(F27EE, lib_exp, 0x0AE5) \
     X(F27EE, name_char6, 0x0AF9) \
+    X(F27EE, name_amok, 0x0AFF) \
+    X(F27EE, name_game, 0x0B04) \
+    X(F27EE, name_fight, 0x0B09) \
+    X(F27EE, name_unit, 0x0B0F) \
+    X(F27EE, name_ground, 0x0B14) \
     X(F27EE, key_set_keyboard, 0x0B1B) \
     X(F27EE, key_set_other, 0x0B3E) \
+    X(F27EE, path_count, 0x0B62) \
+    X(F27EE, cargo, 0x0B64) \
+    X(F27EE, window_y_even, 0x130C) \
+    X(F27EE, move_record, 0x1326) \
+    X(F27EE, loop_map, 0x1334) \
+    X(F27EE, types_listed, 0x1338) \
+    X(F27EE, marks, 0x1339) \
     X(F27EE, players, 0x243E) \
+    X(F27EE, map_bytes, 0x246C) \
+    X(F27EE, map_width, 0x246E) \
+    X(F27EE, map_height, 0x2470) \
+    X(F27EE, explosions, 0x2472) \
+    X(F27EE, state_248e, 0x248E) \
+    X(F27EE, buffer_248f, 0x248F) \
+    X(F27EE, buffer_2493, 0x2493) \
+    X(F27EE, state_2497, 0x2497) \
     X(F27EE, key_set, 0x2498) \
     X(F27EE, save_name, 0x249C) \
+    X(F27EE, hqs, 0x24B0) \
+    X(F27EE, amok, 0x24E8) \
     X(F27EE, game_flags, 0x250C) \
     X(F27EE, menu_flags, 0x250E) \
-    X(F27EE, load_position, 0x2512) \
+    X(F27EE, game_flags2, 0x2510) \
+    X(F27EE, number_asked, 0x2512) \
+    X(F27EE, units_made, 0x2514) \
+    X(F27EE, factories_made, 0x2515) \
+    X(F27EE, depots_made, 0x2516) \
+    X(F27EE, cargo_made, 0x2517) \
+    X(F27EE, loop_player, 0x2518) \
+    X(F27EE, window_last_column, 0x2519) \
+    X(F27EE, window_last_row, 0x251A) \
     X(F27EE, pass_ticks, 0x251B) \
+    X(F27EE, round, 0x251D) \
+    X(F27EE, passes, 0x251F) \
     X(F27EE, map_number, 0x2523) \
+    X(F27EE, timer_kinds, 0x2525) \
+    X(F27EE, timer_dues, 0x2534) \
+    X(F27EE, timer_args, 0x2570) \
+    X(F27EE, state_2592, 0x2592) \
     X(F27EE, score_best, 0x2593) \
     X(F27EE, score_now, 0x2597) \
+    X(F27EE, depots, 0x259C) \
+    X(F27EE, cursors, 0x26B4) \
+    X(F27EE, fight_record, 0x2716) \
+    X(F27EE, factories, 0x2780) \
+    X(F27EE, units, 0x2898) \
+    X(F27EE, window_x, 0x4112) \
     X(F27EE, key_set_copy, 0x4126) \
+    X(F27EE, game_txt, 0x4132) \
+    X(F27EE, types_list, 0x4136) \
+    X(F27EE, remove_depth, 0x4151) \
+    X(F27EE, map0, 0x4152) \
+    X(F27EE, map1, 0x4156) \
+    X(F27EE, cursor_kept, 0x415A) \
+    X(F27EE, window_y_odd, 0x4192) \
+    X(F27EE, around, 0x41A2) \
     X(F2C09, name_titel, 0x0006) \
     X(F2C09, name_bb, 0x000C) \
+    X(F2C0A, computer_types, 0x0000) \
+    X(F2C0A, computer_state, 0x00A2) \
+    X(F2C0A, computer_keys, 0x11EE) \
+    X(F2D8A, effects_ptr, 0x000C) \
     X(F2D8A, effects_asked, 0x0010) \
     X(DATA, draw_colour, 0x00D6) \
     X(DATA, draw_x1, 0x00D8) \
@@ -495,6 +571,7 @@
     X(DATA, fx_asked, 0x16CE) \
     X(DATA, fx_voice, 0x16D6) \
     X(DATA, adlib_found, 0x16EC) \
+    X(DATA, rand_seed, 0x1938) \
     X(ZEROS, op_scratch, 0x0000) \
     X(ZEROS, opl_note_sel, 0x001C) \
     X(ZEROS, voice_key, 0x001D) \

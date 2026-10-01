@@ -311,7 +311,7 @@ static void timer_keys(void)
 
 /* T265E:000E: looks for joysticks at port 201h; the port's answers as a
  * PC without one (FFh): two retraces' wait and nothing found */
-static void t265e_000e(void)
+void t265e_000e(void)
 {
     SW(joy0_there, 0);
     SW(joy1_there, 0);

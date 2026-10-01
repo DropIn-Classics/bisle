@@ -215,6 +215,21 @@ void copy_page(void)
     latches(0);
 }
 
+/* T2590:000A: the page shown is drawn to (kept: which page was), and
+ * T2592:0002: the pages as they were */
+void t2590_000a(void)
+{
+    SW(page_drawn_kept, GW(page_drawn));
+    SW(page_shown_kept, GW(page_shown));
+    SW(page_drawn, GW(page_shown));
+}
+
+void t2592_0002(void)
+{
+    SW(page_shown, GW(page_shown_kept));
+    SW(page_drawn, GW(page_drawn_kept));
+}
+
 /* ---- what the sprites covered ---- */
 
 /* T2515:0008: `w` by `h` pixels of the screen at `at` kept before a
@@ -258,6 +273,27 @@ static void keep_covered(unsigned w, unsigned h, uint16_t at_seg, uint16_t at, u
     di += 8;
     if (!keep_seg)
         SWO(covered_end, 0, di);
+}
+
+/* T24D3:0000: one kept item (keep_covered's, at keep_seg:keep_off) put
+ * back on the page drawn to */
+void t24d3_0000(fptr item)
+{
+    uint16_t page = GW(page_drawn), seg = FSEG(item), si = FOFF(item);
+    uint16_t di = vrw(seg, si);
+    unsigned rows = vrw(seg, (uint16_t)(si + 2)), bytes = vrw(seg, (uint16_t)(si + 4)), x;
+
+    si += 6;
+    planes(0x0F);
+    latches(1);
+    do {
+        for (x = 0; x < bytes; x++) {
+            vrb(seg, si++);
+            vwb(page, di++, 0);
+        }
+        di = (uint16_t)(di + GW(row_bytes) - bytes);
+    } while (--rows);
+    latches(0);
 }
 
 /* what the sprites drawn to this page covered is put back, the last

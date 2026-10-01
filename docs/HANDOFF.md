@@ -1496,6 +1496,18 @@ compared):
 - The menus' loop has no wait but flip_page's retrace: 2 pictures a
   pass in the runner (0.0285 s), one in the port and on a fast PC. The
   title waits for 3 ticks a pass (0.0411 s in both).
+- Names in the hints for data that the code names only by a number
+  (MOV AX,0AD1h with the segment pushed beside it: the libraries'
+  records, the names of files) make no label in the source; they are
+  for the port's header only. `peek.py SEG:OFF LEN [s]` (scratch) reads
+  such data from the player's file.
+- F27EE:2512 is not only LOAD's position: the loop takes it as the
+  sound a player's pass asks for (with bit 100h of F27EE:2510), so it is
+  named number_asked. F27EE:000C, 000D are the version (6 and 2), which
+  a key of the key set shows.
+- The map's loop in the port is the original's pass for pass: keys given
+  by the loop's passes (T0708:135C) gave the same memory and video
+  memory after 60 passes with the cursor moved.
 - Scratch (build/scratch): `rl.py LABEL [LINES]` prints a routine folded,
   `BATTLE.fold` is all of build/BATTLE.ASM folded so (rd.py 1 65518; made
   again after names change), `pb.sh` builds the port with MSVC, `pcmp.py
@@ -1507,10 +1519,12 @@ compared):
 
 ## Next
 
-0. The port: the sound and the menus are done; next a map's setup
-   (T0708:0392 on: the libraries with sort_lib and store_part, load_fin,
-   load_shp, the cursors) and its loop (T0708:135C), then what the loop
-   calls. Each step compared with the runner as port/README.md says.
+0. The port: the sound, the menus, a map's setup and its loop with the
+   cursors are done; next what port/src/todo.c lists, a module at a
+   time: T1479 (the screens over a window), T122D (a move), T0408 (the
+   change of phase), T1F3C..T2190 (the fight), T178C..T1ED2 (the
+   computer), T13CA, T15AC, T2248. Each step compared with the runner as
+   port/README.md says.
 1. BATTLE.EXE's last 4.1 KB: menus, a map, saving, loading, battles
    against the computer and poked wins with their animations ran none
    of it (above) but for a RETF; unused library code and switch tables,
