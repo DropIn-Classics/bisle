@@ -670,13 +670,14 @@ name T164D:028D draw_bar
 ; +2 (+2Ah its length, +2Ch the key), a key from DATA:00BE adds a letter (a
 ; to z made capitals) up to size, the key set's backspace takes one off, 0Dh
 ; ends (returns 2); the text drawn by draw_text24 and CHAR24.LIB's entry 40
-; (F27EE:0ADF + 0A0h) after it. The high score's name, presumably; read, not
-; run.
+; (F27EE:0ADF + 0A0h) after it. Seen in a run for the code typed in OPTIONS
+; (tools/screens.py --menu --id 0 --sel 0: all pixels); for the high
+; score's name read, not run.
 name T1090:0EDE draw_menu
 name T1090:0F82 edit_text
 ; T1090:000E (buffer far): the menus, from the title's end to a map's start
-; (read from the code; of it runs showed four menus' screens only,
-; tools/screens.py --menu --sel). It loads MENU.IFF (load_picture; the
+; (read from the code; runs showed six menus' screens, a code typed and
+; LOAD's two messages, tools/screens.py --menu). It loads MENU.IFF (load_picture; the
 ; picture's upper left 320 by 200 is the screen), char24, CODES.DAT (its
 ; length / 10 the number of maps) and MENU.FXX (CODE:169E; the sounds,
 ; presumably), calls T1090:110F with the map F27EE:2523 and fades in.

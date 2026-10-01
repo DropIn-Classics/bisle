@@ -6,6 +6,7 @@ as BATTLE.EXE draws them, and compared with the run's video memory.
     screens.py --unit RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
     screens.py --building RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
     screens.py --menu RAM [--id N] [--sel N] [--vram VRAM] [--png DIR] ...
+    screens.py --menu RAM --message position|insert [--vram VRAM] ...
     screens.py --scores RAM [--hi FILE] [--vram VRAM] [--png DIR] ...
 
 RAM is a run's memory (run.py -ram), VRAM its video memory (run.py
@@ -30,8 +31,16 @@ SETTING (menu 4) on its second item: all 64000 pixels were in the video
 memory on the page shown (DATA:0352).  The page drawn to (DATA:0350) had
 them all in one run and a pass's redraw under way in the others (the
 sprites' background put back, the texts and the cursor drawn in part).
-Not seen on a screen: PLAYER (2), EXIT/CANCEL (5), the mouse's menu (6),
-a code typed, the messages of LOAD.
+Five more runs (space at 14 s, keys from 33 s, -ram -vram at 40 to 42 s),
+each with all 64000 pixels in the video memory on the page shown: PLAYER
+(menu 2, HUMAN, HUMAN, OK; --sel 0), EXIT/CANCEL (menu 5, --sel 0), a
+code typed (OPTIONS, enter on its first item, then c, o, n: the item is
+hidden, flag 20h, and edit_text draws CON and the sphere after it at the
+item's place; --id 0 --sel 0), and LOAD's two messages (--message):
+"SELECT POSITION 0 TO 9" (position; enter on LOAD) and "PLEASE INSERT
+DISK" (insert; after the digit 0).  Not seen on a screen: the mouse's
+menu (6), the name typed for the scores, the texts with other choices
+(COMPUTER, the limits).
 
 --scores draws the scores' screen (show_scores, T1090:12B7; RATING in the
 DISK menu) from a .HI file (--hi), or as it is without one.  Checked
@@ -545,8 +554,33 @@ def menu_values(ram, menu):
     for k in rec[:rec[5]]:
         at = base + ITEMS + ITEM_REC * k
         flags = struct.unpack_from('<H', ram.data, at)[0]
-        items.append({'item': k, 'flags': flags, 'text': ram.data[at + 2 + 10 * ram.data[at + 0x2B]:at + 12 + 10 * ram.data[at + 0x2B]]})
+        items.append({'item': k, 'flags': flags, 'text': ram.data[at + 2 + 10 * ram.data[at + 0x2B]:at + 12 + 10 * ram.data[at + 0x2B]],
+                      'field': ram.data[at + 2:at + 12]})
     return items
+
+
+# the texts LOAD shows, each (offset in F2740, x, y)
+MESSAGES = {
+    'position': [(0x2B, 0x40, 0x32), (0x34, 0x40, 0x54), (0x3D, 0x40, 0x76)],   # ask_position, T1090:11AC
+    'insert': [(0x46, 0x57, 0x37), (0x4D, 0x57, 0x5B), (0x54, 0x57, 0x7F)],     # T1090:07CE
+}
+
+
+def message_values(ram, which):
+    base = (ram.load + MENU_SEG) * 16
+    return [(ram.data[base + at:base + at + 10], x, y) for at, x, y in MESSAGES[which]]
+
+
+def draw_message(files, texts):
+    """LOAD's messages: over the menu's picture (restore_sprites takes the
+    menu's texts and the cursor away) three texts by draw_text24"""
+    s = Screen(files)
+    pic = files.menu_picture()
+    for y in range(HEIGHT):
+        s.pix[y * WIDTH:(y + 1) * WIDTH] = pic['pixels'][y * pic['width']:y * pic['width'] + WIDTH]
+    for codes, x, y in texts:
+        text24(s, x, y, codes)
+    return s.pix
 
 
 def draw_menu(files, items, sel=None):
@@ -571,6 +605,11 @@ def draw_menu(files, items, sel=None):
         y += 0x22
     if sel is not None:
         s.entry(0x42, 0x32 + 0x22 * sel, files.char24[40], 0)
+        if items[sel]['flags'] & 0x20:
+            # the chosen item is a field (edit_text, T1090:0F82, after the
+            # cursor): what was typed, the item's text from +2, and
+            # CHAR24.LIB's entry 40 once more right after it
+            s.entry(text24(s, 0x64, 0x32 + 0x22 * sel, items[sel]['field']), 0x32 + 0x22 * sel, files.char24[40], 0)
     return s.pix
 
 
@@ -608,7 +647,7 @@ def draw_scores(files, v):
 
 
 def menu_name(codes):
-    return ''.join(' ' if c == 1 else chr(ord('A') + c - 17) if 17 <= c <= 42 else str(c - 2) if 2 <= c <= 11 else '?'
+    return ''.join(' ' if c == 1 else chr(ord('A') + c - 17) if 17 <= c <= 42 else str(c - 5) if 5 <= c <= 14 else '?'
                    for c in menu_text(codes))
 
 
@@ -681,6 +720,16 @@ def building_main(a, files, ram, vram, game):
 
 
 def menu_main(a, files, ram, vram, game):
+    if a.message:
+        texts = message_values(ram, a.message)
+        print('%s: %s' % (a.message, ', '.join(menu_name(t) for t, _, _ in texts)))
+        pix = draw_message(files, texts)
+        if vram:
+            report(pix, vram, ram)
+        if a.png:
+            os.makedirs(a.png, exist_ok=True)
+            to_png(os.path.join(a.png, '%s.png' % a.message), game, pix)
+        return 0
     items = menu_values(ram, a.menu_id)
     print('menu %d: %s' % (a.menu_id, ', '.join('%s%s' % (menu_name(i['text']), ' (hidden)' if i['flags'] & 0x20 else '')
                                                 for i in items)))
@@ -716,6 +765,7 @@ def main():
     ap.add_argument('--hi', metavar='FILE', help='the .HI file for --scores (default: the table without a file)')
     ap.add_argument('--id', dest='menu_id', type=int, default=3, help='the menu (default 3, the title menu)')
     ap.add_argument('--sel', type=int, help='the chosen item: draw the picture behind and the cursor too')
+    ap.add_argument('--message', choices=sorted(MESSAGES), help="with --menu: one of LOAD's messages instead of a menu")
     ap.add_argument('--vram', help="compare with the run's video memory")
     ap.add_argument('--png', metavar='DIR', help='write the pictures here')
     ap.add_argument('--game', help="the game's folder (default ISLE)")

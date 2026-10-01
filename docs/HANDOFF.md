@@ -658,7 +658,9 @@ games, each its own folder mounted as C: and started there:
   Menu 0 OPTIONS (FIRST, SETTING, PLAYER, OK), 1 DISK (LOAD, MOUSE,
   RATING, OK), 2 PLAYER (HUMAN/COMPUTER twice, OK), 3 the title menu
   (START, OPTIONS, DISK, EXIT), 4 SETTING (ALL SHOPS/HIDE SHOP, NO LIMIT/
-  7 TURNS .., PALETTE 4/5, OK), 5 EXIT/CANCEL, 6 SIDE ONE/TWO, SLOW/
+  .. TURNS, PALETTE 1/.., OK; a digit's byte is the digit plus 5, entries
+  2..11: the tool printed digits 3 too high before, the "7 TURNS" and
+  "PALETTE 4/5" of an earlier note), 5 EXIT/CANCEL, 6 SIDE ONE/TWO, SLOW/
   MEDIUM, OK, each item's text at x 100, y 50 + 34 an item. In a run of
   the title menu (-key 14 space, -ram -vram at 40 s) the four texts were
   in the video memory pixel for pixel on page 1, and on page 0 but for
@@ -712,6 +714,21 @@ games, each its own folder mounted as C: and started there:
   00000 EMPTY over MENU.IFF, all 64000 pixels in the video memory on the
   page shown. A file's scores and names, and the name typed after a
   map, were not seen in a run.
+- The menus' other screens in runs (`screens.py --menu`; space at 14 s,
+  the keys from 33 s, -ram -vram at the end, all 64000 pixels in the
+  video memory on the page shown in each): PLAYER (`--id 2 --sel 0`:
+  HUMAN, HUMAN, OK; keys 33 down, 34 enter, 36 down, 36.5 down, 37.5
+  enter, until 41), EXIT/CANCEL (`--id 5 --sel 0`; 33, 34, 35 down, 36
+  enter, until 40), a code typed (`--id 0 --sel 0`; 33 down, 34 enter, 36
+  enter, 37 c, 37.5 o, 38 n, until 41: the item hidden by flag 20h,
+  edit_text draws CON at the item's place and the sphere, CHAR24.LIB's
+  entry 40, right after it, the cursor's sphere still left of it), and
+  LOAD's messages (`--message position`: SELECT / POSITION / 0 TO 9 at x
+  64, y 50, 84, 118; 33 down, 34 down, 35 enter, 37 enter, until 40;
+  `--message insert`: PLEASE / INSERT / DISK at x 87, y 55, 91, 127; the
+  same with 39 0, until 42), both over the picture alone. Not run: the
+  mouse's menu (6), the items' other texts (COMPUTER, the limits, HIDE
+  SHOP), a wrong code's return to the old one, the name for the scores.
 
 ## Next
 
@@ -736,9 +753,8 @@ games, each its own folder mounted as C: and started there:
    (`screens.py`: the status screen and the unit's); next in screens.py
    the other screens of SHOP.LIB's window (the callers of
    draw_shop_window and draw_box in T1479: T1479:0AA6, the buildings'
-   screens, by the texts 03h..09h), the menus' other screens (a code
-   typed, the name for the scores, LOAD's messages; the menus themselves are drawn
-   in full now), then the rest of the screen: the cursor's entries, the overview's frame, the
+   screens, by the texts 03h..09h), the name typed for the scores (the
+   menus, a code typed and LOAD's messages are drawn in full now), then the rest of the screen: the cursor's entries, the overview's frame, the
    frame's texts, what the windows show of a map (scrolling, the units'
    directions, a unit hidden from the other player).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
