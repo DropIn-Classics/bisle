@@ -499,8 +499,175 @@ name T0E9B:1E90 square_distance
 ; +1, the experience, at most 6: one more for a unit whose enemy lost
 ; something (unless the enemy has 20h in its +6), one more when the enemy
 ; is gone. Read; the +1 was seen to go from 0 to 1 between two fights of
-; a unit. The rest of the routine (0C04 on: the squares' animation by
-; F27EE:2472, 7 bytes each) is not read.
+; a unit. The squares' animation (0C04 on, by the records F27EE:2472 of 7
+; bytes that unit_explode fills: the square, the steps, the two bytes the
+; square gets when it has run) is not read beyond that.
+;
+; The whole routine, `change_phase` (keys, far ?, far ?, far ?: buffers):
+; D is the player whose cursor record's +16h is 2 (attack), M the other.
+; Each player has a map of his own (the far pointers F27EE:4152 and 4156)
+; and a unit a square (+0Bh, +0Dh: the offset plus 1, the offset alone
+; inside a building) and a direction (+0Fh, +10h) in each. After the
+; fights of D's orders:
+;   every unit with 4 in its +14h (unit_explode, cargo_loses): move_undo
+;     when it has 1 there, then unit_remove; the units in its cargo too;
+;   every unit by its +13h (the table T0408:23FB): 1 the unit it took in
+;     (+16h) becomes M's (the +4's bits 1, 2, the serial +9 from the type's
+;     +3Ch + player, the counts); 4 the building (by +17h, +15h: 4 a
+;     headquarters, 8 a factory, else a depot) is taken: play_anim 1 (M is
+;     player 0) or 0 in M's half of the screen (ANIM\br seen), D's view of
+;     its slots copied to M's, the units inside become M's, the counts of
+;     the players' factories (+3) or depots (+4), the square's ground from
+;     AMOK.DAT (+0, +3, +6 plus the player), the record's +19h and +18h (5),
+;     the taker into a free slot (none: the unit of slot 0 is removed), and
+;     for a headquarters the routine returns M; 5 for a unit that holds
+;     others: each unit in the building with 4 in its +6 is removed and
+;     gives its count * 8 of energy (the record's +16h + player, FAh at
+;     most); 0Bh the four squares of four_squares(+11h), when all have
+;     ground flag 8000h and no unit, get AMOK's +18h..; 0Dh a depot record
+;     is made (T169E:0324) on them (0Bh, 0Dh read, not run);
+;   the libraries and the palette the fight scene and the animation took
+;     the place of are loaded again (F27EE:250C bit 1000h);
+;   sync_slots for the cargo records, depots, factories, headquarters;
+;   D's map: no units, M's units get their squares and directions of M's
+;     view in D's, drop_empty, every unit not inside (4000h) on its square;
+;     T0E9B:19AB copies it to M's;
+;   both cursors +17h, +18h, +19h 0 and +1Bh 5, the modes exchanged, the
+;     orders' counts 0, messages 3 and 4, F27EE:251D (the round) + 1 when
+;     player 0 is to move;
+;   every unit: +4 AND F0FFh; with 1 in +14h, flag 1 in the type's +0Eh
+;     and not inside: unit_flag 200h again (ISLE's types 0 and 7, the
+;     artillery: moved, so not firing in the next phase, presumably); with
+;     8000h in +6 the count + 1 up to the type's, for its cargo too; +11h,
+;     +13h..+16h 0;
+;   the units without 20h or 4 in +6 counted: none of player 0: the
+;     results (the cursors' +22h) 12h and 11h, none of player 1: 11h and
+;     12h, none at all: 15h both; then both cursors' +17h 7;
+;   F27EE:2597 = score().
+; The caller (T0708:3D01, when both cursors have state 5 and F1 is pressed
+; or both players are the computer) sets state 7 and the results 0Fh for
+; the player returned and 10h for the other, and calls history_add with the
+; two players' counts of units.
+; tools/turn.py --change does all of it again from a run's memory at the
+; routine's entry and compares with the memory at its end: the same bytes
+; in the units, both maps, the records, the counts, marks, modes, results,
+; round and score (HANDOFF.md has the runs: after a plain move, a move
+; into the own headquarters, the other's headquarters taken, and eight
+; changes of a battle against the computer with 10 fights and three units
+; dead).
+name T0408:000B change_phase
+; T0408:2415 (unit, byte, byte, n, player, map far): a dead unit off the
+; map: animation record n (n + 1 for its second half) gets the square and
+; AMOK's +8 steps, the square's unit byte is the first byte (FFh), the
+; unit's +14h gets 4.
+name T0408:2415 unit_explode
+; T0408:28EA (player, unit, loss): each unit in the unit's cargo record
+; (the player's view) loses that much of its +2; one with no more gets 4
+; in its +14h and leaves its slot.
+name T0408:28EA cargo_loses
+; T0408:2730 (records far, to, from, n): for each of n records not 8000h
+; or 2 in +19h: of `from`'s side, the seven slots and the energy (+16h) of
+; from's view into to's (a dead unit's slot FFh first); else to's into
+; from's.
+name T0408:2730 sync_slots
+; T0408:2E5C -> the score: the armour (the type's +1) of every unit alive
+; that is no second half and has not 4 in its +6, both players', + 100
+; with F27EE:250E bit 8, times 4, 3, 2 for a limit (F27EE:2454) of 4, 8,
+; 16, at most 7EF4h. tools/turn.py: as the game's in those runs (1210,
+; 495 .. 380; no limit, no bit 8 seen).
+name T0408:2E5C score
+; T0408:2FAF: every unit with 0 in its +2 gets 8000h in its +4.
+name T0408:2FAF drop_empty
+; T169E:0585 (unit, player): the unit is dead: +4 = 8000h (both halves),
+; the counts F27EE:2514 and the owner's +2 less 1 (2 for two halves); one
+; that holds others: T169E:06D7 removes those of the player's view and
+; ends the cargo record (+19h = 8000h; the counts of F27EE:2515..2517 and
+; the owner's by its flags 8, 10h, 20h).
+name T169E:0585 unit_remove
+; T169E:07EA (unit, player): the units in its cargo record and the
+; record's +0Eh get the unit's square.
+name T169E:07EA cargo_follow
+; T0E9B:19ED (unit, flag, player, on): sets or clears 100h or 200h in the
+; unit's +4 and the mark 40h or 10h (80h, 20h for player 1) on its square,
+; draws the square; for both halves.
+name T0E9B:19ED unit_flag
+; T0E9B:19AB (from far, to far): copies a map (F27EE:246C bytes).
+; Not named: xfer.py carries a name here to MOON.EXE's T0DA1:04D0, another
+; routine.
+; T0E9B:18EF (square): four squares into F27EE:41A2 by the tables
+; F27EE:0A0D (even column) and 0A15 (odd): four columns', four rows'
+; differences.
+name T0E9B:18EF four_squares
+; A move, carried out in the mover's map at once (tools/turn.py --step).
+; T0D36:0642, the cursor in state 0 with +18h 16h (a unit is chosen: fire
+; with up on it, or taken out of a building): fire calls move_aim; with
+; its result's bit 10h clear +18h is 3 and the next fire calls T122D:05B8,
+; then unit_release; with bit 10h timer 7 runs 4 passes and unit_release
+; (flags 10h) gives the choice up.
+; T122D:02D8 (cursor far, map far, player) -> 1 (9 for a unit of two
+; squares), or 12h: no move there. 12h when the cursor's square (the
+; record's +0) has not the player's mark of reach, is the unit's own, or
+; for an air unit has ground flag 4000h; when stop_check gives a message
+; (shown); when find_path finds none (message 16h). Else the reach's
+; marks are cleared and drawn away (T0E9B:1047), the path's squares
+; marked, the unit's +11h is the aim.
+name T122D:02D8 move_aim
+; T122D:05B8 (cursor far, player) -> 1 or 9, or 12h when the cursor is no
+; longer on the aim: the unit into the player's orders (the list at the
+; player's +11h, the count +15h), its +11h the square it stands on,
+; F27EE:0B62 (the path's length) less 2, F27EE:1328 and 1329 FFh (1328
+; the building record's +1Bh for a unit out of a building: what the
+; square shows under it), F27EE:2510 bits 80h (a move runs) and 100h
+; with F27EE:2512 2 (a sound, presumably), timer 4 at once.
+; Not named: xfer.py carries a name here to MOON.EXE's T154F:0C9E, which
+; is another routine (it draws a type's big picture: the one BATTLE.EXE
+; has at T1479:0C93, presumably); MOON.EXE's routine for this is
+; T12F0:05C4 by its place (not read).
+; T122D:0713, called by the map's loop (T0708:42FA) when timer 4 ran out
+; (F27EE:2510 bit 40h): the unit F27EE:1326 one square on, to the path's
+; [0B62] (the path at the player's list + 1F40h, from the aim back): its
+; old square gets the byte of 1328, 1328 the new square's, the unit's
+; direction is direction(old, new); a unit of two squares drags the next
+; record onto its old square (1329 for that one's); cargo_follow; then
+; 0B62 less 1 and timer 4 again after the type's +16h passes, or at the
+; aim (stop_check was called before the square was entered) move_arrive,
+; its message shown, bit 80h and the unit's 100h off.
+name T122D:0713 move_step
+; T122D:0ABD (player, map far) -> the message 6, or 11h/12h for kind 1:
+; the end of a move by the record's kind (stop_check). tools/turn.py has
+; what each kind does; the unit's +13h is the kind, +14h bit 1, +15h the
+; record's number, +16h the other unit, +17h (a word) the other unit's
+; old +4 or the building's +19h, +19h the slot.
+name T122D:0ABD move_arrive
+; T122D:0002 (cursor far, map far, player, flags): the choice of a unit
+; ends: the marks cleared; with flag 10h the unit's 100h off and the
+; cursor back to state 0 (+18h 19h); for a unit out of a building (the
+; cursor's +19h 3) with 10h the unit goes back into its slot, and the
+; cursor goes back to the building's screen (state 2, +18h 9).
+name T122D:0002 unit_release
+; T122D:1516 (from, to; squares' offsets) -> 0 up, 1 right up, 2 right
+; down, 3 down, 4 left down, 5 left up.
+name T122D:1516 direction
+; T122D:15DF (unit, map far, player): the end of the unit's move taken
+; back, by its +13h (the table T122D:189F): 2 and 5 its slot FFh; 3 and 4
+; its square's unit byte FFh; 1 the unit it took in back on the square
+; with its old +4.
+name T122D:15DF move_undo
+; T122D:1910 (player, from far, to far): the units in one record's slots
+; into the free slots of another, their squares the other's +0Eh.
+name T122D:1910 cargo_move
+; T0D36:0165 (kind, passes, value): a timer in the first free of 15 slots
+; (F27EE:2525 the kinds, 2534 when: the passes' count F27EE:251F plus
+; `passes`, 2570 the values); the map's loop calls T0D36:0241 (kind,
+; slot) for each that is due: 1, 2 clear a player's message line, 3 and 4
+; set F27EE:2510 bits 20h and 40h (4: move_step), 6 and 7 clear bits 200h
+; and 400h.
+name T0D36:0165 timer_set
+name T0D36:0241 timer_due
+; T15AC:069D (units of player 0, of player 1): the two counts into the
+; two buffers of the record F27EE:248E (+1 and +5 far, +9 the index, 3Fh
+; at most, then +0 is 1): the curves of the statistics after the map.
+name T15AC:069D history_add
 ; T2190:000D: the fight's outcome from the record at the far pointer
 ; F2D37:000A: the two units' counts are written back. The formula, the
 ; random part (srand with the units' addresses XOR the count of the map
@@ -593,14 +760,22 @@ name T25A6:0655 end_credits
 ; table far) puts the record's code into the menu's text and clears bit
 ; 400h of F27EE:250C when the record's +6 is 2, else sets it: a map
 ; against the computer (the .COM is loaded with that bit).
-; T15AC:0007: after a map (STATS.IFF in the lost battle, not checked that it
-; is this routine; MENU.IFF, CODES.DAT,
-; MENU.FXX after the poked wins, then "TYPE NAME FOR TOP FOUR" and
-; MAP\NN.HI). After a map that was won (bit 10h) it adds the +7 of the
-; map's record in CODES.DAT to the map's number and shows the new map's
-; code, or sets F27EE:250C bit 20h when the old record's +8 has bit 0:
-; the last map (not reached without a poke). F27EE:251B was 4 when map 16 (CONRA) ended, and the name went to
-; MAP\04.HI: the map's number in the game's order, presumably.
+; T15AC:0007: the statistics after a map; nothing at all when no round
+; was played (F27EE:251D 0: the poked ends of map 16 were so, and their
+; name went to MAP\04.HI, F27EE:251B still the loop's 4). Else STATS.IFF,
+; the palette, WINNER.SND with F27EE:250C bit 10h (the map is won), else
+; LOOSER.SND, STATS.LIB, CODES.DAT; the two players' curves of
+; history_add (T15AC:071F, 07EC: not read); F27EE:251B = the map; 500 on
+; the score with bit 2000h. Won: the map's number + the +7 of its record
+; in CODES.DAT, and text 12h with the new map's code, or text 18h and
+; bit 20h when the old record's +8 has bit 0 (the last map; not reached
+; without a poke); not won: text 11h and the score 0. Then text 1Ch with
+; the score, 13h with the round, 14h with text 15h, 16h or 17h by
+; F27EE:2497 (below 10h, below 20h, more; what T15AC:071F returns), a
+; key, fade_out. Seen in a run of ISLE's map 03 with the other player's
+; headquarters taken by keys after one round (HANDOFF.md): the two
+; curves, RATING : 1210 ROUNDS : 1 SCALE : 1 - 1, HEADQUARTER REPORTS A
+; NEW KEYWORD : EAGLE (map 04's code), then the name went to MAP\03.HI.
 name T15AC:0007 after_map
 ; the file routines (assembly, read from the code; the opens, reads and
 ; closes are seen in -dos traces of runs):

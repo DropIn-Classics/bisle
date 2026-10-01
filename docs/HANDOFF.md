@@ -9,10 +9,10 @@ to 98%, the intros' to 92%.
 their programs byte for byte
 (`doskit/tools/check.py`: all ok). BI.EXE is read in full (which
 intro, then BATTLE.EXE); of BATTLE.EXE the data formats, the screens,
-the menus, the fight's reckoning and a unit's reach, path and targets
-are read and checked against runs (below), the computer player, the
-fight scene, the animations and the carrying out of a move are not; the
-port is the template's.
+the menus, the fight's reckoning, a unit's reach, path and targets, the
+carrying out of a move, the change of phase and a map's end are read and
+checked against runs (below), the computer player, the fight scene and
+the animations are not; the port is the template's.
 
 ## Start here (next session)
 
@@ -41,10 +41,13 @@ port is the template's.
   fresh clone needs `git submodule update --init doskit`.
 - Scratch scripts of the last session are in `build/scratch` (ignored,
   not part of the project; they may be gone): `rd.py A B` prints lines
-  of build/BATTLE.ASM with the compiler's table indexing folded
-  (utype, unit, ground, shop, player), `uses.py BASE SIZE` lists the
-  code lines naming F27EE addresses in a range, `rwfields.py LOG` sorts
-  a `-rwatch` report by table field and routine; `brun.py NAME UNTIL
+  of build/BATTLE.ASM with the compiler's idioms folded (the segment
+  loads, LES BX before an operand, the table indexing: about a third of
+  the lines), `turns.py NAME step|change N CODE EVENT..` runs a map
+  stopped at the Nth entry and end of move_step or change_phase and
+  then tools/turn.py on the two memories (KEYS=file takes a key file
+  instead of the events; an event T:phase is both players asking for
+  the change and F1), `brun.py NAME UNTIL
   EVENT..` runs a map (CODE=demon for another than MARSS) with keys
   given as T:KEY or T:fire:DIR and leaves build/NAME.ram, .vram and a
   shot, `cur.py RAM..` prints both cursor records and the building's
@@ -296,7 +299,8 @@ games, each its own folder mounted as C: and started there:
   later: F1 changes the phase once both players asked (the computer
   asks at once; "F1 : CHANGE MODE" is shown, after it a new request
   reads "REQUESTING MOVE MODE"). Movement and action (attack) phases
-  alternate, the orders are carried out at the change. In 600 s the
+  alternate, the attacks are carried out at the change (a move at once,
+  in the mover's own map: turn.py, below). In 600 s the
   computer attacked (fight scenes at 200 s and 500 s in the shots) and
   won (STATS.IFF, LOOSER.SND at 534 s, then the menu). With -cover one
   gap ran: T1F5A:0000, a RETF that ends T1F3C's last routine (T1F5A
@@ -906,15 +910,118 @@ games, each its own folder mounted as C: and started there:
   in full), which says what stopping on a square would be: a plain move,
   taking a unit in, going into a unit of the own side that holds others
   or into a building (by the slots free and the types' sizes and room),
-  taking a building that is not the side's, or a message why not. Not
-  read: how the move itself is carried out along the path (T122D:0002), what the ground flags 3 and 6 that reach's callers give stand
-  for (the other player's buildings, presumably).
+  taking a building that is not the side's, or a message why not (run
+  in the next item but one). Not read: what the ground flags 3 and 6
+  that reach's callers give stand for (the other player's buildings,
+  presumably).
 - xfer.py carried the new names to DESERT.hints (all) and MOON.hints
   (neighbours64, cost_map, reach, fire_reach, find_path, list_reach,
   fight_step, flankers, mod6, srand, rand, count_slots; not mapped
   there: clear_marks, neighbours, off_map, square_distance, fight_bonus,
   same_side, random, stop_check, cargo_size, find_building). MOON's were not looked at beyond the first lines
   of reach, find_path and flankers (the same stack frames).
+- A move carried out, the change of phase and a map's end
+  (`tools/turn.py`, BATTLE.hints at change_phase and move_step; the
+  tool's docstring has the rules in full). Each player has a map of his
+  own (F27EE:4152 and 4156) and every unit a square and a direction in
+  each: what a player does is done in his map at once, and the other's
+  gets it when the phase changes. So an earlier note is put right: only
+  the attacks are carried out at the change, a move right away. A unit
+  is chosen with fire and up on it (or taken out of a building), the
+  cursor put on a square in reach and fire pressed: T122D:02D8
+  (`move_aim`: stop_check, find_path, the path marked); fire again on
+  the same square: T122D:05B8 starts the move, and `move_step`
+  (T122D:0713) takes the unit a square further each time timer 4 runs
+  out, after the type's +16h passes of the map's loop (UNIT.DAT's +16h
+  is the pace of a move, not a sound). At the aim `move_arrive`
+  (T122D:0ABD) does what stop_check found: a plain move, a unit taken in
+  or gone into, a building of the own side entered, or one of the other
+  side or of nobody stood on, which is taken when the phase changes.
+  `change_phase` (T0408:000B) runs when both players asked and F1 is
+  pressed: the fights of the attacking player's orders, the dead units
+  removed (a dead unit's move taken back), the moves' ends (a unit taken
+  in changes its player; a building taken: the units inside and the
+  building change their player, its square's ground comes from
+  AMOK.DAT, a headquarters makes the routine return the taker), the
+  slots and energy of the buildings and the mover's units copied into
+  the attacker's view and that map copied to the mover's, the modes
+  exchanged, the units' flags cleared (a type with flag 1 in +0Eh,
+  ISLE's 0 and 7, keeps "has moved" for the phase after), the end's
+  test (a player with no unit that counts has lost: results 11h and
+  12h, 15h both for none at all) and the score: the armour of all units
+  that count, of both players (+ 100 with HIDE SHOP, times 4, 3, 2 for a
+  limit of 4, 8, 16 turns). All of it is done again by turn.py from a
+  run's memory at a routine's entry and compared with the memory at its
+  end, byte for byte over the units, both maps, the cargo and building
+  records, the players' counts, the marks, the types' serials, and for a
+  change the cursors' modes, states and results, the round, the score
+  and the last fight's record. Runs, all the same in every byte (the
+  keys after the MARSS or CONRA keys above, a key held 0.06 s unless
+  said):
+  - ISLE's map 03, the unit out of the depot (52..56 down, 57 right,
+    fire with left at 59, fire with up at 64), 68 down, space at 70 and
+    at 74 (0.3 s each): two steps (`-break LT122D_0713#1`, `#2`, the end
+    `-break LT122D_0AB6#N`), kind 3; then fire with right at 78 (the
+    cursor is back in the depot's screen) and at 82 the change (space+,
+    82.6 left+, 83.5 space-, 84 left-, 85 lctrl+, 85.6 x+, 86.5 lctrl-,
+    87 x-, 89 f1; `-break LT0408_000B#1`, the end `-break LT0408_23F4#1`).
+  - The unit at (6, 5) into its own headquarters (5, 5): 52 right, 53
+    up, 55 space+, 55.6 up+, 56.5 space-, 56.53 up- (up let go right
+    after fire, or the cursor runs on upwards), 59 left, space at 61 and
+    64: one step, kind 5; 67 down, the change at 69.
+  - The other player's headquarters taken: the unit 10h put on (17, 6),
+    below player 1's headquarters, by pokes (`-poke LT0708_4088#401
+    F27EE:2A43 43014301`, and the unit byte of its old and new square in
+    both maps: 31F99 FF, 31FDF 10, 33F9D FF, 33FE3 10, linear), the
+    cursor there by 64..71 right (a tap a second: 1, 1, 1, then 2 a tap)
+    and 73 left, 75 space+, 75.6 up+, 76.5 space-, 76.53 up-, 79 up,
+    space at 81 and 84: one step, kind 4; 87 down, the change at 89:
+    change_phase plays ANIM\br in the taker's half of the screen
+    (play_anim 1) and returns 0. Then "VICTORY !! HQ IS YOURS" and "YOU
+    LOST YOUR HQ !!", after a key ANIM\qa, after_map, MENU.IFF and the
+    name for the scores.
+  - The battle against the computer (fights.keys): the changes 5, 7, 11,
+    15, 19, 21 and 22 (at 154, 194, 294, 374, 454, 494 and 515 s; 10
+    fights, three units dead; 22 changes in all, one every 20 s) and
+    the 6th (175 s, no fight): in the 22nd the computer's unit takes the
+    player's headquarters and the routine returns 1, a unit inside
+    becomes the computer's.
+  Not seen: a unit of two squares, a unit that holds others moving, a
+  unit taken in or gone into (kinds 1, 2), a factory or depot taken, a
+  full building taken, the pioneers' orders (0Bh, 0Dh; the tool stops at
+  0Dh), a repair (8000h in a unit's +6: where it is set is not read), a
+  map's end by units (11h, 12h, 15h), a limit of turns, the same in
+  DESERT and MOON. Not read: the choice of the unit (T0D36:0F51 on), the
+  limit of turns in it, the animation's records.
+- A real end of a map and the statistics (BATTLE.hints at after_map; the
+  run above with two changes first, so that a round is played: `64:phase
+  76:phase`, the cursor's keys from 88, the change at 113, space at 140
+  and 175, h, a, n, s, enter from 185; -dos): after the animation
+  after_map loads STATS.IFF, the palette, WINNER.SND, STATS.LIB and
+  CODES.DAT and shows the two players' curves of their units' counts
+  (history_add puts a point at each change), "RATING : 1210 ROUNDS : 1
+  SCALE : 1 - 1" and "HEADQUARTER REPORTS A NEW KEYWORD : EAGLE", the
+  code of map 04 (CODES.DAT's +7 added to the map); then MENU.IFF, the
+  name typed goes to MAP\03.HI and the scores show MARSS, 01210 HANS.
+  With no round played (F27EE:251D 0) after_map does nothing: the run
+  without the two changes went from the animation straight to the name,
+  and the poked ends of map 16 before had their name in MAP\04.HI for
+  that (F27EE:251B still the loop's 4). The statistics' screen is not
+  drawn by a tool yet (T15AC:071F, 07EC: the curves, not read).
+- The cursor's keys: taps in the same direction get faster (the third
+  tap on moves two squares; T0D36:058B, the cursor record's +2Bh..+2Eh:
+  not read), so a far square is best reached by a fixed row of taps and
+  checked in the memory (the cursor record's +0 is its square's offset,
+  +2 the window's first square).
+- xfer.py carried two of this step's names to wrong routines of MOON.EXE
+  (the start of a move, T122D:05B8, to MOON's T154F:0C9E, which draws a
+  type's big picture; T0E9B:19AB to T0DA1:04D0): both are left without a
+  name in BATTLE.hints, as T1479:0C93. Carried to MOON.hints and looked
+  at there (the first lines: the same routines): change_phase,
+  move_aim, move_step, unit_release, unit_remove, unit_flag,
+  four_squares, sync_slots; not looked at: unit_explode, cargo_loses,
+  drop_empty, direction; not mapped: score, cargo_follow, move_arrive,
+  move_undo, cargo_move, timer_set, timer_due, history_add.
 - Scratch scripts of this step (build/scratch, ignored): `fights.py log
   UNTIL` and `fights.py N ..` (the battle with the fights logged, or
   stopped at the Nth fight and fight.py run on it), `paths.py N ..` and
@@ -945,8 +1052,9 @@ games, each its own folder mounted as C: and started there:
    the other screens of SHOP.LIB's window (the callers of
    draw_shop_window and draw_box in T1479: the buildings' screens are
    drawn as they open and in use, by keys, with the message line; left
-   there a repair that repairs, a unit that holds others, and the unit
-   moved once it is out; the menus, a code typed, LOAD's
+   there a repair that repairs and a unit that holds others; the
+   statistics after a map (after_map) are not drawn yet; the menus, a
+   code typed, LOAD's
    messages, the scores with a file and their name are drawn in full
    now), then the rest of the screen: the cursor's entries, the overview's frame, the
    frame's texts, what the windows show of a map (scrolling, the units'
@@ -977,9 +1085,10 @@ For the port (behaviour):
    100h is not looked into). F27EE:250E and the players' bit 2 are the
    menu's (above); what the map does with them is not read.
    BATTLE.hints at play_anim.
-2. A real end of a map: what a won map does besides what the pokes
-   showed (after_map, T15AC:0007; the map record's +8 bit 0 for the last
-   map; the STATS.IFF screen after a lost battle, which routine).
+2. A map's end: a headquarters taken is run and read (above); left: an
+   end by units, the last map (CODES.DAT's +8 bit 0) without a poke, the
+   statistics' curves and its SCALE (T15AC:071F, 07EC), what the map's
+   loop does with F27EE:250E's bits at the end against the computer.
 3. The clock: the map's loop runs every 4 ticks of timer_keys, 18.2
    times a second (above). Left: whether timer_add's (T2354:0713) period
    is the PIT's count, the loops of the menus and the title, the values
@@ -1017,11 +1126,11 @@ For the port (behaviour):
 10. The tables (datfiles.py): the fight's formula, what a type's move
     counts and the targets word's bits 40h and 80h are answered (above:
     fight.py, moves.py); left of them: a fight of units the runs did not
-    have (no answer, air, sea, ships, other ground), stop_check in a
-    run and how a move is carried out (T122D:0002); the
+    have (no answer, air, sea, ships, other ground), stop_check's kinds
+    1 and 2 and its messages in a run; the
     targets word's bits above 80h; flag 1 of
-    a type's +0Eh; the low bits and 1000h, 2000h, 8000h of its +10h; its
-    +16h (a sound, presumably) and +41h..+43h (the fight scene); the
+    a type's +0Eh in a run of such a type; the low bits of its +10h and
+    where a unit gets 8000h in its +6; its +41h..+43h (the fight scene); the
     ground's flags besides the buildings' and 4000h; the tables as the
     game shows them on its screens (not compared); MOON.EXE's reading of
     its UNIT.DAT and GROUND.DAT (MOON's masks differ, and one type has a

@@ -70,25 +70,34 @@ UNIT.DAT: 27 records of 44h bytes, the unit types (a map's unit byte
                   squares and 80h its first half; 1000h a unit that
                   holds others (make_unit gives it a record of
                   F27EE:0B64)
-    +0E flags     a word: 1 (tested with the unit's +14h in T0408:2087,
-                  not read further), 2 set or cleared by a map's .SHP
+    +0E flags     a word: 1 a unit of the type that has moved keeps the
+                  flag "has moved" (200h in its +4) when the phase
+                  changes (change_phase, T0408:2087; turn.py): it does
+                  not fire in the phase after, presumably (ISLE's types
+                  0 and 7), 2 set or cleared by a map's .SHP
                   (mapfiles.py): T1479:11B4 leaves such a type out of
                   the list of what can be made (seen), 4 the count is
                   count2
     +10 inside    a word, copied to the unit's +6: bits 40h..800h AND a
                   holding unit's cargo word: which of them can take it;
                   4000h a unit that gets 2 in its +0Ah (the pioneers:
-                  depots it can build, presumably); the low bits and
-                  1000h, 2000h, 8000h are not looked into
+                  depots it can build, presumably); 4 a unit that a
+                  mover with 2000h takes in, 20h one that a mover with
+                  1000h takes in (stop_check; it becomes the mover's
+                  player's when the phase changes), and a unit with 4
+                  taken into a building becomes energy there, neither
+                  20h nor 4 counts as a unit at a map's end (turn.py);
+                  8000h a unit whose count rises by one each change of
+                  phase; the other low bits are not looked into
     +12 cargo     a word: the flags of the record make_unit gives a unit
                   that holds others (T169E:04A0, ORed with 20h), one bit
                   a type
     +14 w_dist    the path search's (T0BA0:0E2E, seen) weights: a
     +15 w_ground  square's key is its distance to the aim * w_dist + its
                   ground's cost * w_ground
-    +16 sound     passed to T0D36:0165 with kind 4 when the unit has
-                  moved (T122D:09E0, seen): an effect's number,
-                  presumably
+    +16 pace      the passes of the map's loop (18.2 a second) between
+                  two squares of a move: move_step (T122D:0713) sets
+                  timer 4 with it
     +17           no reader found in the code or the run
     +18 pic_y     added to y when the type's big picture is drawn
     +19 pic       the big picture's number in the list at F27EE:0A8F
@@ -228,7 +237,7 @@ UNIT_FIELDS = (
     ('ground', 0x04, 'B'), ('targets', 0x05, '<H'), ('range_air', 0x07, 'B'), ('range', 0x08, 'B'),
     ('hit_air', 0x09, 'B'), ('hit_land', 0x0A, 'B'), ('hit_sea', 0x0B, 'B'),
     ('class', 0x0C, '<H'), ('flags', 0x0E, '<H'), ('inside', 0x10, '<H'), ('cargo', 0x12, '<H'),
-    ('w_dist', 0x14, 'b'), ('w_ground', 0x15, 'b'), ('sound', 0x16, 'b'), ('b17', 0x17, 'B'),
+    ('w_dist', 0x14, 'b'), ('w_ground', 0x15, 'b'), ('pace', 0x16, 'b'), ('b17', 0x17, 'B'),
     ('pic_y', 0x18, 'B'), ('pic', 0x19, 'B'),
     ('name', 0x1A, '17s'), ('group', 0x2B, '17s'), ('serial', 0x3C, '2s'),
     ('cost', 0x3E, 'B'), ('room', 0x3F, 'B'), ('size', 0x40, 'B'), ('fight', 0x41, '3s'),
@@ -357,8 +366,8 @@ def unit_line(n, t, raw):
     s += ' class %04X flags %04X inside %04X cargo %04X' % (t['class'], t['flags'], t['inside'], t['cargo'])
     s += ' path %d/%d cost %3d room %3d size %3d' % (t['w_dist'], t['w_ground'], t['cost'], t['room'], t['size'])
     if raw:
-        s += ' sound %d +17 %02X pic %d,%d serial %s fight %s names %s %s' % (
-            t['sound'], t['b17'], t['pic'], t['pic_y'], t['serial'].hex(), t['fight'].hex(),
+        s += ' pace %d +17 %02X pic %d,%d serial %s fight %s names %s %s' % (
+            t['pace'], t['b17'], t['pic'], t['pic_y'], t['serial'].hex(), t['fight'].hex(),
             t['name'].hex(), t['group'].hex())
     return s
 
