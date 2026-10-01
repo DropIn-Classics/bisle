@@ -390,6 +390,24 @@ games, each its own folder mounted as C: and started there:
   a type and the names' last bytes were read by nothing, a ground's
   second cost not in this run (no air unit moved, presumably). Not
   checked against what the game shows on its screens.
+- The maps drawn (`tools/mapfiles.py --png DIR`, all 103): `draw_window`
+  (T0E9B:0A9B) draws a player's window column by column, a square 24x24
+  at x = 16 * column and y = 24 * row, 12 further down in the odd
+  columns; the ground is PART.LIB's entry of that number in PART.DAT's
+  order, of which `draw_hexagon` (T24DF:0002) copies a hexagon of 384
+  pixels through the latches, whatever the entry's transparent value
+  (DESERT's entries are full squares; ISLE's and MOON's are clear outside
+  the hexagon); the unit is UNIT.LIB's entry type * 6 + direction (the
+  unit's +0Fh, +10h, one per window; 3 for player 0 and 0 for the others
+  when a unit is made), base 30h for player 1, else 20h. Runs to the
+  first map of each game (space at 14 s, enter at 33 s, `-vram` at 60 s;
+  `mapfiles.py --match VRAM 00 game/ISLE/MAP`): in both windows
+  (GAME.IFF's colour 64, 24192 pixels each) all pixels were the drawn
+  map's but those of one square, the cursor's (ISLE 240 in each window,
+  DESERT 228, MOON 0 and 384). DESERT.EX2 runs by itself in the runner
+  (from its folder, the same keys; it opens the files BATTLE.EXE opens)
+  and MOON has no .DAT files in LIB: MOON.EXE's ground and units are the
+  libraries' entries in their own order (that run).
 - doskit's `-rwatch` kept 64 readers (an instruction and the byte it
   read), which the unpacker's own reads of the tables filled; it keeps
   up to 65536 now (doskit 1676994, with a test, RWATCH.EXE).
@@ -422,11 +440,12 @@ games, each its own folder mounted as C: and started there:
 3. A tool for each data format (`tools/NAMEfiles.py`): TPWM, the
    palettes, the pictures, the libraries, the maps and the tables of
    unit types and ground are done (`tpwmfiles.py --out build/unpacked`
-   gives the unpacked files); next the maps drawn with PART.LIB and
-   UNIT.LIB against a run's screen (which PART.LIB entry a ground value
-   is: not looked into yet), then the other tables and texts
-   (`CODES.DAT`: the maps' records of 10 bytes, by its size, presumably;
-   `AMOK.DAT`, `CHAR6.DAT`, `GAME.TXT`).
+   gives the unpacked files), and the maps are drawn as a run shows them
+   (`mapfiles.py --png`); next the other tables and texts (`CODES.DAT`:
+   the maps' records of 10 bytes, by its size, presumably; `AMOK.DAT`,
+   `CHAR6.DAT`, `GAME.TXT`), then the rest of the screen: the cursor,
+   the frame's texts, what the windows show of a map (scrolling, the
+   units' directions, a unit hidden from the other player).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.
 5. Later: the AdLib sound refined (`-oplwav` against the game in GOG's
@@ -470,8 +489,9 @@ For the port (behaviour):
    the OPL's rhythm mode.
 8. The libraries' colour bases and palettes where not seen (BIGUNIT,
    FIGHT, the fonts; libfiles.py draws them at base 0 in 00.PAL), and
-   what happens with BIGUNIT's missing MAA and in MOON without .DAT
-   files.
+   what happens with BIGUNIT's missing MAA and with MOON's BIGUNIT
+   without a .DAT (its PART and UNIT are taken in the library's order:
+   seen).
 
 9. The maps (mapfiles.py): which building kind (ground flag 400h,
    100h, 40h; the tables F27EE:2780, 259C, 24B0, and the .SHP's kind 3,

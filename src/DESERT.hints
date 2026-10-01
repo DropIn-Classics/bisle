@@ -523,6 +523,24 @@ name T23FD:000A draw_entry_u
 name T258F:0002 plane_widths
 name T2506:000A draw_unit24
 name T24B5:000E store_part
+; the map in a window, T0E9B:0A9B (the map's offset, window 0 or 1): the
+; window's squares column by column, x from 0 or A0h and 16 further a
+; column, y from 0 or 12 (the odd columns) and 24 further a square: the
+; ground's entry (the map's first byte into the list at F27EE:0A3F, part)
+; by T24DF:0002, then the unit's (type * 6 + the unit's +0Fh or +10h by
+; the window, into the list at F27EE:0A2B) by draw_unit24 with base 30h
+; for a unit of player 1 (bit 0 of its +4), else 20h. A unit with flag 2
+; in its +6 is drawn only when T0D36:00F5 (the unit's +4, the window)
+; says it is that window's player's. tools/mapfiles.py draws the maps so:
+; the first map's two windows in video memory were its picture pixel for
+; pixel but under the cursor (a run, -vram; MOON.EXE's the same with
+; MOON's files).
+name T0E9B:0A9B draw_window
+; T24DF:0002 (x, y, entry far): a stored 24x24 entry (store_part's copy in
+; video memory) to the screen in the shape of a hexagon: write mode 1,
+; rows of 2, 4 and 6 bytes through the latches, then 32 bytes at the
+; edges with the planes chosen by the map mask (384 pixels in all).
+name T24DF:0002 draw_hexagon
 ; T0D36:1592 (n): puts back the interrupt handlers (T2354:056F, 005E),
 ; prints message n of F273B (1 not enough memory, 2 cannot load file,
 ; 3 internal) and exits with -1 (read from the code, not run)

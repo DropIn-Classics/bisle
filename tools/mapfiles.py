@@ -2,7 +2,7 @@
 """Battle Isle's maps (MAP\\NN.FIN, .SHP, .COM, .PMP): read them, write
 them back, show them.
 
-    mapfiles.py [MAPDIR ...] [--grid NN]
+    mapfiles.py [MAPDIR ...] [--grid NN] [--png DIR] [--match VRAM NN]
 
 Without MAPDIR the MAP folder of each game in the game's folder (ISLE,
 DESERT, MOON) is taken.  One line per map: its size, the units on it by
@@ -13,7 +13,11 @@ prints map NN of each folder as text: four hex digits a square, the
 ground and the unit byte (".." for none).  Owners and players are
 numbered 0, 1 as the loader counts them, 2 neither (that 0 is the
 player of the arrow keys is not checked); "buildings 400h 1/1/2" gives
-the squares of that flag by owner 0/1/2.
+the squares of that flag by owner 0/1/2.  --png DIR writes each map as
+a picture, GAME_NN.png, as the game draws it at its start (below);
+--match VRAM NN looks for map NN of each folder in a run's video memory
+(run.py -vram) and says where each player's window shows it and how
+many of the window's pixels are the picture's.
 
 All four files are packed (see tpwmfiles.py).  BATTLE.EXE's T0708 loads
 them when a map starts (seen with -dos: .FIN, .SHP, .COM, .PMP, in that
@@ -82,6 +86,30 @@ known):
     square by square; shown as a picture they are blocks of 8x8 with
     lines between (not decoded).  MOON has no .PMP files.
 
+The map as the game draws it (T0E9B:0A9B, a window, read from the code;
+--png): a square is 24x24 pixels, column c at x = 16 * c, row r at
+y = 24 * r, 12 further down in the odd columns: hexagons.  The ground is
+entry number "ground" of LIB\\PART.LIB in PART.DAT's order (libfiles.py;
+the list at F27EE:0A3F), of which T24DF:0002 copies a hexagon, 384 of
+the 576 pixels (8 in the first and last row, 24 in the two middle ones;
+through the latches, the edges plane by plane), whatever the entry's
+transparent value: ISLE's entries and all but three of MOON's have that
+value in exactly the 192 pixels outside the hexagon, DESERT's do not.
+The unit is entry type * 6 + direction of UNIT.LIB in UNIT.DAT's order
+(F27EE:0A2B), the direction the unit's +0Fh or +10h by the window, which
+make_unit sets to 3 for player 0 and 0 for the others; colour base 30h
+for player 1, else 20h, the ground 0; the palette 00.PAL (palfiles.py,
+level 252).  A unit with flag 2 in its +6 (its type's +10h, datfiles.py:
+ISLE's types 17 and 18) is drawn only in its own player's window
+(T0D36:00F5, as read); here it is drawn like the others.  MOON has no
+.DAT files: its libraries are taken in their own order.
+Checked against runs (-vram at the first map's start, 60 s; --match):
+in the windows (GAME.IFF's pixels of colour 64, 24192 each) ISLE's map
+00 had 23952 pixels equal in each window, the other 240 in one square
+(the cursor); DESERT's map 00, from DESERT.EX2's run, 23964 in each, the
+others in one square; MOON's map 00, from MOON.EXE's run, 24192 and
+23808 (384 in one square).
+
 MOON's files are read here as BATTLE.EXE reads them; MOON.EXE's loader
 is not compared.  MOON's 16.FIN has a two-square unit whose second
 square is not the next type (reported).
@@ -95,6 +123,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, '..', 'doskit', 'tools'))
 from kit import game_dir  # noqa: E402
+import ifffiles  # noqa: E402
+import libfiles  # noqa: E402
+import palfiles  # noqa: E402
+import png  # noqa: E402
 import tpwmfiles  # noqa: E402
 
 UNIT_TYPES = 27
@@ -102,6 +134,12 @@ UNIT_REC = 0x44
 GROUND_REC = 6
 NO_UNIT = 0xF4
 BUILDING_FLAGS = (0x40, 0x400, 0x100)   # the SHP kinds 0, 1, 2
+SQUARE = 24                             # a square's picture, 24x24
+COLUMN = 16                             # from one column to the next
+WINDOW_COLOUR = 64                      # GAME.IFF's pixels the maps are drawn in
+# the hexagon T24DF:0002 copies of a ground's picture: the first pixel of
+# each of its 24 rows (the row is as much shorter on the right)
+HEXAGON = (8, 7, 7, 6, 5, 4, 4, 3, 2, 1, 1, 0, 0, 1, 1, 2, 3, 4, 4, 5, 6, 7, 7, 8)
 
 
 def unpacked(path):
@@ -228,6 +266,119 @@ def grid(m):
     return '\n'.join(rows)
 
 
+def find(d, name):
+    for f in os.listdir(d):
+        if f.upper() == name:
+            return os.path.join(d, f)
+    return None
+
+
+def sorted_entries(game, lib):
+    """a library's entries in its .DAT's order, as load_lib sorts them;
+    without a .DAT in the library's own"""
+    libdir = find(game, 'LIB')
+    entries = libfiles.read(unpacked(find(libdir, lib + '.LIB')))
+    dat = find(libdir, lib + '.DAT')
+    if dat is None:
+        return [e for _, e in entries]
+    by_name = dict(entries)
+    names = unpacked(dat)
+    return [by_name[names[k:k + 8]] for k in range(0, len(names), 8)]
+
+
+def ground_images(game):
+    """PART.LIB's pictures as the map shows them: the hexagon of each,
+    its pixels whatever the entry's transparent value"""
+    out = []
+    for e in sorted_entries(game, 'PART'):
+        w, h, px = libfiles.image(e)
+        if (w, h) != (SQUARE, SQUARE):
+            raise ValueError('a ground picture of %dx%d' % (w, h))
+        px = [e['key'] if v < 0 else v for v in px]
+        for y, first in enumerate(HEXAGON):
+            for x in list(range(first)) + list(range(SQUARE - first, SQUARE)):
+                px[y * w + x] = -1
+        out.append((w, h, px))
+    return out
+
+
+def unit_images(game):
+    return [libfiles.image(e) for e in sorted_entries(game, 'UNIT')]
+
+
+def draw(m, parts, units):
+    """(width, height, colour numbers with -1 where nothing is drawn) of
+    a map as the game draws it at its start"""
+    w, h = m['w'], m['h']
+    width, height = COLUMN * w + SQUARE - COLUMN, SQUARE * h + SQUARE // 2
+    out = [-1] * (width * height)
+
+    def put(img, x0, y0, base):
+        iw, ih, px = img
+        for j in range(ih):
+            o = (y0 + j) * width + x0
+            for i in range(iw):
+                if px[j * iw + i] >= 0:
+                    out[o + i] = (px[j * iw + i] + base) & 0xFF
+
+    for units_now in (False, True):
+        for r in range(h):
+            for c in range(w):
+                g, u = m['squares'][r * w + c]
+                x, y = COLUMN * c, SQUARE * r + (SQUARE // 2 if c & 1 else 0)
+                if not units_now:
+                    if g < len(parts):
+                        put(parts[g], x, y, 0)
+                elif u < NO_UNIT:
+                    e = (u >> 1) * 6 + (0 if u & 1 else 3)
+                    if e < len(units):
+                        put(units[e], x, y, 0x30 if u & 1 else 0x20)
+    return width, height, out
+
+
+def to_png(path, game, pic):
+    width, height, out = pic
+    pal = palfiles.read(open(find(game, '00.PAL'), 'rb').read())[0]
+    rgb = [tuple(png.dac_to_rgb(v) for v in c) for c in palfiles.dac(pal, palfiles.kind(pal))]
+    used = set(out)
+    clear = next((i for i in range(256) if i not in used), None) if -1 in used else None
+    png.write_indexed(path, width, height, bytes((clear or 0) if p < 0 else p for p in out), rgb, clear)
+
+
+def match(pic, game, vram):
+    """per window (left, right): (pixels of the window, the most that
+    equal the picture's, the map's column and half row at the screen's
+    corner, the box of the pixels that differ or None)"""
+    width, height, out = pic
+    frame = ifffiles.read(unpacked(find(game, 'GAME.IFF')))
+    fw, fh, fp = frame['width'], frame['height'], frame['pixels']
+    screen = [vram[4 * (y * 80 + x // 4) + (x & 3)] for y in range(fh) for x in range(fw)]
+    res = []
+    for xs in (range(0, fw // 2), range(fw // 2, fw)):
+        win = [(x, y) for y in range(fh) for x in xs if fp[y * fw + x] == WINDOW_COLOUR]
+
+        def equal(points, ox, oy):
+            n = 0
+            for x, y in points:
+                mx, my = x + ox, y + oy
+                if 0 <= mx < width and 0 <= my < height and out[my * width + mx] == screen[y * fw + x]:
+                    n += 1
+            return n
+
+        some = win[::13]
+        best = max((equal(some, COLUMN * c, SQUARE // 2 * k), c, k)
+                   for c in range(-fw // COLUMN, width // COLUMN + 1)
+                   for k in range(-fh // (SQUARE // 2), height // (SQUARE // 2) + 1))
+        _, c, k = best
+        ox, oy = COLUMN * c, SQUARE // 2 * k
+        bad = [(x, y) for x, y in win if not (0 <= x + ox < width and 0 <= y + oy < height
+                                              and out[(y + oy) * width + x + ox] == screen[y * fw + x])]
+        box = (min(x for x, _ in bad), min(y for _, y in bad),
+               max(x for x, _ in bad), max(y for _, y in bad)) if bad else None
+        res.append((len(win), len(win) - len(bad), c, k, box))
+    return res
+
+
 def map_dirs(root):
     for game in ('ISLE', 'DESERT', 'MOON'):
         d = os.path.join(root, game, 'MAP')
@@ -239,12 +390,29 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     ap.add_argument('dirs', nargs='*', metavar='MAPDIR')
     ap.add_argument('--grid', help='print this map (NN) of each folder as text')
+    ap.add_argument('--png', metavar='DIR', help='write each map as a picture here')
+    ap.add_argument('--match', nargs=2, metavar=('VRAM', 'NN'),
+                    help="where map NN is in a run's video memory, and how much of it")
     a = ap.parse_args()
     root = game_dir()
     dirs = a.dirs or list(map_dirs(root))
     total = bad = 0
     for d in dirs:
-        ground, unit = tables(os.path.dirname(os.path.abspath(d)))
+        game = os.path.dirname(os.path.abspath(d))
+        ground, unit = tables(game)
+        tiles = sprites = None
+        if a.png or a.match:
+            tiles, sprites = ground_images(game), unit_images(game)
+        if a.match:
+            m = read_fin(unpacked(os.path.join(d, a.match[1] + '.FIN')))
+            vram = open(a.match[0], 'rb').read()
+            for side, (n, same, c, k, box) in zip(('left', 'right'), match(draw(m, tiles, sprites), game, vram)):
+                print("%s\\%s %s window: column %d, row %s of the map at the screen's corner; "
+                      "%d of %d pixels equal%s" % (
+                          os.path.basename(game), a.match[1], side, c, '%g' % (k / 2), same, n,
+                          '' if box is None else ', the others within x %d..%d, y %d..%d' % (
+                              box[0], box[2], box[1], box[3])))
+            continue
         files = {f.upper(): os.path.join(d, f) for f in os.listdir(d)}
         maps = sorted({os.path.splitext(f)[0] for f in files if f.endswith('.FIN')})
         rel = os.path.relpath(d, root) if not a.dirs else d
@@ -267,6 +435,10 @@ def main():
                 if a.grid == nn:
                     print('%s\\%s.FIN' % (rel, nn))
                     print(grid(m))
+                if a.png:
+                    os.makedirs(a.png, exist_ok=True)
+                    to_png(os.path.join(a.png, '%s_%s.png' % (os.path.basename(game), nn)),
+                           game, draw(m, tiles, sprites))
                 if nn + '.SHP' in files:
                     data = unpacked(files[nn + '.SHP'])
                     s = read_shp(data)
@@ -292,7 +464,8 @@ def main():
                 rel, nn, ', '.join(parts),
                 'written back identical' if ok else 'WRITTEN BACK OTHERWISE',
                 ''.join('; ' + q for q in sorted(set(problems)))))
-    print('%d maps, %d not read or not written back' % (total, bad))
+    if not a.match:
+        print('%d maps, %d not read or not written back' % (total, bad))
     return 1 if bad else 0
 
 
