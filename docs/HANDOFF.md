@@ -17,6 +17,15 @@ beyond the segments and a few routines; the port is the template's.
 - `game/` holds the installed GOG folder as it is (no CD image: GOG
   ships the three games as folders for DOSBox); it is not in the
   repository.
+- Not pushed yet when this was written: doskit 1676994 (push doskit
+  first, the project's commits name it) and the project's commits from
+  74fa292 on.
+- Scratch scripts of the last session are in `build/scratch` (ignored,
+  not part of the project; they may be gone): `rd.py A B` prints lines
+  of build/BATTLE.ASM with the compiler's table indexing folded
+  (utype, unit, ground, shop, player), `uses.py BASE SIZE` lists the
+  code lines naming F27EE addresses in a range, `rwfields.py LOG` sorts
+  a `-rwatch` report by table field and routine.
 - A build of BATTLE.hints takes about 15 s once it is identical, 30 to
   60 s while build.py still has rounds to go.
 
@@ -401,6 +410,19 @@ games, each its own folder mounted as C: and started there:
   number is the map (F27EE:2523). +5 (2) and +9 (0) have no reader in
   the code as far as read. All read from the code; no run made for it
   (the CONRA run of earlier steps went this way).
+- AMOK.DAT (36 bytes, packed only in MOON; loaded to F27EE:24E8), its
+  first 8 bytes read, not in a tool yet: ground values. When a building
+  changes its owner (T0408, around T0408:16B3, as read) the square gets
+  +0 or +1 (player 0, 1) for a building record with flag 8 in its +19h,
+  +3 or +4 with flag 10h, +6 or +7 with flag 4. In all three games
+  those bytes are GROUND.DAT records with the flags 0E0Ch, 0E09h, 0E0Ah
+  (+0..+2: the 400h building of owner 0, 1, 2), 098Ch, 0989h, 098Ah
+  (+3..+5: the 100h building) and 006Ch, 0069h (+6, +7: the 40h
+  building, the headquarters): so ground flag 4 is owner 0, and a
+  building record's flag 8 goes with the 400h kind, 10h with 100h, 4
+  with the headquarters. +8 is 6 (compared in T0408:0CA5); +9..+17h
+  are set before texts are drawn (colours, presumably); +18h..+23h are
+  indexed tables (T0408:197C, T0408:1A27, T0E9B:09D6), not read.
 - The maps drawn (`tools/mapfiles.py --png DIR`, all 103): `draw_window`
   (T0E9B:0A9B) draws a player's window column by column, a square 24x24
   at x = 16 * column and y = 24 * row, 12 further down in the odd
@@ -453,10 +475,8 @@ games, each its own folder mounted as C: and started there:
    unit types and ground are done (`tpwmfiles.py --out build/unpacked`
    gives the unpacked files), and the maps are drawn as a run shows them
    (`mapfiles.py --png`), CODES.DAT is read; next the other tables and
-   texts (`AMOK.DAT`: 36 bytes loaded to F27EE:24E8, numbers the code
-   takes from there: values put into a map's squares at +0..+7, values
-   set before texts are drawn at +0Bh..+13h, colours presumably; not
-   read through; `CHAR6.DAT`, `GAME.TXT`), then the rest of the
+   texts (`AMOK.DAT` into datfiles.py: its first 8 bytes are read, see
+   above, the rest not; `CHAR6.DAT`, `GAME.TXT`), then the rest of the
    screen: the cursor,
    the frame's texts, what the windows show of a map (scrolling, the
    units' directions, a unit hidden from the other player).
