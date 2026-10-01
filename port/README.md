@@ -10,6 +10,14 @@ repository.
 Started 2026-09-30 from doskit's template: finds or unpacks the game's
 files and shows a text screen. Nothing of the game is translated yet.
 
+The game's files (doskit ebd96fa's template): a GOG release found by
+itself is copied only when the player agrees, in the kit's dialog about
+the game's files (`launcher.h`), which also shows the copy's progress
+and says what to do when nothing was found; `-gog` copies without
+asking. Built on Windows 11 with MSVC (no warnings) and started
+headless with `-game` (5 pictures, exit 0); the dialog itself was not
+started, macOS and Linux not built.
+
 ## Build and run
 
     sh port/build.sh          # macOS, Linux (SDL2 for the window)

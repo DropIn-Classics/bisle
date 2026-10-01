@@ -23,7 +23,17 @@ the animations of ANIM\ are not read; the port is the template's.
 - `game/` holds the installed GOG folder as it is (no CD image: GOG
   ships the three games as folders for DOSBox); it is not in the
   repository.
-- The kit is at b08dc28 (after the merge 2fca87a it got, for ports, the
+- The kit is at a69c62b (its last step, from ebd96fa, is the launcher's
+  design written down, doskit/docs/LAUNCHER.md, and AGENTS.md's rule 9
+  from the template; no code changed): since b08dc28 the runtime has `hud.h` (a box
+  at the top of the picture for the volume keys) and, in `launcher.h`,
+  the dialog about the game's files every port shows (the copy from the
+  GOG release offered, its progress, what to do when nothing is found)
+  and a `LauncherApp` for the title bar (`launcher_run` takes it now);
+  the tools and the runner did not change, check.py was not run again
+  for it. port/src/main.c and the build scripts took the template's
+  changes (below, port/README.md). Before that, at b08dc28 (after the
+  merge 2fca87a it got, for ports, the
   runtime's cdaudio, a CD's audio tracks from a cue sheet, the VGA's
   start address latched at the retrace, the VESA modes 100h, 101h and
   103h, cd_copy_disc and launcher.h, a setup screen; nothing of the

@@ -10,7 +10,12 @@
  * `game`, or, installed as a folder, that folder copied there (cdimage.h);
  * not installed, GOG's Windows installer (setup_*.exe) lying about is
  * unpacked instead (inno.h).  -gog names the image, the folder or the
- * installer instead of looking for it.
+ * installer instead of looking for it.  Found by itself, the release is
+ * copied only when the player agrees, asked in the kit's dialog about the
+ * game's files (launcher.h: "Copy the files" or "Quit"), which also shows
+ * the copy's progress and says what to do when nothing was found; the
+ * headless build shows it only in a run scripted with keys (DK_KEYS,
+ * plat_null.c) and copies without asking otherwise.
  *
  * A release build (PORT_VERSION and PORT_UPDATE_URL defined) asks once
  * whether it may look for newer releases and shows one it found
@@ -20,9 +25,11 @@
  * waits for Esc.
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "cdimage.h"
 #include "inno.h"
+#include "launcher.h"
 #include "platform.h"
 #include "sys.h"
 #include "textmode.h"
@@ -94,44 +101,54 @@ static void show(void)
     plat_present(pixels, TM_WIDTH, TM_HEIGHT, palette);
 }
 
+static const LauncherApp app = { "Battle Isle", "battle-isle", PORT_VERSION };
+
 /* the game's files: found, or from the GOG release (its CD image
  * unpacked, its installed folder copied, or its Windows installer
- * unpacked); 1 if there */
+ * unpacked) once the player agreed in the kit's dialog about the game's
+ * files (launcher.h); 1 if there, 0 after saying why not.  Not asked when
+ * -gog named the release; headless the dialog is shown only when keys are
+ * scripted. */
 static int get_game(const char *given, const char *gog, char *out, size_t n)
 {
     char from[SYS_PATH], data[SYS_PATH], err[256];
-    int folder, setup, r;
+    int dialog = plat_has_window() || getenv("DK_KEYS"), r;
+    int (*progress)(void *, const char *, long, long) = dialog ? launcher_copy_progress : NULL;
+    LauncherCopy copy = { &app, LAUNCHER_GAME, 0, 0 };
 
     if (sys_find_game(given, "BATTLE_ISLE_GAME", "ISLE/BI.EXE", out, n))
         return 1;
-    if (given)
-        return 0;
-    if (gog)
+    if (gog && !given)
         snprintf(from, sizeof from, "%s", gog);
-    else if (!gog_find(&release, from, sizeof from) &&
-             !gog_find_folder(&release, from, sizeof from) &&
-             !inno_find(&release, from, sizeof from))
-        return 0;
-    folder = sys_is_dir(from);
-    setup = !folder && inno_is_setup(from);
-    sys_data_dir(data, sizeof data);
-    sys_join(out, n, data, "game");
-    tm_clear(' ', TM_ATTR(TM_LIGHTGREY, TM_BLUE));
-    tm_text(2, 2, folder ? "Copying the game's files from" : "Unpacking the game's files from",
-            TM_ATTR(TM_WHITE, TM_BLUE));
-    tm_text(2, 3, from, TM_ATTR(TM_YELLOW, TM_BLUE));
-    show();
-    if (folder)
-        r = gog_copy(from, out, "ISLE/BI.EXE", NULL, NULL, err, sizeof err);
-    else if (setup)
-        r = inno_unpack(from, out, "ISLE/BI.EXE", NULL, NULL, err, sizeof err);
-    else
-        r = cd_unpack(from, out, "ISLE/BI.EXE", NULL, NULL, err, sizeof err);
-    if (r != 0) {
-        plat_message(err);
+    else if (given || (!gog_find(&release, from, sizeof from) &&
+                       !gog_find_folder(&release, from, sizeof from) &&
+                       !inno_find(&release, from, sizeof from))) {
+        if (dialog)
+            launcher_no_game(&app, NULL);
+        else
+            plat_message("The game's files were not found. This program needs an installed "
+                         "copy of Battle Isle (the GOG release), or -game with its folder.");
         return 0;
     }
-    return 1;
+    sys_data_dir(data, sizeof data);
+    sys_join(out, n, data, "game");
+    if (dialog && !gog && !launcher_offer_copy(&app, LAUNCHER_GAME, from, out))
+        return 0;
+    if (sys_is_dir(from))
+        r = gog_copy(from, out, "ISLE/BI.EXE", progress, &copy, err, sizeof err);
+    else if (inno_is_setup(from))
+        r = inno_unpack(from, out, "ISLE/BI.EXE", progress, &copy, err, sizeof err);
+    else
+        r = cd_unpack(from, out, "ISLE/BI.EXE", progress, &copy, err, sizeof err);
+    if (r == 0)
+        return 1;
+    if (copy.closed)
+        return 0;
+    if (dialog)
+        launcher_copy_failed(&app, from, err);
+    else
+        plat_message(err);
+    return 0;
 }
 
 int main(int argc, char **argv)
@@ -155,8 +172,6 @@ int main(int argc, char **argv)
     if (!plat_init("Battle Isle"))
         return 1;
     if (!get_game(given, gog, game, sizeof game)) {
-        plat_message("The game's files were not found. This program needs an installed "
-                     "copy of Battle Isle (the GOG release), or -game with its folder.");
         plat_shutdown();
         return 1;
     }
