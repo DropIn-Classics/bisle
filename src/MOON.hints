@@ -757,8 +757,9 @@ name T1724:0283 draw_bar
 ; to z made capitals) up to size, the key set's backspace takes one off, 0Dh
 ; ends (returns 2); the text drawn by draw_text24 and CHAR24.LIB's entry 40
 ; (F27EE:0ADF + 0A0h) after it. Seen in a run for the code typed in OPTIONS
-; (tools/screens.py --menu --id 0 --sel 0: all pixels); for the high
-; score's name read, not run.
+; (tools/screens.py --menu --id 0 --sel 0: all pixels) and for the high
+; score's name (--message name --typed: all pixels, nothing typed and
+; three letters).
 name T1151:0EDF draw_menu
 name T1151:0F86 edit_text
 ; T1090:000E (buffer far): the menus, from the title's end to a map's start
@@ -812,7 +813,12 @@ name T1151:0F86 edit_text
 ; T1090:12B7 (table far, map, CODES far): the scores held within 0 and
 ; 7EF4h, the map's code at (110, 22) and the four from the highest down,
 ; the score in 5 digits at x 18 and the name at x 174, y 66 + 34 each
-; (draw_text24), until a key.
+; (draw_text24), until a key. Runs (the poked end of map 16, a name typed;
+; RATING with a file put in): the file's scores and names on the screen,
+; all pixels (tools/screens.py --scores --hi); after the map the code was
+; EAGLE, record 4 of CODES.DAT, F27EE:251B being 4 there (the loop's
+; ticks, not the map 16: the poke's doing, presumably), from RATING the
+; chosen map's.
 name T1151:0003 menu
 ; T1090:110F has no name here: xfer.py carried it to another routine of
 ; MOON.EXE (T0C0E:005C), as T1479:0C93 before.

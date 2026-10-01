@@ -7,7 +7,8 @@ as BATTLE.EXE draws them, and compared with the run's video memory.
     screens.py --building RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
     screens.py --menu RAM [--id N] [--sel N] [--vram VRAM] [--png DIR] ...
     screens.py --menu RAM --message position|insert [--vram VRAM] ...
-    screens.py --scores RAM [--hi FILE] [--vram VRAM] [--png DIR] ...
+    screens.py --menu RAM --message name [--typed TEXT] [--vram VRAM] ...
+    screens.py --scores RAM [--hi FILE] [--map N] [--vram VRAM] [--png DIR] ...
 
 RAM is a run's memory (run.py -ram), VRAM its video memory (run.py
 -vram), both of the same moment.  --status draws the status screen of
@@ -38,16 +39,31 @@ code typed (OPTIONS, enter on its first item, then c, o, n: the item is
 hidden, flag 20h, and edit_text draws CON and the sphere after it at the
 item's place; --id 0 --sel 0), and LOAD's two messages (--message):
 "SELECT POSITION 0 TO 9" (position; enter on LOAD) and "PLEASE INSERT
-DISK" (insert; after the digit 0).  Not seen on a screen: the mouse's
-menu (6), the name typed for the scores, the texts with other choices
-(COMPUTER, the limits).
+DISK" (insert; after the digit 0).  --message name draws the screen that
+asks for the scores' name after a map, "TYPE NAME FOR TOP FOUR" and
+below it the letters typed so far (--typed) with the sphere after them.
+Checked against two runs of a map's end poked in (HANDOFF.md: the battle
+against the computer, player 1's state 7 and result 0Fh, space at 70 s;
+the screen is up from about 84 s; -ram -vram at 90 s with nothing typed,
+at 91 s with h, a, n typed at 86, 87, 88 s): all 64000 pixels in the video
+memory on the page shown.  Not seen on a screen: the mouse's menu (6),
+the texts with other choices (COMPUTER, the limits).
 
 --scores draws the scores' screen (show_scores, T1090:12B7; RATING in the
-DISK menu) from a .HI file (--hi), or as it is without one.  Checked
-against a run without a file (the DISK run's keys, enter on RATING at
-39 s, -ram -vram at 44 s): the code FIRST and four times 00000 EMPTY, all
-64000 pixels in the video memory on the page shown (the other page held
-neither it nor the menu: the picture alone, presumably; not compared).  Scores and names of a file were not seen in a run.
+DISK menu) from a .HI file (--hi), or as it is without one, with the code
+of the map --map (default the chosen map, F27EE:2523, as from RATING).
+Checked against a run without a file (the DISK run's keys, enter on
+RATING at 39 s, -ram -vram at 44 s): the code FIRST and four times 00000
+EMPTY, all 64000 pixels in the video memory on the page shown (the other
+page held neither it nor the menu: the picture alone, presumably; not
+compared).  With a file, three runs, all 64000 pixels on the page shown
+in each: the poked end with a name typed and enter at 89 s (-ram -vram at
+95 s; the game wrote MAP\\04.HI, which the runner keeps in its -state
+folder: 00495 HANS and three times 00000 EMPTY under the code EAGLE,
+--map 4: after a map the code is that of the map F27EE:251B, which was 4
+there), the same again over that file with another name (the same score
+twice: the file's first comes first), and RATING with that file put in
+as MAP\\00.HI (-put; FIRST, the same table).
 
 --building draws the building's screen (draw_building below) of each
 player whose cursor has the state 2 (+17h) in the run's memory.  Checked
@@ -563,6 +579,7 @@ def menu_values(ram, menu):
 MESSAGES = {
     'position': [(0x2B, 0x40, 0x32), (0x34, 0x40, 0x54), (0x3D, 0x40, 0x76)],   # ask_position, T1090:11AC
     'insert': [(0x46, 0x57, 0x37), (0x4D, 0x57, 0x5B), (0x54, 0x57, 0x7F)],     # T1090:07CE
+    'name': [(0x5B, 0x3A, 0x14), (0x65, 0x80, 0x38), (0x6F, 0x46, 0x5C)],       # the scores' name, T1090:0381
 }
 
 
@@ -571,15 +588,24 @@ def message_values(ram, which):
     return [(ram.data[base + at:base + at + 10], x, y) for at, x, y in MESSAGES[which]]
 
 
-def draw_message(files, texts):
+def draw_message(files, texts, typed=None):
     """LOAD's messages: over the menu's picture (restore_sprites takes the
-    menu's texts and the cursor away) three texts by draw_text24"""
+    menu's texts and the cursor away) three texts by draw_text24.  The
+    name for the scores (typed not None; T1090:0381) has below them what
+    was typed so far, by edit_text at x 102 (66h), y 164 (A4h): the
+    letters (a letter's byte is its key's less 50h, 17 for A) and
+    CHAR24.LIB's entry 40, the sphere, right after them.  The letters are
+    in a block the menu allocates, found by a local only: the tool is
+    told them."""
     s = Screen(files)
     pic = files.menu_picture()
     for y in range(HEIGHT):
         s.pix[y * WIDTH:(y + 1) * WIDTH] = pic['pixels'][y * pic['width']:y * pic['width'] + WIDTH]
     for codes, x, y in texts:
         text24(s, x, y, codes)
+    if typed is not None:
+        codes = bytes(ord(c) - ord('A') + 17 for c in typed.upper()) + b'\0'
+        s.entry(text24(s, 0x66, 0xA4, codes), 0xA4, files.char24[40], 0)
     return s.pix
 
 
@@ -613,19 +639,23 @@ def draw_menu(files, items, sel=None):
     return s.pix
 
 
-def scores_values(ram, hi=None):
-    """what show_scores shows: the map's code (item 2's text, which
-    T1090:110F copies from the map's record of CODES.DAT) and the table of
-    load_scores: four longs, then from +10h four names of 6 bytes; from a
-    .HI file's bytes, or as load_scores has it without a file: the scores
-    0 and each name F2740:0010's 6 bytes"""
+def scores_values(ram, files, hi=None, number=None):
+    """what show_scores shows: the code of a map, the first 5 bytes of its
+    record (10 bytes) in CODES.DAT, and the table of load_scores: four
+    longs, then from +10h four names of 6 bytes; from a .HI file's bytes,
+    or as load_scores has it without a file: the scores 0 and each name
+    F2740:0010's 6 bytes.  The map is show_scores' second argument:
+    F27EE:2523 (the map chosen) from RATING, the default here, and
+    F27EE:251B (the .HI file's number) after a map."""
     base = (ram.load + MENU_SEG) * 16
     if hi is None:
         hi = bytes(16) + ram.data[base + 0x10:base + 0x16] * 4
     scores = [min(max(n, 0), 0x7EF4) for n in struct.unpack_from('<4l', hi)]
     names = [hi[0x10 + 6 * i:0x16 + 6 * i] for i in range(4)]
-    code = ram.data[base + ITEMS + ITEM_REC * 2 + 2:base + ITEMS + ITEM_REC * 2 + 7]
-    return {'code': code, 'scores': scores, 'names': names}
+    if number is None:
+        number = ram.word(0x2523)
+    code = unpacked(find(files.game, 'CODES.DAT'))[10 * number:10 * number + 5]
+    return {'map': number, 'code': code, 'scores': scores, 'names': names}
 
 
 def draw_scores(files, v):
@@ -723,7 +753,7 @@ def menu_main(a, files, ram, vram, game):
     if a.message:
         texts = message_values(ram, a.message)
         print('%s: %s' % (a.message, ', '.join(menu_name(t) for t, _, _ in texts)))
-        pix = draw_message(files, texts)
+        pix = draw_message(files, texts, (a.typed or '') if a.message == 'name' else None)
         if vram:
             report(pix, vram, ram)
         if a.png:
@@ -743,8 +773,8 @@ def menu_main(a, files, ram, vram, game):
 
 
 def scores_main(a, files, ram, vram, game):
-    v = scores_values(ram, open(a.hi, 'rb').read() if a.hi else None)
-    print('code %s: %s' % (menu_name(v['code']), ', '.join(
+    v = scores_values(ram, files, open(a.hi, 'rb').read() if a.hi else None, a.map)
+    print('map %d, code %s: %s' % (v['map'], menu_name(v['code']), ', '.join(
         '%s %d' % (menu_name(n), n2) for n, n2 in zip(v['names'], v['scores']))))
     pix = draw_scores(files, v)
     if vram:
@@ -765,7 +795,10 @@ def main():
     ap.add_argument('--hi', metavar='FILE', help='the .HI file for --scores (default: the table without a file)')
     ap.add_argument('--id', dest='menu_id', type=int, default=3, help='the menu (default 3, the title menu)')
     ap.add_argument('--sel', type=int, help='the chosen item: draw the picture behind and the cursor too')
-    ap.add_argument('--message', choices=sorted(MESSAGES), help="with --menu: one of LOAD's messages instead of a menu")
+    ap.add_argument('--message', choices=sorted(MESSAGES),
+                    help="with --menu: one of LOAD's messages or the scores' name instead of a menu")
+    ap.add_argument('--typed', metavar='TEXT', help='with --message name: the letters typed so far')
+    ap.add_argument('--map', type=int, metavar='N', help="with --scores: the map whose code is shown (default F27EE:2523)")
     ap.add_argument('--vram', help="compare with the run's video memory")
     ap.add_argument('--png', metavar='DIR', help='write the pictures here')
     ap.add_argument('--game', help="the game's folder (default ISLE)")

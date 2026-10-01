@@ -713,7 +713,7 @@ games, each its own folder mounted as C: and started there:
   began, at 15.5 s, and is not there) the code FIRST and four times
   00000 EMPTY over MENU.IFF, all 64000 pixels in the video memory on the
   page shown. A file's scores and names, and the name typed after a
-  map, were not seen in a run.
+  map, were seen in later runs (below).
 - The menus' other screens in runs (`screens.py --menu`; space at 14 s,
   the keys from 33 s, -ram -vram at the end, all 64000 pixels in the
   video memory on the page shown in each): PLAYER (`--id 2 --sel 0`:
@@ -728,7 +728,29 @@ games, each its own folder mounted as C: and started there:
   `--message insert`: PLEASE / INSERT / DISK at x 87, y 55, 91, 127; the
   same with 39 0, until 42), both over the picture alone. Not run: the
   mouse's menu (6), the items' other texts (COMPUTER, the limits, HIDE
-  SHOP), a wrong code's return to the old one, the name for the scores.
+  SHOP), a wrong code's return to the old one.
+- The name for the scores and a .HI file in runs (`screens.py --menu
+  --message name --typed TEXT`, `--scores RAM --hi FILE --map N`): the
+  poked end of map 16 (the CONRA keys, the two pokes at
+  LT0708_4088#401, space at 70 s; each run with its own `-state` folder)
+  has "TYPE NAME FOR TOP FOUR" up from about 84 s (MAP\04.HI asked for at
+  80.9 s); the score, the long F27EE:2597, was 495. Five runs, all 64000
+  pixels in the video memory on the page shown in each: nothing typed
+  (-ram -vram at 90 s), h, a, n typed (86, 87, 88 s; at 91 s: HAN and the
+  sphere after it at x 102, y 164), the name HANS and enter at 89 s (at
+  95 s: the game created MAP\04.HI, 28h bytes, at 89.0 s, and shows 00495
+  HANS and three times 00000 EMPTY), the same once more over that file
+  with OTTO (the file then holds both, each 495; HANS, the file's first,
+  is shown first), and RATING with the first file put in as MAP\00.HI
+  (`-put`; the DISK run's keys, at 44 s: FIRST, 00495 HANS). The file is
+  as read from the code: four longs, four names of 6 bytes in the
+  menus' character codes; a new name takes the place of the lowest
+  score's (the first of equal ones). The code on the scores' screen is
+  CODES.DAT's record of show_scores' second argument, not the menu's
+  text: the chosen map (F27EE:2523) from RATING, F27EE:251B after a map,
+  so the poked end showed EAGLE (record 4) for map 16. Not run: a name
+  of fewer than 5 letters over a longer one, a score not above the
+  lowest (no question, as read), backspace, a real end of a map.
 
 ## Next
 
@@ -753,8 +775,9 @@ games, each its own folder mounted as C: and started there:
    (`screens.py`: the status screen and the unit's); next in screens.py
    the other screens of SHOP.LIB's window (the callers of
    draw_shop_window and draw_box in T1479: T1479:0AA6, the buildings'
-   screens, by the texts 03h..09h), the name typed for the scores (the
-   menus, a code typed and LOAD's messages are drawn in full now), then the rest of the screen: the cursor's entries, the overview's frame, the
+   screens, by the texts 03h..09h; the menus, a code typed, LOAD's
+   messages, the scores with a file and their name are drawn in full
+   now), then the rest of the screen: the cursor's entries, the overview's frame, the
    frame's texts, what the windows show of a map (scrolling, the units'
    directions, a unit hidden from the other player).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
@@ -797,9 +820,10 @@ For the port (behaviour):
 5. Saving and the high scores: where save_game writes (save_file or its
    own), where the name "00" comes from (the position asked for at LOAD
    is F27EE:2512, and T26EA:000F makes the name from it: not read), the
-   .HI file in a run (its format is read, above; named by F27EE:251B,
-   which after_map sets to the map's number and the map's loop to its 4
-   ticks; a real end of a map not run).
+   .HI file after a real end of a map (written and read back in runs of
+   a poked end, above; named by F27EE:251B, which after_map sets to the
+   map's number and the map's loop to its 4 ticks, and the scores'
+   screen takes its code by the same number).
 6. The animations: play_anim's names from ANIM\anim.fx (presumably),
    the .Axx/.FX/.PX formats, end_credits (T25A6:0655) and ab.fx.
 7. Sound: where sound_init's mode comes from, whether the music uses
