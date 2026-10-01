@@ -668,7 +668,16 @@ name T122D:02D8 move_aim
 ; record onto its old square (1329 for that one's); cargo_follow; then
 ; 0B62 less 1 and timer 4 again after the type's +16h passes, or at the
 ; aim (stop_check was called before the square was entered) move_arrive,
-; its message shown, bit 80h and the unit's 100h off.
+; its message shown, bit 80h and the unit's 100h off. On the screen the
+; unit goes a whole square at a time: move_step draws the old and the new
+; square again by redraw_square, nothing between them. move_aim marks the
+; path with the bit of the reach (1, player 1's 2), so it shows as the
+; reach does. Runs (map 03, unit 00 three squares down, its type's +16h
+; 1; dumps every 0.2 s): the reach (78 squares marked), the path (4
+; marked, the cursor's +18h 3), the unit two squares on with F27EE:2510
+; C0h and no marks left, the unit at the aim with message 6 on the line:
+; tools/screens.py --field had every pixel of the page shown in each
+; (the message's number given to it).
 name T122D:0713 move_step
 ; T122D:0ABD (player, map far) -> the message 6, or 11h/12h for kind 1:
 ; the end of a move by the record's kind (stop_check). tools/turn.py has

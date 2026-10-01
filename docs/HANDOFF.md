@@ -1206,7 +1206,7 @@ games, each its own folder mounted as C: and started there:
   needs `--line1 1E`, p1msg2 and p1msg3 `--line1 clear` (a message's
   text is not in the memory). Not seen: marks of player 1, what the
   marks 40h and 10h stand for (T0708:3297 sets 40h or 80h), a unit with
-  2 in its +6 (hidden from the other side), a unit under way in a move, the squares' explosions
+  2 in its +6 (hidden from the other side), the squares' explosions
   after a fight, scrolling as such (the windows at other first squares
   are seen), why the page drawn to lacked the aim's mark in its dump.
   xfer.py carried the four names to MOON.hints (T0F3E:0E2A, 0F9D, 1208,
@@ -1245,6 +1245,23 @@ games, each its own folder mounted as C: and started there:
   player's window, not drawn since, lacks it: 144 pixels). Not seen:
   0Ah over the map, message 21h (the turn's limit reached, presumably:
   the counts' +15h against +16h).
+- A unit under way in a move on the screen (BATTLE.hints at move_step):
+  nothing of its own. move_step takes the unit a whole square on and
+  draws the old and the new square again (redraw_square), so the screen
+  is the map as the memory has it, and the path move_aim marks has the
+  reach's bit and looks as the reach does. Runs of map 03 (scratch
+  `mvw.py`: the cursor to unit 00 at 3, 1, fire with up, down held
+  twice for 0.15 s, fire at 70 s and at 72 s; dumps at 69.5, 71.5, 72.2
+  to 73.4 every 0.2 s, 80): the reach, the path, the unit two of its
+  three squares on (F27EE:2510 C0h) and at the aim; `screens.py --field`
+  had all 64000 pixels of the page shown in each, those after the
+  arrival with `--line0 6` (the message is not in the memory). The page
+  drawn to lacked 115 pixels in player 1's window in the dump with the
+  path (not looked into). Seen on the way and not looked into: with a
+  unit chosen (the cursor's +18h 16h) taps of 0.06 s did not move the
+  cursor, keys held 0.15 s moved it one or two squares. Not seen: a
+  unit of two squares under way, a move that leaves the window (whether
+  the window follows).
 - MOON.hints: T2084 has `start=8`: MOON's fight_step (T2066) ends in the
   frame's first 8 bytes (read; the build is identical either way).
   xfer.py carried the scene's names to MOON.hints (their beginnings
@@ -1349,7 +1366,7 @@ games, each its own folder mounted as C: and started there:
    the scores with a file and their name are drawn in full, and the
    fight scene pass by pass, `scene.py`; the map's whole screen with
    both windows, marks, lines, cursors and the overview, `screens.py
-   --field`), then what is left of the screen: a unit under way in a move, a unit hidden from the other
+   --field`, a move under way too), then what is left of the screen: a unit hidden from the other
    player, the squares' explosions after a fight, and the sounds: FIGHT.FXX, GAME.FXX, the .SND files and the
    records the fight scene hands to CODE:16F8 (not read).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by

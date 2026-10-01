@@ -105,10 +105,12 @@ the game's that the memory holds) in four more dumps of map 03: player
 players' at once with player 1's frame moved, and the window after fire
 ended it; all 64000 pixels on both pages in each.  Six more with fire
 held (state 1: the cursor's entries 1, 2, 3, 9, 0 and 4) had them all
-but for a unit poked into the run for entry 4.  Not seen: marks of
+but for a unit poked into the run for entry 4.  Ten of a move (the
+reach, the path marked, the unit under way and at its aim, with
+--line0 6 after the arrival) had all on the page shown.  Not seen: marks of
 player 1, a unit with 2 in its +6 (drawn only for its own side), a dot
-of +20h's colour, the cursor's other states over the map, a unit under
-way in a move, the squares' explosions.
+of +20h's colour, the cursor's states 5 and 6 over the map, the
+squares' explosions.
 
 --building draws the building's screen (draw_building below) of each
 player whose cursor has the state 2 (+17h) in the run's memory.  Checked
