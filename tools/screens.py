@@ -19,11 +19,8 @@ the state 4 (the record's +17h) in the run's memory.
 
 --building draws the building's screen (draw_building below) of each
 player whose cursor has the state 2 (+17h) in the run's memory.  Checked
-against a poked run only (HANDOFF.md, the headquarters): of 24160 pixels
-drawn 21734 were in the video memory; the others are in the places T0708
-draws over afterwards (the big box, the numbers box, slot 0, row 13 right
-of the title), 134 of them outside x 44..140 y 22..118, x 56..128 y
-125..165 and slot 0, all in that row; what T0708 draws there is not read.
+against a poked run only (HANDOFF.md, the headquarters): all 24160 pixels
+drawn were in the video memory, on both pages.
 
 The status screen (draw_status, T1479:0DC5, one argument: the player),
 read from the code; x0 is 0 for player 0 and 160 for player 1:
@@ -312,6 +309,30 @@ def unit_values(ram, player):
             'ground': ram.far(seg, off + pos), 'player': player}
 
 
+def unit_numbers(s, a, x, y, u, t):
+    """T1479:030A for a unit of the viewer's: the rectangle at x, y (70 by
+    40) filled again, the icon, the labels and the numbers"""
+    s.fill(x, y, x + 0x45, y + 0x27, a[C_BOX])
+    x, y = x + 6, y + 2
+    s.entry(x, y + 1, s.f.shop[6], 0)
+    s.text(x + 0x2A, y, 0, a[C_TEXT])
+    s.colour = a[C_TEXT]
+    for dy, n in ((0, t[0x0A]), (6, t[9]), (0x0C, t[0x0B]), (0x15, u[0] >> 1), (0x1B, t[1])):
+        s.number(n, x + 0x18, y + dy)
+    t5 = t[5] | t[6] << 8
+    s.number(t[8] - 1 if t5 & 4 else 0, x + 0x30, y)
+    s.number(t[8] - 1 if t5 & 8 else 0, x + 0x30, y + 0x0C)
+    s.number(t[7] - 1, x + 0x30, y + 6)
+
+
+def unit_picture(s, a, x, y, t, base):
+    """T1479:0C93: the type's big picture and name"""
+    s.entry(x, y + t[0x18], s.f.bigunit[t[0x19]], base)
+    name = t[0x1A:0x2B].split(b'\0')[0]
+    s.colour = a[C_TEXT]
+    s.chars(x + 0x30 - 3 * len(name), y + 0x56, [name])
+
+
 def draw_unit_info(files, v, clip=None):
     """the unit's screen (T1479:05AF) for a unit that holds no others
     (the record's +4 without bit 40h; the other case is not read), as
@@ -346,26 +367,8 @@ def draw_unit_info(files, v, clip=None):
     window(s, files, x0)
     s.box(x0 + 30, 20, 96, 96, a[C_BOX])
     s.box(x0 + 43, 124, 70, 40, a[C_BOX])
-    # T1479:030A
-    x, y = x0 + 43, 124
-    s.fill(x, y, x + 0x45, y + 0x27, a[C_BOX])
-    x, y = x + 6, y + 2
-    s.entry(x, y + 1, files.shop[6], 0)
-    s.text(x + 0x2A, y, 0, a[C_TEXT])
-    s.colour = a[C_TEXT]
-    for dy, n in ((0, t[0x0A]), (6, t[9]), (0x0C, t[0x0B]), (0x15, u[0] >> 1), (0x1B, t[1])):
-        s.number(n, x + 0x18, y + dy)
-    t5 = t[5] | t[6] << 8
-    s.number(t[8] - 1 if t5 & 4 else 0, x + 0x30, y)
-    s.number(t[8] - 1 if t5 & 8 else 0, x + 0x30, y + 0x0C)
-    s.number(t[7] - 1, x + 0x30, y + 6)
-    # T1479:0C93
-    x, y = x0 + 30, 20
-    base = 0x30 if word4 & 3 else 0x20
-    s.entry(x, y + t[0x18], files.bigunit[t[0x19]], base)
-    name = t[0x1A:0x2B].split(b'\0')[0]
-    s.colour = a[C_TEXT]
-    s.chars(x + 0x30 - 3 * len(name), y + 0x56, [name])
+    unit_numbers(s, a, x0 + 43, 124, u, t)
+    unit_picture(s, a, x0 + 30, 20, t, 0x30 if word4 & 3 else 0x20)
     # T1479:05AF
     s.entry(x0 + 0x74, 0x86, files.shop[5], 0)
     s.entry(x0 + 15, 0x86, files.shop[5], 0)
@@ -385,8 +388,23 @@ def building_values(ram, player):
     b = [ram.far(seg, off + k) for k in range(0x1A)]
     slots = [ram.far(seg, off + 7 * player + i) for i in range(7)]
     units = {n: ram.bytes(UNITS + UNIT_REC * n, UNIT_REC) for n in slots if n <= 0xF0}
+    sel = ram.word(rec + 0x0E)
+    sel_unit = ram.bytes(UNITS + UNIT_REC * slots[sel], UNIT_REC) if slots[sel] <= 0xF0 else None
     return {'state': ram.byte(rec + 0x17), 'mode': ram.byte(rec + 0x18), 'flags': b[0x19], 'slots': slots,
-            'units': units, 'player': player}
+            'units': units, 'player': player, 'kind': ram.word(rec + 0x22), 'sel': sel, 'value': b[0x16 + player],
+            'cursor': ram.byte(rec + 0x1B), 'cursor_at': (ram.word(rec + 0x10), ram.word(rec + 0x12)),
+            'shown': ram.word(STATE) & (8 if player else 4) == 0,
+            'type': ram.bytes(TYPES + TYPE_REC * sel_unit[8], TYPE_REC) if sel_unit else None}
+
+
+def bar(s, x, y, colour, back, h, value, size):
+    """LT164D_028D: a bar of size / 2 pixels in the colour back (when not
+    0) and over it value / 2 + 1 pixels in colour, h + 1 rows"""
+    value, size = value >> 1, size >> 1
+    if back:
+        s.fill(x, y, x + size, y + h, back)
+    if 0 < value <= size:
+        s.fill(x, y, x + value, y + h, colour)
 
 
 def draw_building(files, v, clip=None):
@@ -406,7 +424,21 @@ def draw_building(files, v, clip=None):
       at the slot, base 0 (an arrow; what the bit 200h means is not read).
       The title (draw_text, x 44 and y 13): GAME.TXT's text 3, 5, 4 or 6 by
       the record's +19h bit 4, 8, 10h, else, in AMOK's +0Bh.  A player's
-      screen is 160 pixels right of player 0's."""
+      screen is 160 pixels right of player 0's.
+
+      What T0708 draws after it (T0708:2AF0, 2D91, once per change of the
+      chosen slot, the cursor record's +0Eh): the big box filled again,
+      the numbers box (T1479:030A, when the player's bit 4 or 8 of
+      F27EE:250C is clear) and the big picture (T1479:0C93, colour base 30h
+      when the unit's word +4 has bit 1, or bit 2 with player 1) of the
+      unit in the chosen slot; for a record with +22h 1 (the headquarters,
+      presumably) a bar (LT164D:028D) right of the title, the value
+      (record +16h + player) / 7 + 1 of 35 half-pixels wide, and the value
+      itself as a number in a cleared box; last the cursor, CURSOR.LIB's
+      entry of +1Bh at the record's +10h, +12h.  Not drawn: units of the
+      other player or that hold others (the texts 2, 8, 9), the other
+      records (+22h 2: a factory or depot, with list_makeable), the loop's
+      later states."""
     s = Screen(files, clip)
     a = files.amok
     x0 = WINDOW * v['player']
@@ -430,6 +462,23 @@ def draw_building(files, v, clip=None):
         y += 0x18
     f = v['flags']
     s.text(x0 + 0x2C, 0x0D, 3 if f & 4 else 5 if f & 8 else 4 if f & 0x10 else 6, a[0x0B])
+    # what T0708 draws then (T0708:2AF0, once the slot is chosen)
+    s.fill(x0 + 0x2C, 0x16, x0 + 0x8B, 0x75, a[C_BOX])
+    sel = v['slots'][v['sel']]
+    if sel <= 0xF0:
+        u, t = v['units'][sel], v['type']
+        word4 = u[4] | u[5] << 8
+        if v['shown']:
+            unit_numbers(s, a, x0 + 0x38, 0x7D, u, t)
+        flag = 1 if word4 & 1 else v['player'] if word4 & 2 else 0
+        unit_picture(s, a, x0 + 0x2C, 0x16, t, 0x30 if flag else 0x20)
+    if v['kind'] == 1:
+        x = x0 + 0x2C
+        bar(s, x + 0x7A - 0x2C, 0x0D, a[0x13], a[0x14], 5, v['value'] // 7 + 1, 0x23)
+        bar(s, x + 0x32, 0x0D, a[0x0E], a[0x0E], 6, 0x1E, 0x23)
+        s.colour = a[0x13]
+        s.number(v['value'], x + 0x32, 0x0D)
+    s.entry(*v['cursor_at'], files.cursor[v['cursor']], 0)
     return s.pix
 
 
