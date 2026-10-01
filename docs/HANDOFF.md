@@ -17,8 +17,22 @@ beyond the segments and a few routines; the port is the template's.
 - `game/` holds the installed GOG folder as it is (no CD image: GOG
   ships the three games as folders for DOSBox); it is not in the
   repository.
-- doskit is at 11c6135, which is pushed. Not pushed yet when this was
-  written: the project's commits after a5d390a.
+- The kit is at its merge 2fca87a (the plugin together with what came
+  from the remote: -keyat/-keysat in the runner, the selftest on
+  Windows), which is pushed; check.py says all ok with it, the port's
+  comparisons were not run again. Not pushed yet when this was written:
+  the project's commits made after a5d390a on the Windows machine
+  (60857eb to fc687ae) and their merge with d680857.
+- The subagents come from the kit's plugin now (`doskit/agents/`,
+  switched on in `.claude/settings.json`, which names `./doskit` as the
+  marketplace): `doskit:collector`, `doskit:cmd-digest` (new: runs a
+  command with long output and reports only the result),
+  `doskit:git-committer`. Seen in headless sessions (`claude -p`): the
+  first session after a checkout only makes the marketplace known, the
+  agents are there from the second on. Not checked: an interactive
+  session's question about trusting the marketplace, and two projects
+  on one machine each naming their own `doskit/` as the marketplace
+  `doskit` (Claude Code keeps one path for a name).
 - On a machine without `game/` in the checkout, `DOSKIT_GAME` names the
   installed game's folder (GOG's, with ISLE, DESERT and MOON in it); a
   fresh clone needs `git submodule update --init doskit`.
