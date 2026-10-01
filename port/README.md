@@ -16,7 +16,9 @@ hints' names (`src/gen/names.h`, written by doskit's `symmap.py`). A part
 that is not translated yet ends the program with a message that names it.
 
 Translated so far (2026-10-01): the start, the Blue Byte logo, the title
-with its running lines, up to the title menu's entry. No sound yet.
+with its running lines, the sound (the songs and the effects on the
+AdLib), the menus with the code typed, the scores and their name; START
+ends at the map's setup, which is not translated yet.
 
 | File | The original's | What |
 |---|---|---|
@@ -29,8 +31,10 @@ with its running lines, up to the title menu's entry. No sound yet.
 | `lib.c` | T0CEB | the sprite libraries (`sort_lib` not yet) |
 | `text.c` | T164D | text in the large letters |
 | `title.c` | T1727 | the logo and the title |
-| `battle.c` | T0708 | main, to the menu's call |
-| `sound.c` | CODE:0215..1B79 | a stand-in: the songs are loaded, nothing plays |
+| `menu.c` | T1090 | the menus, a code typed, the scores, the name for them |
+| `battle.c` | T0708 | main, to the map's setup |
+| `sound.c` | CODE:0215..1B79 | the AdLib's driver, the songs' player, the effects |
+| `audio.c` | - | the values written to the AdLib into doskit's OPL and out |
 
 The game's files (doskit's template): a GOG release found by itself is
 copied only when the player agrees, in the kit's dialog about the game's
@@ -45,6 +49,14 @@ What the port does otherwise than a PC:
   waits (the retrace, a count of ticks, the scan lines of `set_palette`);
   the timer's interrupt runs at those points, not between any two
   instructions.
+- A loop that does not wait for the timer (the menus) makes a pass a
+  picture, 70 a second, as on a fast PC (GOG's DOSBox runs at
+  `cycles=max`); in the runner, at 6 million instructions a second, the
+  menus' pass takes two pictures. What follows from the time between two
+  passes (how far an effect has sounded when the next begins) differs
+  from a run of the runner for that.
+- The sound is the AdLib's whatever the switches: the PC speaker's
+  (`/s`, and what the original does without an AdLib) is not in the port.
 - No joystick and no mouse (INT 33h): the original's code for them is
   translated as far as it is reached without them.
 - The original's routines keep scratch values in their code segments;
@@ -66,8 +78,8 @@ stays undefined.
 looks for newer ones (doskit/runtime/update.h); the workflow sets it to
 the latest release's `latest.json`.
 
-`/s` and `/m` are the original's switches (the PC speaker's sound, which
-the port does not have, and another text at the start).
+`/m` is the original's switch (another text at the start; what else it
+does is not known). Its `/s`, the PC speaker's sound, is not taken.
 
 ## Releases
 
@@ -107,6 +119,25 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   did.
 - The pictures of the logo and the title were looked at (the headless
   build's `DK_SHOTS`), not compared pixel for pixel on their way.
+- The sound: every value the original writes to the AdLib in the first
+  30 s (the start and the title's music; the runner's `-log` on
+  opl_write's two outputs) against the port's (`BI_OPLLOG`): the 1889
+  writes the same in order. With the sound translated the comparison at
+  the menu's entry above no longer has the sound's differences: its
+  variables behind the stack and in its code are the original's but
+  `song_wait`, which goes with the time. A song's end and beginning
+  again, a pitch bend and the percussion mode's drums were not looked
+  for in these 30 s.
+- The menus: the map's setup (T0708:0392) after space at the title's
+  200th pass and enter (START) at the title menu's 30th pass
+  (T1090:058B): all of the video memory the same, the memory the same
+  but for the kinds of differences above and the effect still sounding
+  (`fx_ticks`, `fx_count`, `fx_freq` of the fourth channel: the time
+  between the passes, above). Not compared: the other menus, a code
+  typed, LOAD, RATING, the name for the scores (their routines are
+  translated; tools/screens.py drew those screens from runs of the
+  original before).
+- The window build was started for 8 s and ran (nothing looked at or
+  heard: nobody was there).
 
-Not built: macOS, Linux. Not started: the window build (only the
-headless one ran).
+Not built: macOS, Linux.

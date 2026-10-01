@@ -220,6 +220,11 @@ static double frame_counts(void)
     return PIT_HZ / (hz > 10.0 ? hz : 70.0);
 }
 
+double clock_seconds(void)
+{
+    return now / PIT_HZ;
+}
+
 void clock_set_period(unsigned counts)
 {
     period_set = counts ? counts : 0x10000;
@@ -300,15 +305,14 @@ void clock_lines(int lines)
  * counted by its name.
  * BI_BREAK=NAME#N: at the Nth pass of NAME the memory goes to $BI_RAM and
  * the video memory to $BI_VRAM, and the program ends.
- * BI_KEYSAT="NAME N:HEX N:HEX ...": at the Nth pass of NAME the keyboard
- * sends the byte HEX (a scancode; E0 first for the grey keys), as the
- * runner's -keysat does. */
+ * BI_KEYSAT="NAME N:HEX N:HEX ...;NAME N:HEX ...": at the Nth pass of
+ * NAME the keyboard sends the byte HEX (a scancode; E0 first for the grey
+ * keys), as the runner's -keysat and -keyat do. */
 void bi_at(const char *name)
 {
-    static struct { const char *name; long count; } places[16];
+    static struct { const char *name; long count; } places[32];
     static const char *brk, *keys;
     static long brk_pass;
-    static size_t keys_name;
     const char *ram, *vram, *p;
     size_t len = strlen(name);
     long count;
@@ -323,28 +327,40 @@ void bi_at(const char *name)
         keys = getenv("BI_KEYSAT");
         if (!keys)
             keys = "";
-        keys_name = strcspn(keys, " ");
     }
-    for (i = 0; i < 16 && places[i].name && strcmp(places[i].name, name) != 0; i++)
+    if (!*brk && !*keys)
+        return;
+    for (i = 0; i < 32 && places[i].name && strcmp(places[i].name, name) != 0; i++)
         ;
-    if (i == 16)
+    if (i == 32)
         return;
     places[i].name = name;
     count = ++places[i].count;
-    if (keys_name == len && !strncmp(keys, name, len))
-        for (p = keys + len; *p; ) {
-            char *end;
-            long n = strtol(p, &end, 10);
+    for (p = keys; *p; ) {
+        const char *end = strchr(p, ';');
+        size_t group = end ? (size_t)(end - p) : strlen(p);
 
-            if (end == p || *end != ':')
-                break;
-            p = end + 1;
-            if (n == count)
-                key_byte((unsigned char)strtol(p, &end, 16));
-            else
-                strtol(p, &end, 16);
-            p = end;
+        if (group > len && !strncmp(p, name, len) && p[len] == ' ') {
+            const char *q = p + len;
+
+            while (q < p + group) {
+                char *e;
+                long n = strtol(q, &e, 10);
+
+                if (e == q || *e != ':')
+                    break;
+                q = e + 1;
+                if (n == count)
+                    key_byte((unsigned char)strtol(q, &e, 16));
+                else
+                    strtol(q, &e, 16);
+                q = e;
+            }
         }
+        p += group;
+        if (*p == ';')
+            p++;
+    }
     if (!*brk || strncmp(brk, name, len) != 0 || (brk[len] != '#' && brk[len] != 0))
         return;
     if (count != brk_pass)

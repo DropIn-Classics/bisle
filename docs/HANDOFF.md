@@ -1475,6 +1475,27 @@ compared):
   program's memory, so the byte is the original's.
 - load_picture returns -1 whatever happened, and looks for BODY from
   the segment's start, word by word.
+- What the zeros after the stack are (ZEROS, open question 13): the
+  sound's variables, DS:1AD0 to 1CE6 (the operators' values, the voices,
+  the song's tracks; named in BATTLE.hints now), and above them the
+  stack the program really uses (SS:SP is 2F32:0F8C at the menu's entry:
+  the startup code moves it there). The sound keeps more in its code
+  segment (the song's timer handle and wait, where the song and the
+  effects' file are): named too, and kept there by the port, so that a
+  comparison shows the sound's state.
+- A pointer to a variable behind DATA is made with DS in the original
+  (2D8D:1C30, not 2F3A:0160): the port's DP() does the same, or the
+  pointers differ in a comparison though they point to the same byte.
+- The sound's check is a list of the values written (BI_OPLLOG against
+  the runner's -log on CODE:14BC and 14C7; scratch `oplcmp.py SECONDS`):
+  the title's first 30 s the same. Once a second source writes (the
+  effects' timer in the menus) the two lists fall apart where the port's
+  passes are quicker than the runner's (port/README.md): the order
+  within each source is to be compared then, not the whole list (not
+  done).
+- The menus' loop has no wait but flip_page's retrace: 2 pictures a
+  pass in the runner (0.0285 s), one in the port and on a fast PC. The
+  title waits for 3 ticks a pass (0.0411 s in both).
 - Scratch (build/scratch): `rl.py LABEL [LINES]` prints a routine folded,
   `BATTLE.fold` is all of build/BATTLE.ASM folded so (rd.py 1 65518; made
   again after names change), `pb.sh` builds the port with MSVC, `pcmp.py
@@ -1486,10 +1507,10 @@ compared):
 
 ## Next
 
-0. The port, in this order: the sound (CODE:0215..1B79 over
-   doskit/runtime/opl.c; sndfiles.py has it in Python), the menus
-   (T1090), a map's start and its loop (T0708), then what the loop calls.
-   Each step compared with the runner as port/README.md says.
+0. The port: the sound and the menus are done; next a map's setup
+   (T0708:0392 on: the libraries with sort_lib and store_part, load_fin,
+   load_shp, the cursors) and its loop (T0708:135C), then what the loop
+   calls. Each step compared with the runner as port/README.md says.
 1. BATTLE.EXE's last 4.1 KB: menus, a map, saving, loading, battles
    against the computer and poked wins with their animations ran none
    of it (above) but for a RETF; unused library code and switch tables,

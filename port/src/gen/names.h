@@ -159,18 +159,24 @@
     X(CODE, song_step, 0x1334) \
     X(CODE, opl_frequency, 0x13E6) \
     X(CODE, opl_write, 0x14B2) \
+    X(CODE, song_timer_handle, 0x14EE) \
+    X(CODE, song_wait, 0x14F0) \
+    X(CODE, song_busy, 0x1546) \
     X(CODE, song_timer, 0x1547) \
     X(CODE, sound_init, 0x1588) \
     X(CODE, load_song, 0x15F7) \
+    X(CODE, song_loaded, 0x164D) \
     X(CODE, play_song, 0x1655) \
     X(CODE, stop_song, 0x168D) \
     X(CODE, load_effects, 0x169E) \
+    X(CODE, effects_loaded, 0x16E9) \
     X(CODE, effects_timer, 0x16ED) \
     X(CODE, effects_start, 0x16F8) \
     X(CODE, effects_volume, 0x177A) \
     X(CODE, effect_start, 0x17A7) \
     X(CODE, effects_tick, 0x188A) \
     X(CODE, effect_silence, 0x1964) \
+    X(CODE, timbre_silent, 0x1986) \
     X(CODE, speaker_timer, 0x19C0) \
     X(CODE, speaker_note, 0x1A67) \
     X(CODE, srand, 0x2627) \
@@ -342,6 +348,20 @@
     X(T2695, load_file, 0x0004) \
     X(T26D2, save_file, 0x000A) \
     X(F273B, fatal_messages, 0x0008) \
+    X(F2740, name_menu, 0x0000) \
+    X(F2740, name_codes, 0x000A) \
+    X(F2740, score_empty, 0x0010) \
+    X(F2740, text_select, 0x002B) \
+    X(F2740, text_position, 0x0034) \
+    X(F2740, text_0_to_9, 0x003D) \
+    X(F2740, text_please, 0x0046) \
+    X(F2740, text_insert, 0x004D) \
+    X(F2740, text_disk, 0x0054) \
+    X(F2740, text_type_name, 0x005B) \
+    X(F2740, text_for_top, 0x0065) \
+    X(F2740, text_four, 0x006F) \
+    X(F2740, menus, 0x0079) \
+    X(F2740, menu_items, 0x00A3) \
     X(F27E6, disk_names, 0x000B) \
     X(F27E6, path_dirs, 0x0023) \
     X(F27E6, path_exts, 0x003B) \
@@ -352,13 +372,18 @@
     X(F27EE, key_set_other, 0x0B3E) \
     X(F27EE, players, 0x243E) \
     X(F27EE, key_set, 0x2498) \
+    X(F27EE, save_name, 0x249C) \
     X(F27EE, game_flags, 0x250C) \
     X(F27EE, menu_flags, 0x250E) \
+    X(F27EE, load_position, 0x2512) \
+    X(F27EE, pass_ticks, 0x251B) \
     X(F27EE, map_number, 0x2523) \
+    X(F27EE, score_best, 0x2593) \
     X(F27EE, score_now, 0x2597) \
     X(F27EE, key_set_copy, 0x4126) \
     X(F2C09, name_titel, 0x0006) \
     X(F2C09, name_bb, 0x000C) \
+    X(F2D8A, effects_asked, 0x0010) \
     X(DATA, draw_colour, 0x00D6) \
     X(DATA, draw_x1, 0x00D8) \
     X(DATA, draw_y1, 0x00DA) \
@@ -439,5 +464,62 @@
     X(DATA, pit_period_low, 0x0DE6) \
     X(DATA, pit_period_high, 0x0DE8) \
     X(DATA, pit_period_set, 0x0DEA) \
+    X(DATA, voice_scale, 0x1336) \
+    X(DATA, perc_bits, 0x134C) \
+    X(DATA, op_modulator, 0x1351) \
+    X(DATA, op_carrier, 0x135F) \
+    X(DATA, op_drums, 0x136D) \
+    X(DATA, slots, 0x13C1) \
+    X(DATA, slots_perc, 0x13D3) \
+    X(DATA, op_offsets, 0x13E9) \
+    X(DATA, op_is_carrier, 0x13FB) \
+    X(DATA, op_voice, 0x140D) \
+    X(DATA, op_voice_perc, 0x141F) \
+    X(DATA, song_tracks, 0x1432) \
+    X(DATA, song_sounding, 0x1436) \
+    X(DATA, song_timer_on, 0x1438) \
+    X(DATA, song_time, 0x1439) \
+    X(DATA, song_track, 0x143D) \
+    X(DATA, event_bytes, 0x143F) \
+    X(DATA, fnums, 0x144E) \
+    X(DATA, octaves, 0x15CE) \
+    X(DATA, notes, 0x162E) \
+    X(DATA, fx_left, 0x168E) \
+    X(DATA, fx_freq0, 0x1696) \
+    X(DATA, fx_step, 0x169E) \
+    X(DATA, fx_count, 0x16A6) \
+    X(DATA, fx_volume, 0x16AE) \
+    X(DATA, fx_number, 0x16B6) \
+    X(DATA, fx_ticks, 0x16BE) \
+    X(DATA, fx_freq, 0x16C6) \
+    X(DATA, fx_asked, 0x16CE) \
+    X(DATA, fx_voice, 0x16D6) \
+    X(DATA, adlib_found, 0x16EC) \
+    X(ZEROS, op_scratch, 0x0000) \
+    X(ZEROS, opl_note_sel, 0x001C) \
+    X(ZEROS, voice_key, 0x001D) \
+    X(ZEROS, voice_volume, 0x0026) \
+    X(ZEROS, voice_count, 0x0032) \
+    X(ZEROS, opl_port, 0x0034) \
+    X(ZEROS, opl_wave_on, 0x0036) \
+    X(ZEROS, voice_note, 0x0038) \
+    X(ZEROS, bend_range, 0x0042) \
+    X(ZEROS, voice_b0, 0x0044) \
+    X(ZEROS, voice_bend, 0x004E) \
+    X(ZEROS, opl_am_deep, 0x0060) \
+    X(ZEROS, perc_keys, 0x0061) \
+    X(ZEROS, opl_vib_deep, 0x0062) \
+    X(ZEROS, op_params, 0x0063) \
+    X(ZEROS, perc_mode, 0x015F) \
+    X(ZEROS, track_ptr, 0x0160) \
+    X(ZEROS, track_time, 0x01A0) \
+    X(ZEROS, track_status, 0x01E0) \
+    X(ZEROS, song_ptr, 0x01F0) \
+    X(ZEROS, song_ended, 0x01F4) \
+    X(ZEROS, status_ptr, 0x01F6) \
+    X(ZEROS, song_volume, 0x01FA) \
+    X(ZEROS, track_cur, 0x0210) \
+    X(ZEROS, song_division, 0x0214) \
+    X(ZEROS, song_playing, 0x0216) \
 
 #endif

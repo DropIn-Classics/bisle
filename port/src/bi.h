@@ -45,7 +45,7 @@ enum { BI_NAMES(X) S_names_end };
 typedef uint32_t fptr;
 #define MKFP(seg, off) ((fptr)(uint16_t)(seg) << 16 | (uint16_t)(off))
 #define FSEG(p) ((uint16_t)((p) >> 16))
-#define FOFF(p) ((uint16_t)(p))
+#define FOFF(p) ((uint16_t)((p) & 0xFFFF))
 #define FP(n) MKFP(S_##n, A_##n)
 #define GFP(n) MKFP(frw(S_##n, A_##n + 2), frw(S_##n, A_##n))
 #define SFP(n, p) (fww(S_##n, A_##n, FOFF(p)), fww(S_##n, A_##n + 2, FSEG(p)))
@@ -109,6 +109,8 @@ void clock_idle(void);
 void clock_retrace(void);
 /* a scan line passes with the interrupts off (set_palette) */
 void clock_lines(int lines);
+/* the clock's time in seconds */
+double clock_seconds(void);
 /* the PIT's period as int08 sets it (0: 10000h counts) */
 void clock_set_period(unsigned counts);
 /* the end, also when the window was closed */
@@ -176,17 +178,32 @@ void draw_unit24(int x, int y, int base, fptr entry);
 int load_picture(fptr dest, fptr name, fptr work, int *width, int *height);
 void t2433_0006(fptr buffer, fptr picture, fptr sprites, fptr work);
 
-/* ---- sound.c: CODE:0215..1B79 ---- */
-int sound_init(int speaker);
+/* ---- sound.c: CODE:0215..1B79; audio.c: the port's sound output ---- */
+int sound_init(int mode);
 int load_song(fptr dest, fptr name, fptr work);
-void play_song(int a, int b);
+int play_song(int a, int b);
 void stop_song(void);
+fptr load_effects(fptr dest, fptr name, fptr work);
+void effects_start(void);
+void effects_volume(int channel, int volume);
+/* a value into a register of the AdLib */
+void adlib_out(unsigned reg, unsigned value);
 
 /* ---- text.c, lib.c, title.c: T164D, T0CEB, T1727 ---- */
 int draw_text24(int x, int y, fptr text, unsigned keep_off, unsigned keep_seg);
 fptr next_line(fptr at, fptr start);
 long load_lib(fptr path, fptr dest, fptr work, fptr record, int sorted);
 int title(fptr work);
+
+/* ---- menu.c: T1090 ---- */
+int menu(fptr work);
+void draw_menu(int menu);
+int edit_text(int x, int y, int most, fptr item);
+int ask_position(void);
+void show_scores(fptr scores, int map, fptr codes);
+void load_scores(fptr scores, fptr work, int n);
+int t0d36_0c85(void);
+fptr t26ea_000f(long value, fptr dest, int digits, int flags);
 
 /* ---- battle.c: T0708, the program ---- */
 void battle_main(int argc, char **argv);

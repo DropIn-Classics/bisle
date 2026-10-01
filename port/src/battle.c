@@ -15,12 +15,13 @@ void fatal_error(int number)
     bi_fatal(text);
 }
 
-/* main: the switches /s (the PC speaker's sound) and /m (another text
- * than "Color."; what else it is for is not known) */
+/* main: the switch /m (another text than "Color."; what else it is for is
+ * not known).  The original's /s, the PC speaker's sound, is not taken:
+ * the port plays the AdLib's. */
 void battle_main(int argc, char **argv)
 {
     fptr work, p;
-    int speaker = 0, colour = 1, i;
+    int colour = 1, i;
 
     t2354_0011();
     SW(game_flags, 0);
@@ -30,13 +31,11 @@ void battle_main(int argc, char **argv)
     t164d_0482(1);
     for (i = 1; i < argc; i++)
         if (argv[i][0] == '/') {
-            if (argv[i][1] == 's' || argv[i][1] == 'S')
-                speaker = 1;
             if (argv[i][1] == 'm' || argv[i][1] == 'M')
                 colour = 0;
         }
     fwb(SEG(F2740), 0x02C8, colour ? 0 : 2);
-    sound_init(speaker);
+    sound_init(0);
     t0d36_000f(0x32);
     work = t2619_0004(0x493E0);
     if (work == 0)
@@ -74,5 +73,16 @@ void battle_main(int argc, char **argv)
     flip_page();
     /* the mouse (T267C:000E, T2683:000A, T268A:0006): the port has none */
     bi_at("menu");
-    bi_todo("the menu");
+    if (menu(work))
+        fatal_error(2);
+    t2354_0530();
+    SW(one_page, 0xFFFF);
+    t2593_0006();
+    flip_page();
+    if (GW(game_flags) & 0x100) {
+        /* EXIT */
+        bi_todo("the end of the program");
+    }
+    bi_at("map_setup");
+    bi_todo("a map");
 }

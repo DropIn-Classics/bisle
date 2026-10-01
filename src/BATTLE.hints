@@ -1969,3 +1969,128 @@ name F273B:0008 fatal_messages
 name F27EE:243E players
 name F27EE:2597 score_now
 name F27EE:2523 map_number
+; the sound's data (CODE:0215..1B79; tools/sndfiles.py has the rules). The
+; driver's tables: the most a voice's volume can be (words, 7Fh at
+; first; effects_volume sets it), the drums' bits of register BDh, the
+; values of a modulator, a carrier and the six drum operators (14 bytes
+; each), the operators of each voice (two bytes a voice: nine voices, and
+; the percussion mode's eleven), each operator's register offset, whether
+; it is a carrier, its voice and its voice in the percussion mode
+name DATA:1336 voice_scale
+name DATA:134C perc_bits
+name DATA:1351 op_modulator
+name DATA:135F op_carrier
+name DATA:136D op_drums
+name DATA:13C1 slots
+name DATA:13D3 slots_perc
+name DATA:13E9 op_offsets
+name DATA:13FB op_is_carrier
+name DATA:140D op_voice
+name DATA:141F op_voice_perc
+; the player: the number of tracks, whether notes sound (1; a song's
+; volumes are kept either way), whether the song's timer is there, the
+; time of the current event (a long), the current track, a channel
+; event's bytes by its kind (words), the frequencies (12 rows of 16
+; words: a semitone in sixteenths), the octave and the row of each
+; semitone
+name DATA:1432 song_tracks
+name DATA:1436 song_sounding
+name DATA:1438 song_timer_on
+name DATA:1439 song_time
+name DATA:143D song_track
+name DATA:143F event_bytes
+name DATA:144E fnums
+name DATA:15CE octaves
+name DATA:162E notes
+; the effects' four channels (words): the ticks an effect lasts, its
+; first frequency, the step, the count of times left, the volume, the
+; effect's number, the ticks left, the frequency now, 1 when asked for;
+; the channels' voices (2, 4, 3, 5); 1 when the AdLib is used
+name DATA:168E fx_left
+name DATA:1696 fx_freq0
+name DATA:169E fx_step
+name DATA:16A6 fx_count
+name DATA:16AE fx_volume
+name DATA:16B6 fx_number
+name DATA:16BE fx_ticks
+name DATA:16C6 fx_freq
+name DATA:16CE fx_asked
+name DATA:16D6 fx_voice
+name DATA:16EC adlib_found
+; the driver's and the player's variables, behind the stack (DS:1AD0 on:
+; the segment ZEROS, which answers what its zeros are for): 13 words for
+; an operator's values, register 8's bit, each voice's key bit, volume,
+; the number of voices (9, or 11 in the percussion mode), the card's
+; port, register 1's bit (the wave forms), each voice's note, the pitch
+; bend's range, each voice's register B0 and bend, the two depths of
+; register BDh and the drums' keys, the 18 operators' values (14 bytes
+; each), the percussion mode; the tracks' places (16 far pointers), times
+; (longs) and statuses, the song (a far pointer), 1 when all tracks have
+; ended, a far pointer to the current track's status, the song's volume
+; of each voice (words), a far pointer to the current track's place, the
+; song's division, 1 while it plays
+name ZEROS:0000 op_scratch
+name ZEROS:001C opl_note_sel
+name ZEROS:001D voice_key
+name ZEROS:0026 voice_volume
+name ZEROS:0032 voice_count
+name ZEROS:0034 opl_port
+name ZEROS:0036 opl_wave_on
+name ZEROS:0038 voice_note
+name ZEROS:0042 bend_range
+name ZEROS:0044 voice_b0
+name ZEROS:004E voice_bend
+name ZEROS:0060 opl_am_deep
+name ZEROS:0061 perc_keys
+name ZEROS:0062 opl_vib_deep
+name ZEROS:0063 op_params
+name ZEROS:015F perc_mode
+name ZEROS:0160 track_ptr
+name ZEROS:01A0 track_time
+name ZEROS:01E0 track_status
+name ZEROS:01F0 song_ptr
+name ZEROS:01F4 song_ended
+name ZEROS:01F6 status_ptr
+name ZEROS:01FA song_volume
+name ZEROS:0210 track_cur
+name ZEROS:0214 song_division
+name ZEROS:0216 song_playing
+; the sound's variables in its code: the song's timer (its handle, FFFFh
+; none), the timer's periods until the next step, 1 while a step runs,
+; where the song is (two far pointers, the same), where the effects'
+; file is, the timbre a channel is silenced with (28 words)
+name CODE:14EE song_timer_handle
+name CODE:14F0 song_wait
+name CODE:1546 song_busy
+name CODE:164D song_loaded
+name CODE:16E9 effects_loaded
+name CODE:1986 timbre_silent
+; the effects asked for: four records of 6 bytes (the effect, the volume,
+; a count; effects_start), and before them a far pointer to them
+name F2D8A:0010 effects_asked
+; the menus' data (T1090; port/src/menu.c): the names MENU and CODES, the
+; name of a score nobody has, the texts SELECT POSITION 0 TO 9, PLEASE
+; INSERT DISK and TYPE NAME FOR TOP FOUR, the menus (6 bytes each) and
+; their items (2Eh bytes each)
+name F2740:0000 name_menu
+name F2740:000A name_codes
+name F2740:0010 score_empty
+name F2740:002B text_select
+name F2740:0034 text_position
+name F2740:003D text_0_to_9
+name F2740:0046 text_please
+name F2740:004D text_insert
+name F2740:0054 text_disk
+name F2740:005B text_type_name
+name F2740:0065 text_for_top
+name F2740:006F text_four
+name F2740:0079 menus
+name F2740:00A3 menu_items
+; the ticks a pass of the map's loop takes (4; also the number of the
+; scores' file after a map), the position LOAD was given, the name made
+; of a number (T26EA:000F writes it: a saved game, a map's files), the
+; highest of the map's four scores
+name F27EE:251B pass_ticks
+name F27EE:2512 load_position
+name F27EE:249C save_name
+name F27EE:2593 score_best
