@@ -514,6 +514,44 @@ games, each its own folder mounted as C: and started there:
   found on the way: `runtime/inno.c` and the template's `port/src/main.c`
   gave warnings at MSVC's /W4 (this project's main.c too, fixed here),
   update.c on Windows had no file:// for the test.
+- The status screen in full (`tools/screens.py --status RAM --vram
+  VRAM`, BATTLE.hints at draw_status): the tool draws it from the game's
+  files and a run's memory as draw_status does: the window
+  (`draw_shop_window`, T1479:0004: SHOP.LIB's entries 0, 3, 1, 2 with
+  base 40h and a filled rectangle), three boxes (`draw_box`, T1479:0130:
+  filled, a light row above and column left, a dark column right and row
+  below; `fill_rect`, `draw_row`, `draw_column`), the texts, the numbers
+  and SHOP.LIB's entry 5, all colours AMOK.DAT's. A run with both
+  players' screens up (the keys of the overview run with down; player
+  1's: 53 x, 54 x, 55 lctrl+, 55.6 c+, 56.5 lctrl-, 57 c-; -ram and
+  -vram at 61 s): all 24160 pixels drawn for each player were in video
+  memory, on both pages (player 0 MOVE, player 1 ATTACK). Other values
+  and a limit were not seen. Two things the comparison showed:
+  draw_entry_u clips to the drawing record's rectangle with the right
+  column and the lower row left out (0, 0, 320, 179 in the run, so row
+  179 of the window's lower edge is not drawn), and the cursor is in the
+  hexagon of entry 5.
+- The cursor and the map's clock (BATTLE.hints at copy_page): at the end
+  of each pass of the map's loop (T0708:4385) each player's cursor is
+  drawn, CURSOR.LIB's entry of the cursor record's +1Bh at its +10h,
+  +12h, then `copy_page` (T2479:000A) copies one page to the other. The
+  loop then waits until the tick count DATA:0304 reaches F27EE:251B, 4
+  in a map; `timer_keys` counts it, added with a period of 4000h (72.8
+  a second if that is the PIT's count, presumably): 18.2 passes a
+  second. Two dumps 4 s apart had 397 and 470 passes (the long
+  F27EE:251F): 18.25 a second. F27EE:251B is also the number in the .HI
+  file's name, which after_map sets to the map's: the 04 of 04.HI after
+  the poked end of map 16 was the loop's 4, presumably. `fade_in` and
+  `fade_out` (T247D:0004, 002B) call set_palette at the levels 0, 4, ..
+  252 and 255, 251, .. 3 (read, not run; 252 is the level seen on the
+  map). MOON.hints got the eight names by xfer.py; not looked at in
+  MOON.ASM.
+- Player 1's keys (the table at DATA:0B50 in a run's memory): x left, v
+  right, d and f up, c down, Alt and left Ctrl fire.
+- doskit 11c6135 has `-keyat ADDR[#N] KEY+` and `-keysat ADDR FILE`: a
+  key at the Nth pass of an address, not at a time. Not used here yet;
+  with the loop's end (T0708:4385) as the address the key scripts would
+  no longer hang on the timing.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -539,10 +577,12 @@ games, each its own folder mounted as C: and started there:
    gives the unpacked files), and the maps are drawn as a run shows them
    (`mapfiles.py --png`), CODES.DAT and AMOK.DAT are read, the .PMP is
    the map's overview, the texts and the small font are read
-   (`txtfiles.py`); next the status screen in full (its boxes and
-   numbers: T1479:0130, draw_number's places), the menus' texts (T1090,
+   (`txtfiles.py`), the status screen is drawn in full
+   (`screens.py`); next in screens.py the other screens of SHOP.LIB's
+   window (the callers of draw_shop_window and draw_box in T1479: the
+   buildings' screens, by the texts 03h..09h), the menus' texts (T1090,
    in the program's data by the looks, drawn by draw_text24), `BB.DAT`,
-   then the rest of the screen: the cursor, the overview's frame, the
+   then the rest of the screen: the cursor's entries, the overview's frame, the
    frame's texts, what the windows show of a map (scrolling, the units'
    directions, a unit hidden from the other player).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
@@ -573,15 +613,18 @@ For the port (behaviour):
 2. A real end of a map: what a won map does besides what the pokes
    showed (after_map, T15AC:0007; the map record's +8 bit 0 for the last
    map; the STATS.IFF screen after a lost battle, which routine).
-3. The clock: what timer_add's (T2354:0713) period counts, how often
-   the main loop runs, why the title menu takes keys only from about
+3. The clock: the map's loop runs every 4 ticks of timer_keys, 18.2
+   times a second (above). Left: whether timer_add's (T2354:0713) period
+   is the PIT's count, the loops of the menus and the title, the values
+   2 and 0 of F27EE:251B, why the title menu takes keys only from about
    30 s.
-4. The palette level: where set_palette's level comes from, the fades
-   (steps of 4 to 252, presumably), where the animations' 6-bit
+4. The palette level: fade_in and fade_out give set_palette its levels
+   (above; their callers are not read), where the animations' 6-bit
    palettes are set.
 5. Saving and the high scores: where save_game writes (save_file or its
    own), where the name "00" comes from, the .HI file (28h bytes, named
-   by F27EE:251B, the map's number in the game's order, presumably).
+   by F27EE:251B, which after_map sets to the map's number and the map's
+   loop to its 4 ticks; a real end of a map not run).
 6. The animations: play_anim's names from ANIM\anim.fx (presumably),
    the .Axx/.FX/.PX formats, end_credits (T25A6:0655) and ab.fx.
 7. Sound: where sound_init's mode comes from, whether the music uses

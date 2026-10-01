@@ -666,10 +666,65 @@ name T2649:0006 put_pixel
 ; F27EE:243E +2, +3, +4 (17h bytes a player), drawn at y 5Ah, 66h, 72h in
 ; AMOK's colours +9 and +0Ah; +3 counts the buildings of ground flag 400h
 ; and +4 those of 100h (load_fin, and T0408:16B3 when one changes its
-; owner): factories and depots by the screen's rows. The rest of the
-; screen is not read. On ISLE's first map UNIT was 6, 6 and 12 though the
-; .FIN has 5 units a player (not looked into).
+; owner): factories and depots by the screen's rows. On ISLE's first map
+; UNIT was 6, 6 and 12 though the .FIN has 5 units a player (not looked
+; into). The whole screen is read (tools/screens.py has every place and
+; colour): T1479:0004 (player) draws the window, SHOP.LIB's entries 0, 3,
+; 1, 2 (the list at F27EE:0A7B) with base 40h and a rectangle filled with
+; AMOK's +0Eh; then three boxes by T1479:0130 with the texts 0Ah, 0Bh,
+; 0Fh, the numbers by draw_number (the words F27EE:250C +11h, +17h, +87h,
+; +8Bh; the counts; the bytes +15h, +16h of the player's counts for TURN
+; and LIMIT, text 10h for a limit of FFh), text 0Dh (MOVE) when the
+; player's record (F27EE:26B4) has bit 1 in +16h, else 0Ch (ATTACK), and
+; SHOP.LIB's entry 5 at x0 + 74h, 8Ah. A run with both players' status
+; screens up (-ram, -vram): all 24160 pixels screens.py draws for each
+; player were in video memory, on both pages.
+; T1479:0130 (x, y, w, h, window, colour): a rectangle filled with the
+; colour (not when negative; A0h added to x when window is not 0), the
+; row above and the column left of it in AMOK's +11h, the column right
+; and the row below in AMOK's +12h.
+; T2482:0004: the rectangle DATA:00D8..00DE (x1, y1, x2, y2, both corners
+; in it) in the colour DATA:00D6, row by row with T24BA:0008, which draws
+; the row y1 from x1 to x2; T2536:0004 the column x1 from y1 to y2. None
+; of the three clips.
+; draw_entry_u clips when the record's +0Eh (DATA:00E4) is not 0
+; (T23FD:0111): columns from +12h up to but not +16h, rows from +14h up
+; to but not +18h. In the run the rectangle was 0, 0, 320, 179: the last
+; row of SHOP.LIB's entry 2 (row 179) was not drawn. draw_entry_p's
+; clipping is not read.
 name T154F:0DBB draw_status
+name T154F:0008 draw_shop_window
+name T154F:0134 draw_box
+name T25C8:0004 fill_rect
+name T2600:0008 draw_row
+name T267C:0004 draw_column
+; the end of a pass of the map's loop, T0708:4385: each player's cursor,
+; CURSOR.LIB's entry of the cursor record's +1Bh (the list at F27EE:0A53)
+; at the record's +10h, +12h by draw_entry with base 0 (the far argument
+; the far pointer at +5 of the player's counts when F27EE:243E's or
+; 2455's bit 4 is set, else 0); before draw_status T0708 sets +10h, +12h
+; to 75h (+A0h for player 1), 8Bh, and in the run entry 1 was there.
+; Then L16F8, T259F:0004 (not read) and T2479:000A, which copies
+; DATA:02EE bytes of all planes from the segment DATA:0352 to DATA:0350
+; through the latches. Then the long F27EE:251F (the state's +13h)
+; counts the pass, and the loop waits until DATA:0304 (the record's
+; +22Eh) reaches F27EE:251B. DATA:0304 is counted up by timer_keys, which
+; T2354:0004 adds with timer_add and CX:BX = 0:4000h (72.8 times a second
+; if that is the PIT's count, presumably), and set to 0 just before
+; T0708:137F, the loop over the two players (each pass, by the dumps: it
+; was 1 in both). F27EE:251B is
+; 4 in a map (set at T0708:3CF4 and 3D01; 2 at T0408:09A1, 0 at one place
+; in T0708): a pass every 4 ticks, 18.2 a second. Two memory dumps of a
+; run 4 s apart had 397 and 470 passes: 18.25 a second.
+; F27EE:251B is also what T15AC (after_map) sets to the map's number
+; (F27EE:2523) and what names the .HI file: in the poked end of map 16
+; it was 4, the loop's value, so MAP\04.HI was written (presumably the
+; poke's doing; a real end of a map not run).
+name T25BF:000A copy_page
+; T247D:0004: set_palette with the palette DATA:04A0 at the levels 0, 4,
+; .. 252; T247D:002B at 255, 251, .. 3 (read, not run).
+name T25C3:0004 fade_in
+name T25C3:002B fade_out
 ; the texts (tools/txtfiles.py has the formats). DATA:0092 is a far
 ; pointer to DATA:00D6, a record the drawing routines take their
 ; arguments from: +0 the colour, +2, +4 x and y, +12h..+18h a rectangle
