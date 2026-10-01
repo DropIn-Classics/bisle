@@ -1458,9 +1458,9 @@ games, each its own folder mounted as C: and started there:
    fight scene pass by pass, `scene.py`; the map's whole screen with
    both windows, marks, lines, cursors and the overview, `screens.py
    --field`, a move under way too), then what is left of the screen: a unit hidden from the other
-   player. The sounds are read and done again (`sndfiles.py`); left
-   there a run with the speaker (`/s`; the runner has no speaker sound,
-   but the PIT's channel 2 could be logged as the AdLib's writes were).
+   player. The sounds are read and done again (`sndfiles.py`); the
+   PC speaker's sound (`/s`) stays as read: the user does not want it,
+   the port plays the AdLib's only.
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.
 5. Later: the AdLib sound refined (`-oplwav` against the game in GOG's
@@ -1510,7 +1510,7 @@ For the port (behaviour):
    screen takes its code by the same number).
 6. The animations: play_anim's names from ANIM\anim.fx (presumably),
    the .Axx/.FX/.PX formats, end_credits (T25A6:0655) and ab.fx.
-7. Sound: the speaker's songs and effects in a run (read only); what
+7. Sound (the AdLib's; the speaker's is left out on purpose): what
    the port does where the original loses the timers' ticks in a fade
    and where a value goes to the wrong register (both are the original's
    timing, not its rules); what F2740:02C8 (`/m`) is for.
