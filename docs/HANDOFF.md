@@ -578,6 +578,30 @@ games, each its own folder mounted as C: and started there:
   load messages) are not run yet. MOON.hints did not get the name (not
   mapped). mapfiles.py's sorted_entries stops before BIGUNIT.DAT's MAA
   now (the loader's list does).
+- A building's screen (T1479:0AA6, not drawn by a tool yet): the
+  cursor record in state +17h 2 with +18h 9 (T0708:2846..291B picks the
+  record the screen shows: F27EE:259C + 1Ch * the building's number for
+  a factory or depot, F27EE:24B0 + 1Ch * 0 or 1 for a square of ground
+  flag 40h (the headquarters), F27EE:0B64 + 1Ch * n for a unit that holds
+  others; in the record's +24h, +26h as far pointer, +22h 1 or 2). The
+  record's first 7 bytes are the units inside (FFh none) for player 0's
+  window, the next 7 for player 1's. Reached by a poke, not by keys (the
+  cursor's start square is empty: fire there gives the status screen with
+  down, nothing with the other directions; the route by keys to a
+  building was not found): `-poke LT0708_4088#401 F27EE:26CB 02 -poke
+  LT0708_4088#401 F27EE:26CC 09 -poke LT0708_4088#401 F27EE:26D6 0100
+  -poke LT0708_4088#401 F27EE:26D8 B024 -poke LT0708_4088#401 F27EE:26DA
+  6528` (about 46 s into the map; 6528 is the load segment 0077 plus
+  27EEh, written as the run stores it) then `-log T1479:0AA6` ran once and
+  the shot at 56 s showed the headquarters screen: a box and a column of
+  seven slots on the left (T1479:0931: SHOP.LIB's entry 4 at each, the
+  unit in it by UNIT.LIB, an arrow icon from F27EE:0A67 for some), the
+  title "HQ" with a number, and below the box of the unit in slot 0 (a
+  T-4 GLADIATOR, unit 10) with its numbers, in a box at 56, 125 (not the
+  unit screen's place, 43, 124). T0708 draws the rest after 0AA6 (the
+  state 2, +18h 0Ah loop from T0708:2A4C on: the choice among the
+  slots, the costs and the messages by texts 03h..09h, T1479:028E and
+  show_message): not read.
 - The cursor and the map's clock (BATTLE.hints at copy_page): at the end
   of each pass of the map's loop (T0708:4385) each player's cursor is
   drawn, CURSOR.LIB's entry of the cursor record's +1Bh at its +10h,
