@@ -578,7 +578,12 @@ games, each its own folder mounted as C: and started there:
   load messages) are not run yet. MOON.hints did not get the name (not
   mapped). mapfiles.py's sorted_entries stops before BIGUNIT.DAT's MAA
   now (the loader's list does).
-- A building's screen (T1479:0AA6, not drawn by a tool yet): the
+- A building's screen (T1479:0AA6, drawn by `screens.py --building` for
+  the poked headquarters run below: window, the two boxes, the seven
+  slots with their arrows (PATT.LIB's entry 2, from `make_path`'s name at
+  F27EE:0A59) and the title in AMOK's +0Bh match the video memory; the
+  big picture, the numbers box, slot 0's highlight and part of the title
+  row are drawn later by T0708 and not drawn by the tool): the
   cursor record in state +17h 2 with +18h 9 (T0708:2846..291B picks the
   record the screen shows: F27EE:259C + 1Ch * the building's number for
   a factory or depot, F27EE:24B0 + 1Ch * 0 or 1 for a square of ground

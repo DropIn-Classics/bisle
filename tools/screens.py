@@ -4,6 +4,7 @@ as BATTLE.EXE draws them, and compared with the run's video memory.
 
     screens.py --status RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
     screens.py --unit RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
+    screens.py --building RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
 
 RAM is a run's memory (run.py -ram), VRAM its video memory (run.py
 -vram), both of the same moment.  --status draws the status screen of
@@ -15,6 +16,14 @@ runner loaded the program at (its report's "load ... at"; default 0077).
 
 --unit draws the unit's screen (below) of each player whose cursor has
 the state 4 (the record's +17h) in the run's memory.
+
+--building draws the building's screen (draw_building below) of each
+player whose cursor has the state 2 (+17h) in the run's memory.  Checked
+against a poked run only (HANDOFF.md, the headquarters): of 24160 pixels
+drawn 21734 were in the video memory; the others are in the places T0708
+draws over afterwards (the big box, the numbers box, slot 0, row 13 right
+of the title), 134 of them outside x 44..140 y 22..118, x 56..128 y
+125..165 and slot 0, all in that row; what T0708 draws there is not read.
 
 The status screen (draw_status, T1479:0DC5, one argument: the player),
 read from the code; x0 is 0 for player 0 and 160 for player 1:
@@ -132,6 +141,7 @@ class Files:
         self.texts = txtfiles.read_texts(unpacked(find(game, 'GAME.TXT')))
         self.shop = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'SHOP.LIB')))]
         self.cursor = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'CURSOR.LIB')))]
+        self.patt = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'PATT.LIB')))]
         self.bigunit = mapfiles.sorted_entries(game, 'BIGUNIT')
         self.unit = mapfiles.sorted_entries(game, 'UNIT')
         self.ground = mapfiles.ground_images(game)
@@ -365,6 +375,64 @@ def draw_unit_info(files, v, clip=None):
     return s.pix
 
 
+def building_values(ram, player):
+    """what the building's screen (T1479:0AA6) shows for a player, from the
+    run's memory: the record the player's cursor record (+24h, +26h) points
+    to, its 7 slots for the player, its flags byte +19h, and the units'
+    records the slots name"""
+    rec = PLAYERS + PLAYER_REC * player
+    off, seg = struct.unpack_from('<HH', ram.bytes(rec + 0x24, 4))
+    b = [ram.far(seg, off + k) for k in range(0x1A)]
+    slots = [ram.far(seg, off + 7 * player + i) for i in range(7)]
+    units = {n: ram.bytes(UNITS + UNIT_REC * n, UNIT_REC) for n in slots if n <= 0xF0}
+    return {'state': ram.byte(rec + 0x17), 'mode': ram.byte(rec + 0x18), 'flags': b[0x19], 'slots': slots,
+            'units': units, 'player': player}
+
+
+def draw_building(files, v, clip=None):
+    """the building's screen (T1479:0AA6: player, the building's record) as
+    its routines draw it, read from the code:
+
+      the window, a box (44, 22, 96, 96) and a box (56, 125, 72, 40) filled
+      with AMOK's +10h (the second holds the numbers of the unit in slot 0,
+      which T0708 draws later: not drawn here).  The slots (T1479:0931: x,
+      y, player, the record's far pointer): seven, from (16, 12) down in
+      steps of 24, each SHOP.LIB's entry 4 at colour base 40h and, when the
+      slot's byte (the record's +7 * player + slot) is not above F0h, the
+      unit of that number (UNIT.LIB's entry type * 6 + 1, base 30h for
+      player 1, 20h for 0; 30h when the unit's word +4 has bit 1, 20h when
+      neither bit 1 nor bit 2) and, when that word has bit 200h and
+      T0D36:00F5 (player, word) is not 0, or has bit 2, PATT.LIB's entry 2
+      at the slot, base 0 (an arrow; what the bit 200h means is not read).
+      The title (draw_text, x 44 and y 13): GAME.TXT's text 3, 5, 4 or 6 by
+      the record's +19h bit 4, 8, 10h, else, in AMOK's +0Bh.  A player's
+      screen is 160 pixels right of player 0's."""
+    s = Screen(files, clip)
+    a = files.amok
+    x0 = WINDOW * v['player']
+    window(s, files, x0)
+    s.box(x0 + 0x2C, 0x16, 0x60, 0x60, a[C_BOX])
+    s.box(x0 + 0x38, 0x7D, 0x48, 0x28, a[C_BOX])
+    y = 0x0C
+    for n in v['slots']:
+        s.entry(x0 + 0x10, y, files.shop[4], FRAME_BASE)
+        if n <= 0xF0:
+            u = v['units'][n]
+            word4 = u[4] | u[5] << 8
+            base = 0x30 if v['player'] else 0x20
+            if word4 & 1:
+                base = 0x30
+            elif not word4 & 2:
+                base = 0x20
+            s.entry(x0 + 0x10, y, files.unit[u[8] * 6 + 1], base)
+            if word4 & 0x200 and (not word4 & 1 if v['player'] == 0 else bool(word4 & 1)) or word4 & 2:
+                s.entry(x0 + 0x10, y, files.patt[2], 0)
+        y += 0x18
+    f = v['flags']
+    s.text(x0 + 0x2C, 0x0D, 3 if f & 4 else 5 if f & 8 else 4 if f & 0x10 else 6, a[0x0B])
+    return s.pix
+
+
 def compare(pix, vram, page=0):
     """(pixels drawn, those the video memory has, the box of the others
     or None)"""
@@ -413,10 +481,30 @@ def unit_main(a, files, ram, vram, game):
     return 0
 
 
+def building_main(a, files, ram, vram, game):
+    shown = 0
+    for player in (0, 1):
+        v = building_values(ram, player)
+        if v['state'] != 2:
+            continue
+        shown += 1
+        print('player %d: slots %s, flags %02X' % (player, ' '.join('%02X' % n for n in v['slots']), v['flags']))
+        pix = draw_building(files, v, ram.clip())
+        if vram:
+            report(pix, vram)
+        if a.png:
+            os.makedirs(a.png, exist_ok=True)
+            to_png(os.path.join(a.png, 'building%d.png' % player), game, pix)
+    if not shown:
+        print('no player has the state 2')
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     ap.add_argument('--status', metavar='RAM', help="draw the status screens from a run's memory")
     ap.add_argument('--unit', metavar='RAM', help="draw the unit's screens from a run's memory")
+    ap.add_argument('--building', metavar='RAM', help="draw the building's screens from a run's memory")
     ap.add_argument('--vram', help="compare with the run's video memory")
     ap.add_argument('--png', metavar='DIR', help='write the pictures here')
     ap.add_argument('--game', help="the game's folder (default ISLE)")
@@ -424,12 +512,14 @@ def main():
     a = ap.parse_args()
     game = a.game or os.path.join(game_dir(), 'ISLE')
     files = Files(game)
-    if bool(a.status) == bool(a.unit):
-        ap.error('one of --status and --unit')
-    ram = Ram(open(a.status or a.unit, 'rb').read(), int(a.load, 16))
+    if [bool(a.status), bool(a.unit), bool(a.building)].count(True) != 1:
+        ap.error('one of --status, --unit and --building')
+    ram = Ram(open(a.status or a.unit or a.building, 'rb').read(), int(a.load, 16))
     vram = open(a.vram, 'rb').read() if a.vram else None
     if a.unit:
         return unit_main(a, files, ram, vram, game)
+    if a.building:
+        return building_main(a, files, ram, vram, game)
     for player in (0, 1):
         v = status_values(ram, player)
         pix = draw_status(files, player, v, ram.clip())
