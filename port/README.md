@@ -276,9 +276,15 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   game of two computers on the maps 17 to 20 (their codes read from the player's CODES.DAT), each compared
   once, where the map ends by itself (the passes 4196, 3423, 11910 and 14236): the same there
   too. Those games ran the helper's steps 0 to 7, the plan's steps 9.2,
-  9.3 and B.7 to B.9 and the tasks 0Dh and 0Eh as well. Not reached in
-  any of them: the commands 5 and 7, the plan's steps 2 and 6, the
-  tasks 9 to 0Ch. The maps 21 to 31 were not compared.
+  9.3 and B.7 to B.9 and the tasks 0Dh and 0Eh as well. And on the
+  maps 21, 24, 25 and 27 (the ends at the passes 15102, 23839, 28207
+  and 47608, the last after about 58 minutes of the original's time):
+  the same again; these ran the command 7 (a unit made in a factory),
+  the plan's step 6 and the tasks 9, 0Ah and 0Ch too. Not reached in
+  any game: the command 5, the plan's step 2, the task 0Bh. The maps
+  22, 23, 26, 28, 29 and 31 were played by the port alone to their ends
+  (nothing new reached) and not compared; map 30 did not end within
+  the 400 s given to the port's run, not looked into.
 - The setup screen, in the headless build with scripted keys (`DK_KEYS`,
   the picture through `DK_DUMP`, looked at): the page as the kit draws
   it; down twice, right, up twice and Enter start the game with `/m`
