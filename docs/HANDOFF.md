@@ -1128,6 +1128,18 @@ games, each its own folder mounted as C: and started there:
   in MOON.ASM: routine starts); five others it put 8 to 10h bytes before
   MOON's routines and are left without a name in BATTLE.hints (the
   comment there has both programs' addresses).
+- The fight scene, read in outline only (BATTLE.hints at fight_step has
+  it; T1F3C, T2112, T1F5A, T223C): the scene drawn in the attacker's
+  half of the screen from lists of pieces by the two grounds' kinds, the
+  units of both sides coming in along scripts chosen by unit and ground,
+  then a shot for each unit and explosions for those hit, with sounds.
+  Nothing of it is run or done again by a tool: the next step is a
+  `screens.py --fight` that draws a pass from a run's memory (the units'
+  records F2D37:0068 and 00CE, the shots' 012E and 01DC) and compares it
+  with the video memory, for which the fight record's far pointers
+  (+32h..+66h: the lists of entries and the drawing, sound and random
+  routines) have to be looked up first, and the passes with random
+  numbers (the shots' waits, the misses) taken from the memory.
 - A real end of a map and the statistics (BATTLE.hints at after_map; the
   run above with two changes first, so that a round is played: `64:phase
   76:phase`, the cursor's keys from 88, the change at 113, space at 140

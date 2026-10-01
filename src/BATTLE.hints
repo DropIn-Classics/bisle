@@ -701,6 +701,49 @@ name T15AC:069D history_add
 ; divide error; not seen.
 name T2190:000D fight_reckon
 name T1F3C:000A fight_step
+; The fight scene (T1F3C, T2112, T1F5A, T223C: read in outline, nothing
+; of it run or done again by a tool yet). fight_step counts its calls in
+; the fight record's +26h. The first call reckons (fight_reckon), keeping
+; the two counts of before and after in F2D37:00CC, 01D9 (attacker,
+; target; held within 1..6 for the scene) and 01DA, 0067; the first two
+; calls draw the scene into the attacker's half of the screen (x 0 or
+; A0h by bit 1 of his +4): T2112:000B the ground, by the scene's kind
+; (+5 of the two ground records, 1..7) a list of pieces at F2D5F:0006..
+; (a count, then entry, x, y each; the target's ground above, the
+; attacker's 5Ah lower), drawn through the record's far routine +5Ah
+; from the list of entries at its +42h, or for a target next to the
+; attacker columns of random height (T2112:0278); then pieces where the
+; two kinds differ (2 or 5 against others, 7 against others), and
+; T2112:05F4, 0670, 06EE, 076B the frame's four pieces (the record's
+; +3Eh list through +56h). Then, a call a pass:
+;   T1F5A:093C until it returns 1 (F2D37:0008): the units come in. Its
+;   first call starts a sound for each side (the type's +41h, through
+;   the record's +4Ah list and +4Eh routine, when the record's +2Ch has
+;   bit 1) and T1F5A:0001 gives each unit of a side (10h bytes each at
+;   F2D37:0068 and 00CE) its place in a script: T223C:0001 (unit, ground)
+;   chooses the script by the unit (bits 4 or 20h of its +6, 10h or 8 of
+;   its +4) or else the ground's kind, in F2D66. T1F5A:0736 plays a
+;   unit's script: FEh, x, y, direction sets its place, FFh ends it, else
+;   a direction and a length, gone at the pace of F2D37:000E by the
+;   type; T1F5A:0322 draws the unit (the entry by type and direction from
+;   the record's +32h list, 18h bytes a type; a type with 40h in its
+;   +0Ch a second part beside it; a shadow for an air unit, bit 10h),
+;   the target's side mirrored. T1F5A:0176 says which of the frame's
+;   pieces a sprite touched, and those are drawn again.
+;   T1F5A:1A21 until it returns 1 (F2D37:0009): the shots. Its first
+;   call sets up a shot for each unit (1Ch bytes each at F2D37:012E and
+;   01DC; T1F5A:0C58 the attacker's, T1F5A:101C the target's, none when
+;   the target cannot answer: the rules of fight_reckon again, in
+;   F2D37:0284): from a unit to one of the other side, its picture by
+;   the way it flies (T1F5A:01E4, eight ways), a random wait before it
+;   starts; the shots beyond those that hit go 20h up or down at random.
+;   T1F5A:1548 moves a shot at the pace of F2D37:002A by the type, with
+;   a sound at its start (the type's +42h) and at its end, where an
+;   explosion of six pictures follows and a unit that is hit is no longer
+;   drawn (its record's +1 set).
+; Then the four sounds are stopped, the count cleared, and fight_step
+; returns 1. The random numbers are the record's +62h routine's; which
+; routines the record's far pointers +4Eh..+66h are is not looked up.
 ; T0408:29C6 (attacker, target, squares far, window): the record's two
 ; percentages, +24h on the attacker's hit value for the attacker's side's
 ; units around the target (the bytes F27EE:000E.. by where they stand
