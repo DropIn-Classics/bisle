@@ -20,6 +20,18 @@ beyond the segments and a few routines; the port is the template's.
 - Not pushed yet when this was written: doskit 1676994 (push doskit
   first, the project's commits name it) and the project's commits from
   74fa292 on.
+- The subagents come from the kit's plugin now (`doskit/agents/`,
+  switched on in `.claude/settings.json`, which names `./doskit` as the
+  marketplace): `doskit:collector`, `doskit:cmd-digest` (new: runs a
+  command with long output and reports only the result),
+  `doskit:git-committer`. Seen in headless sessions (`claude -p`): the
+  first session after a checkout only makes the marketplace known, the
+  agents are there from the second on. Not checked: an interactive
+  session's question about trusting the marketplace, and two projects
+  on one machine each naming their own `doskit/` as the marketplace
+  `doskit` (Claude Code keeps one path for a name). The kit's commit
+  with the plugin and the project's commit that uses it were not
+  pushed when this was written (push doskit first).
 - Scratch scripts of the last session are in `build/scratch` (ignored,
   not part of the project; they may be gone): `rd.py A B` prints lines
   of build/BATTLE.ASM with the compiler's table indexing folded
