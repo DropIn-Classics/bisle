@@ -10,9 +10,11 @@ their programs byte for byte
 (`doskit/tools/check.py`: all ok). BI.EXE is read in full (which
 intro, then BATTLE.EXE); of BATTLE.EXE the data formats, the screens,
 the menus, the fight's reckoning, a unit's reach, path and targets, the
-carrying out of a move, the change of phase and a map's end are read and
-checked against runs (below), the computer player, the fight scene and
-the animations are not; the port is the template's.
+carrying out of a move, the change of phase and a map's end, and the
+computer player's assessment, plan and commands are read and checked
+against runs (below); how the computer steers its cursor to carry the
+commands out, the fight scene and the animations are not; the port is
+the template's.
 
 ## Start here (next session)
 
@@ -987,8 +989,8 @@ games, each its own folder mounted as C: and started there:
     player's headquarters and the routine returns 1, a unit inside
     becomes the computer's.
   Not seen: a unit of two squares, a unit that holds others moving, a
-  unit taken in or gone into (kinds 1, 2), a factory or depot taken, a
-  full building taken, the pioneers' orders (0Bh, 0Dh; the tool stops at
+  unit taken in or gone into (kinds 1, 2), a full building taken (a
+  factory and a depot taken are seen in the second battle, below), the pioneers' orders (0Bh, 0Dh; the tool stops at
   0Dh), a repair (8000h in a unit's +6: where it is set is not read), a
   map's end by units (11h, 12h, 15h), a limit of turns, the same in
   DESERT and MOON. Not read: where the limit of turns counts, the
@@ -1006,6 +1008,75 @@ games, each its own folder mounted as C: and started there:
   attacking this time. What fire offers on a square (the cursor's +1Ch)
   and the choice of a unit to move or fire are read (BATTLE.hints
   there); the pioneers' orders are read, not run.
+- The computer player (`tools/computer.py`, BATTLE.hints at
+  computer_step; the tool's docstring has the rules in full). It is a
+  state machine of which the map's loop does one small step a pass
+  (`computer_step`, T178C:000D), in five stages: it assesses (the two
+  sides' strength, how much each enemy unit threatens, a list of aims:
+  the enemy's buildings, squares by the own headquarters, units of
+  nobody), plans (a task and a score for every unit: the nearest fitting
+  unit to each aim, weakened units to a building, the units that fire
+  from afar, up to four units around the enemy that threatens most, the
+  rest towards an enemy or after a unit with a task), hands the tasks
+  out as commands (a unit to a square, a unit fires at a unit, a unit
+  out of a building, a repair, a type made in a factory, the change of
+  phase), and carries each command out by steering its own cursor: it
+  makes up directions and fire (the word F2C0A:11EE) that the map's loop
+  takes as it takes a player's keys, so the computer moves, fires and
+  builds through the routines read before (move_aim, give_order, the
+  building's screen). The map's .COM file is the types' worth and flags
+  for it (27 records of 6 bytes at F2C0A:0000: +0 the worth of a type as
+  a threat, +2 flags: 1 a type that takes buildings, 2 one that fires
+  from afar, 20h one that wants company, 40h one that guards, 80h..200h
+  those that carry, 400h one the computer builds; +4 how many go with
+  it; read from the code's use, the flags' names are the tool's).
+  tools/computer.py does the first three stages again from a run's
+  memory, call by call, and with `--calls` a whole visit of a stage from
+  one memory (the calls up to the one that returns 1). In the battle
+  against the computer (fights.keys; `build/scratch/aic.py STAGE ENTRY
+  EXIT N` stops a run at the Nth entry, lets the tool say how many calls
+  the visit has and stops a second run at that call's end):
+  - the assessment (`-break LT17C0_0A0D#N`, the end `LT17C0_177C#N`):
+    the calls 1..8, 11, 12, 19, 20, 27, 28, 43, 44, 59, 60, 75, 76, one
+    by one: all the records and the aims as the game's;
+  - the plan (`LT1C04_000D#N`, `LT1C04_2C58#N`): the twelve visits from
+    the calls 3, 90 (the attack phase: 2 calls), 92, 191, 312, 432, 544,
+    643, 731, 816, 911 and 1000 (83 to 119 calls each, the game's
+    numbers): every byte of the units' records, the aims and the plan's
+    own values as the game's;
+  - the commands (`LT17C0_0004#N`, `LT17C0_09C2#N`): the chains from the
+    calls 1, 8, 44, 51 and 230 (2 to 20 calls), each up to the command it
+    adds: the records, the queue of commands, the path's length and the
+    record of stop_check as the game's.
+  A second battle, ISLE's map 24 (code MAGIC, `build/scratch/magic.keys`:
+  the same keys with the code and without the two lefts; 24 by 24, four
+  factories and a depot of nobody, 23 units of the computer): the plan's
+  visits from the calls 3, 435, 894 and 1340 (430, 457, 444 and 462
+  calls, the game's numbers), the commands' chains from 8 (68 calls),
+  299, 926 and 932 (78 calls, a move running meanwhile), the assessment's
+  calls 3..7: all as the game's; and its first ten changes of phase with
+  turn.py (the computer takes a depot and two factories, three changes
+  with fights, a unit dead): every byte the game's, which adds a factory
+  and a depot taken to what turn.py was seen with. While a move runs the
+  map's loop carries it on between the calls, so the tool leaves the
+  units, the marks, the path's length and the move's record out of such
+  a chain's comparison and ends the chain before a call that only waits
+  (the chain from 616 of this battle, done before the tool did so, had
+  only such differences; it was not done again: the machine ran short
+  of memory and the last runs were stopped, as were the chains from 283
+  on of the first battle).
+  Not seen in the two battles: aims of kind 4 (units of nobody), a unit
+  that needs another to the end (T1ED2:0005 was called, its steps 5 and
+  6 not looked for), what the computer builds (the random choice: no
+  factory was the computer's with energy in the attack phase as far as
+  seen), ships and aircraft, the tasks 5 and 6 (units in buildings).
+  Not read: the cursor's steering (T1938:0480..17A6: the seven commands
+  as rows of directions and fire, F2D33:0006 and 0010 the directions'
+  and rows' tables), what the human's request for the change does to it
+  (F27EE:250E bit 80h, T0708:1480). MOON.hints got the names by xfer.py
+  (computer_step, computer_assess, computer_plan, computer_hand_out and
+  their helpers, in MOON's own segments in the same order; not looked
+  at).
 - A real end of a map and the statistics (BATTLE.hints at after_map; the
   run above with two changes first, so that a round is played: `64:phase
   76:phase`, the cursor's keys from 88, the change at 113, space at 140
@@ -1035,7 +1106,18 @@ games, each its own folder mounted as C: and started there:
   four_squares, sync_slots; not looked at: unit_explode, cargo_loses,
   drop_empty, direction; not mapped: score, cargo_follow, move_arrive,
   move_undo, cargo_move, timer_set, timer_due, history_add.
-- Scratch scripts of this step (build/scratch, ignored): `fights.py log
+- A kit matter seen on the way: disasm.py names an operand `D0008` (as
+  if of DATA) where the code has set DS to another far data segment by
+  hand and the ASSUME is of that segment (T17C0, T1C04: `MOV AL,[BX+D0000]`
+  is F2D33:0000); the build is identical all the same. Not looked into.
+- Runs in parallel: three batches of runs at once and the session's
+  own memory ran this machine short of memory (two batches were stopped
+  for it); one batch at a time is safe. A chain of 400 calls of the plan
+  takes the tool some minutes (the path search in Python).
+- Scratch scripts of this step (build/scratch, ignored): `ais.py STAGE
+  ENTRY EXIT N..` (single calls of a stage of the computer player),
+  `aic.py STAGE ENTRY EXIT N` (a chain), KEYS=file for another battle;
+  `fights.py log
   UNTIL` and `fights.py N ..` (the battle with the fights logged, or
   stopped at the Nth fight and fight.py run on it), `paths.py N ..` and
   `fires.py N ..` the same for find_path and fire_reach. A run to 600 s

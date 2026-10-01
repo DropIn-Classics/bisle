@@ -731,6 +731,110 @@ name T0D36:00F5 same_side
 name T0D36:05FF random
 name CODE:2627 srand
 name CODE:263F rand
+; The computer player. The map's loop calls T178C:000D (player) once a
+; pass for a player whose record's +0 has bit 2 (T0708:1554; with
+; F27EE:250E bit 80h, set when the human asked for the change of phase
+; while the computer is in its stages 20h or 40h, it calls it in a loop
+; of its own with message 32h up, until a key or the stages are through).
+; Its state is in the frame F2C0A: the map's .COM file at 0000 (27
+; records of 6 bytes, a type each: +0 a signed byte, the type's worth,
+; +2 a word of flags); the player's record at 00A2 + 0Ch * player; a
+; record of 9 bytes a unit at 00BA (the move phase) and at 0934 (the
+; attack phase): +0 an aim (a square or a unit), +2, +4 a score, +6 the
+; unit's threat, +8 its task; the keys' script at 11AE + 20h * player
+; (bytes played one a pass by T1938:000F into the word 11EE + 4 * player,
+; which the map's loop takes as the player's directions and fire: a byte
+; below 80h a direction of the table F2D33:0006, 80h + n the three bytes
+; of F2D33:0010 + 3 * n, FFh the end; +1Eh, +1Fh where it is); the word
+; 11F0 + 4 * player a message's number for the player's line; the
+; commands at 11FE + 49h * player (ten of 7 bytes: the kind, three words;
+; +46h the one that runs, +47h, +48h its steps). The list of aims is at
+; the far pointer of the player's record +9 (F27EE:2447), 6 bytes each.
+; T178C:000D does a step of the stage in the player's record's +0:
+;   20h T17C0:0A0D (message 2Fh), until it returns 1: then 40h
+;   40h T1C04:000D (messages 30h, 31h in turn), then 8
+;   8   T17C0:0004 (message 2Eh), then 2
+;   2   T1938:012F: a step of the command that runs; when it returns not
+;       0 (no command left) the stage is 8 again, else 1
+;   1   T1938:000F: the next byte of the keys' script; at its end 2
+; (message 1Ch else, 1Dh in the stages 2 and 1). T178C:01B6 (player), at
+; a map's start: the stage 20h, the records cleared.
+; T17C0:0A0D, the first stage, by the record's +5 (the table
+; T17C0:1783): the strengths, the threats, the aims; tools/computer.py
+; --assess has the rules and does a call again from a run's memory:
+; the same bytes in the records and the aims (HANDOFF.md has the runs).
+name T178C:000D computer_step
+name T178C:01B6 computer_start
+name T17C0:0A0D computer_assess
+; T1C04:000D, the stage 40h, by the record's +4 and +7 (the tables at
+; T1C04:2C5F..2CCB): a task for every unit; its own values are at
+; F2D36:0006..0015. T1ED2:0005 (player, unit, score, task, square), by
+; the record's +8: a unit that needs another (to be carried, or to wait
+; beside). tools/computer.py --plan has the rules and does whole visits
+; of the stage again, call by call: the same number of calls and the
+; same bytes as the game.
+name T1C04:000D computer_plan
+name T1ED2:0005 task_helper
+; T17C0:0004, the stage 8, by the record's +3 (the table T17C0:09FB):
+; the tasks become commands (T1938:0388 puts one at the queue's end: 1 a
+; unit to a square, 2 a unit fires at a unit, 3 the change of phase, 4 a
+; unit out of its building, 6 a repair, 7 a type made in a factory); it
+; returns 1 after each, and command_step carries it out before the next.
+; tools/computer.py --handout does it again; T1B01:0712 (unit, player) a
+; unit towards its aim, T1B01:0007 (unit, player) a unit to a square
+; beside a unit, T1B01:0C27 (square, player) -> 1 for a square with more
+; than three enemies around or two opposite.
+name T17C0:0004 computer_hand_out
+name T1B01:0712 task_move
+name T1B01:0007 task_approach
+name T1B01:0C27 square_crowded
+name T1938:0388 command_add
+name T1938:012F command_step
+name T1938:000F script_step
+; How the commands are carried out (T1938, read in outline, not run by a
+; tool): command_step calls the command's routine (the table
+; T1938:037A: 1 T1938:0480, 2 06D3, 3 08D8, 4 0A08, 5 1245, 6 0D59, 7
+; 0F7A), each a row of steps (the command record's +47h) that wait for a
+; running move to end, take the cursor to a square (T1938:1245 and
+; 157E: directions into the script until the cursor's square is the
+; aim's) and put fire into the script: the script's byte 5 is fire, 1
+; and 2 up and down (the slots of a building's screen), 80h..83h fire
+; with up, down, left, right (as a player chooses a unit, opens a
+; building, asks for the change), by the two tables F2D33:0006 and 0010.
+; Command 1: to the unit, fire with up, to the aim's square, then fire
+; twice when the square has the mark of reach and stop_check allows it,
+; else bit 8 of the player's record's +0 (the choice is given up, as
+; T0D36:0731 reads it). 2: to the unit, fire with up, the target's
+; square: fire if it is marked a target, else bit 8. 3: the cursor to
+; the own headquarters' square and one row on, fire with left when no
+; move runs, then it waits for the stage record's bit 4 (set by the
+; map's loop at the change). 4, 6: T1938:16C1 finds the building that
+; holds the unit; the cursor there, fire with left, up or down to the
+; unit's slot, then for 4 fire with up, a square it can stop on
+; (list_reach; none: bit 8), fire twice, fire with right; for 6 fire
+; with down, fire with right. 7: the cursor to the factory, fire with
+; left, to a free slot, fire with left, down the list to the type, fire
+; with left, fire with right.
+; T1ABC:0008 (unit, far three words): the unit's strength against land,
+; sea and air: the type's hit value (+0Ah, +0Bh, +9) * (count / 2 + 1) *
+; (the unit's +1 + 1) * (armour / 8) / 32.
+name T1ABC:0008 unit_strength
+; T1ABC:01D2 (flags, side) -> the first unit of the side alive whose
+; type's .COM record has one of the flags in +2, FFh none.
+name T1ABC:01D2 find_kind
+; T1ABC:027D (square, unit, player, flags) -> 1 when find_path finds a
+; way for the unit to the square with every square of the map marked
+; whose ground the type can be on (the masks), but those with a unit of
+; the other side (flag 1), and those with a unit of the own side that
+; holds others; the path stays in the player's list.
+name T1ABC:027D can_go
+; T1B01:0B4F (records far, player, n): the squares (+0Eh) of the side's
+; records with more than 2 of energy onto the list of aims, counted in
+; F27EE:0B62. T1B01:0E4B (player, unit): the unit's task 0Ah, score 190h,
+; its aim the nearest own factory can_go reaches (the distance reckoned
+; with the squares' offsets not halved) or the own headquarters.
+name T1B01:0B4F list_buildings
+name T1B01:0E4B task_home
 ; T1479:11B4 (energy): the types that can be made, into F27EE:4136 and
 ; their count into F27EE:1338: cost (+3Eh) no more than the argument,
 ; flag 2 of +0Eh clear (a map's .SHP sets it), and for a type that holds
@@ -794,7 +898,7 @@ name T25A6:0655 end_credits
 ; name went to MAP\04.HI, F27EE:251B still the loop's 4). Else STATS.IFF,
 ; the palette, WINNER.SND with F27EE:250C bit 10h (the map is won), else
 ; LOOSER.SND, STATS.LIB, CODES.DAT; the two players' curves of
-; history_add (T15AC:071F, 07EC: not read); F27EE:251B = the map; 500 on
+; history_add (below); F27EE:251B = the map; 500 on
 ; the score with bit 2000h. Won: the map's number + the +7 of its record
 ; in CODES.DAT, and text 12h with the new map's code, or text 18h and
 ; bit 20h when the old record's +8 has bit 0 (the last map; not reached
@@ -805,6 +909,17 @@ name T25A6:0655 end_credits
 ; headquarters taken by keys after one round (HANDOFF.md): the two
 ; curves, RATING : 1210 ROUNDS : 1 SCALE : 1 - 1, HEADQUARTER REPORTS A
 ; NEW KEYWORD : EAGLE (map 04's code), then the name went to MAP\03.HI.
+; The curves (read, not drawn by a tool yet): T15AC:071F (player, far
+; row) puts the player's history in order (after 64 points the oldest
+; first) and returns the number of points, F27EE:2497. T15AC:07EC (x, y,
+; far row, far entry, colour, the maximum as a long) draws one: a point
+; every 16 pixels for fewer than 16 points, every 8 for fewer than 32,
+; else every 4 (the SCALE's texts 15h, 16h, 17h); a point's height is
+; its count * 40h / the maximum (the larger of the two players' highest
+; counts, T15AC:0650), up from y; from point to point a line in the
+; colour (T2541:0004, a line between the drawing record's two points)
+; and STATS.LIB's entry drawn at every x along it (T15AC:095B). The
+; curves start at x 1Dh, y 48h and A8h, colours 3 and 12h.
 name T15AC:0007 after_map
 ; the file routines (assembly, read from the code; the opens, reads and
 ; closes are seen in -dos traces of runs):

@@ -36,8 +36,9 @@ Python 3 with `capstone` (`pip install capstone`).
   small font; `screens.py`: the game's screens drawn from a run's memory
   and compared with its video memory), and for the rules: `fight.py`
   (a fight's outcome), `moves.py` (where a unit can move and fire, the
-  path it takes) and `turn.py` (a move carried out, the change of phase,
-  a map's end), each done again from a run's memory and compared with
+  path it takes), `turn.py` (a move carried out, the change of phase,
+  a map's end) and `computer.py` (the computer player's assessment, plan
+  and commands), each done again from a run's memory and compared with
   what the game made of it.
 - `port/`: the implementation in C (its README says how far it is).
 - `docs/HANDOFF.md`: state, what was learned, what is next.
