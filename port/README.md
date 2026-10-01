@@ -12,8 +12,7 @@ program's own memory image (doskit/docs/METHOD.md, stage 3): the player's
 file is loaded into a megabyte of memory where the runner loads it (PSP
 0067h; its SHA-256 is checked), and each routine of the original is a C
 function of the hints' name that reads and writes that memory by the
-hints' names (`src/gen/names.h`, written by doskit's `symmap.py`). A part
-that is not translated yet ends the program with a message that names it.
+hints' names (`src/gen/names.h`, written by doskit's `symmap.py`).
 
 Translated so far (2026-10-01): the start, the Blue Byte logo, the title
 with its running lines, the sound (the songs and the effects on the
@@ -23,8 +22,15 @@ line, a unit chosen, its reach and targets, an attack order, the
 overview), the screens over a window (status, a unit, a building with
 its slots), a move carried out, the change of phase with the fights and
 their scene, the films, a game saved and loaded, a map's end with the
-statistics, the last map's ending and the credits. Not yet (`todo.c`:
-the program ends with the routine's name): the computer player.
+statistics, the last map's ending and the credits, the computer
+player. That is all of BATTLE.EXE the game calls; a few rare paths
+still end the program with a message that names them (`bi_todo`: a
+picture larger than a page, a block of the second page in
+restore_sprites, the question for another disk, a timer's handler that
+is not one of the program's). Not in the port: the game's other
+programs (the starter BI.EXE, the intros, DESERT.EXE and MOON.EXE of
+the two scenario disks), the PC speaker's sound (not wanted), joystick
+and mouse (the port answers as a PC without them).
 
 | File | The original's | What |
 |---|---|---|
@@ -52,7 +58,9 @@ the program ends with the routine's name): the computer player.
 | `credits.c` | T25A6 | the text typed after the last map's end |
 | `after.c` | T15AC | the numbers of units kept at each change, the statistics after a map |
 | `battle.c` | T0708 | main: the start, a map's setup, the map's loop, after a map |
-| `todo.c` | - | what is not translated yet |
+| `ai.h`, `computer.c` | T178C, T17C0, T1ABC, T1B01 | the computer player: its step a pass, the two sides assessed, the tasks handed out |
+| `plan.c` | T1C04, T1ED2 | the computer player's plan: a task for every unit |
+| `command.c` | T1938 | the computer player's commands carried out as keys |
 | `sound.c` | CODE:0215..1B79 | the AdLib's driver, the songs' player, the effects |
 | `audio.c` | - | the values written to the AdLib into doskit's OPL and out |
 
@@ -242,6 +250,23 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   overall) and the credits (the 1st and the 200th letter typed) the same
   but for the C library's jmp_buf; the port then went on to the menu
   (the original was not run that far).
+- The computer player: map 16 (the code CONRA), the human doing
+  nothing, at the passes 30, 150, 500 and 1500 of the map's loop (the
+  computer, in the attack phase first, assesses, hands out and asks for
+  the change); and both players the computer (PLAYER in the menus set to
+  COMPUTER twice: the two play by themselves, moves, fights and changes
+  of phase), at the passes 300, 1000, 3000 and 5900 and at the map's end
+  (the game ends by itself in round 14, before pass 6000): at each the
+  whole video memory, the program's memory (the computer's state, the
+  units, both maps, the seed of rand) but for the kinds of differences
+  above, and the memory behind the program the same. Which parts ran in
+  that game was recorded (`BI_SEEN=FILE`, `bi_seen` in the sources): the
+  assessment's steps 0 to 5, the commands 1, 2, 3, 4 and 6, the tasks 1
+  to 7 and most of the plan's steps. Translated and not reached, so not
+  compared: the commands 5 and 7 (units made in a factory), the plan's
+  steps 2 and 6, 7.4, 9.2 and 9.3 (a unit that fires from afar), B.7 to
+  B.9, the helper (T1ED2) as a whole and the tasks 9 to 0Eh. The other
+  maps for one player were not compared.
 - The window build was started for 8 s and ran (nothing looked at or
   heard: nobody was there).
 

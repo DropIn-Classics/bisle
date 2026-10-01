@@ -1602,6 +1602,27 @@ compared):
   leaves by longjmp; the text is DATA:0DEC (0Dh a line's end, 0Ch a
   page's, 0 the end); colour 1 is set by INT 10h AX=1010h (the port:
   set_dac_entry).
+- The computer player (read in full for the port; tools/computer.py
+  corrected where the reading showed it wrong): a unit of two squares is
+  handled by its first half's record (task_move and task_approach lower
+  the number first); task_move keeps the path's length in its own
+  module's data, F2D35:0014 (the listing shows it as D0014: a label of
+  DATA, because the offset lies behind F2D35's own bytes; such a label
+  without ES: in a module whose DS is not DATA is that module's DS plus
+  the offset, not DATA's variable: T1C04's D0006..D0014 are F2D36:0006
+  on, T1938's D001F..D0029 F2D33:001F on); the plan's step for the units
+  that fire from afar looks for its unit with a count of its own and
+  leaves F2D36:0007 as it is when none is found.
+- A game of two computers: the code CONRA, then PLAYER in OPTIONS and
+  Enter on the first line (the second is COMPUTER by the code); by the
+  menu loop's passes: down 30, enter 40, enter 60, c o n r a at 70 to
+  110, enter 120, down 130, 140, enter 150, enter 170, down 190, 200,
+  enter 210, down 230, 240, 250, enter 260, enter 280. Without a code
+  the PLAYER menu's lines do not change (a map without a .COM file).
+  The two play without a key (the change of phase needs no F1 between
+  two computers): the best run for a comparison of everything at once.
+  The scratch shot.py writes the port's picture at a place as a PNG
+  (DK_DUMP), which is how the menus were looked at.
 - T2701:000E unpacks a packed entry in memory as load_file does a file,
   a byte more than the length says; draw_packed (T24D8:0008) draws from
   the buffer when it returns 0. Above 64 KB, or when the buffer's offset
@@ -1618,15 +1639,16 @@ compared):
 
 ## Next
 
-0. The port: the sound, the menus, a map's setup and its loop with the
-   cursors, the screens over a window (T1479), a move (T122D), the change
-   of phase (T0408), T15AC, the fight scene (T1F3C..T223C), the films
-   (T2248), saving and loading (T13CA) and the credits (T25A6) are done;
-   what is left in port/src/todo.c is the computer player
-   (T178C..T1ED2; tools/computer.py did its routines again from runs and
-   says what each does). After it: the launcher's screen, the other
-   platforms' builds, DESERT and MOON. Each step compared with the
-   runner as port/README.md says.
+0. The port: all of BATTLE.EXE the game calls is translated and
+   compared with the runner as port/README.md says, the computer player
+   last (T178C..T1ED2). Next for the port: the setup screen before the
+   game (doskit/docs/LAUNCHER.md: pages and items through launcher.h,
+   nothing drawn by the port), the builds on macOS and Linux, the
+   window build looked at and listened to by a person, then the other
+   programs: BI.EXE (what it does before BATTLE.EXE), the intros,
+   DESERT.EXE and MOON.EXE (their hints are carried over from
+   BATTLE's; what differs is to be read). A release only as
+   doskit/docs/RELEASE.md says.
 1. BATTLE.EXE's last 4.1 KB: menus, a map, saving, loading, battles
    against the computer and poked wins with their animations ran none
    of it (above) but for a RETF; unused library code and switch tables,

@@ -456,6 +456,7 @@
     X(F27EE, map0, 0x4152) \
     X(F27EE, map1, 0x4156) \
     X(F27EE, cursor_kept, 0x415A) \
+    X(F27EE, strength_values, 0x418C) \
     X(F27EE, window_y_odd, 0x4192) \
     X(F27EE, around, 0x41A2) \
     X(F2C09, name_titel, 0x0006) \
@@ -466,7 +467,27 @@
     X(F2C0A, computer_attack_units, 0x0934) \
     X(F2C0A, computer_scripts, 0x11AE) \
     X(F2C0A, computer_keys, 0x11EE) \
+    X(F2C0A, computer_command, 0x11F6) \
     X(F2C0A, computer_queues, 0x11FE) \
+    X(F2D33, computer_hq_order, 0x0000) \
+    X(F2D33, computer_key_bits, 0x0006) \
+    X(F2D33, computer_key_sequences, 0x0010) \
+    X(F2D33, computer_holder, 0x001F) \
+    X(F2D35, computer_out_square, 0x0003) \
+    X(F2D35, computer_repair_holder, 0x0005) \
+    X(F2D35, computer_factory, 0x0009) \
+    X(F2D35, approach_turns, 0x000E) \
+    X(F2D36, task_path_count, 0x0004) \
+    X(F2D36, plan_foe, 0x0006) \
+    X(F2D36, plan_unit, 0x0007) \
+    X(F2D36, plan_kind, 0x0008) \
+    X(F2D36, plan_aim, 0x000A) \
+    X(F2D36, plan_count, 0x000C) \
+    X(F2D36, plan_score, 0x000E) \
+    X(F2D37, plan_square, 0x0000) \
+    X(F2D37, plan_got, 0x0002) \
+    X(F2D37, plan_other, 0x0004) \
+    X(F2D37, helper_unit, 0x0006) \
     X(F2D37, scene_arrived, 0x0008) \
     X(F2D37, scene_shot, 0x0009) \
     X(F2D37, scene_record, 0x000A) \

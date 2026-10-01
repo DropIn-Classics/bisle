@@ -301,6 +301,41 @@ void clock_lines(int lines)
 
 /* ---- for comparisons with the original ---- */
 
+/* BI_SEEN=FILE: the names of the places a run came through (bi_seen:
+ * the kinds of the computer player's steps), each once, to say what a
+ * comparison covered */
+void bi_seen(const char *what, int n)
+{
+    static char seen[256][24];
+    static int count, off;
+    static const char *path;
+    char name[24];
+    FILE *f;
+    int i;
+
+    if (off)
+        return;
+    if (!path) {
+        path = getenv("BI_SEEN");
+        if (!path) {
+            off = 1;
+            return;
+        }
+    }
+    snprintf(name, sizeof name, "%s %X", what, n);
+    for (i = 0; i < count; i++)
+        if (!strcmp(seen[i], name))
+            return;
+    if (count == 256)
+        return;
+    strcpy(seen[count++], name);
+    f = fopen(path, "a");
+    if (f) {
+        fprintf(f, "%s\n", name);
+        fclose(f);
+    }
+}
+
 /* A place the original passes too (a loop's start, a routine's entry),
  * counted by its name.
  * BI_BREAK=NAME#N: at the Nth pass of NAME the memory goes to $BI_RAM and

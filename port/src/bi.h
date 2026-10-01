@@ -125,6 +125,8 @@ void bi_exit(int code);
 void bi_fatal(const char *text);
 /* a place for comparisons with the original (BI_BREAK, main.c) */
 void bi_at(const char *name);
+/* a place a run came through, for $BI_SEEN */
+void bi_seen(const char *what, int n);
 /* a routine not translated yet was reached */
 void bi_todo(const char *name);
 
@@ -328,7 +330,7 @@ long score(void);
 void history_add(int units0, int units1);
 void after_map(fptr buffer);
 
-/* ---- not translated yet (todo.c) ---- */
+/* ---- computer.c, plan.c, command.c (ai.h): T178C..T1ED2 ---- */
 void computer_start(int side);
 void computer_step(int side);
 void computer_unit_new(int unit);

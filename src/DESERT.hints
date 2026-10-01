@@ -2159,6 +2159,33 @@ name F2C0A:00BA computer_move_units
 name F2C0A:0934 computer_attack_units
 name F2C0A:11AE computer_scripts
 name F2C0A:11FE computer_queues
+; the computer player's other values (computer.c, plan.c, command.c of the
+; port; tools/computer.py): the command being made, a unit's three
+; strengths, the order of the squares around the headquarters, the keys of
+; a script's bytes and of the bytes 80h..83h, what a command keeps between
+; its steps, the turns tried around a unit, the length of a path kept, the
+; plan's own values (they run on into F2D37), the helper's unit
+name F2C0A:11F6 computer_command
+name F27EE:418C strength_values
+; (not mapped) name F2D33:0000 computer_hq_order
+name F2D33:0006 computer_key_bits
+name F2D33:0010 computer_key_sequences
+name F2D33:001F computer_holder
+; (not mapped) name F2D35:0003 computer_out_square
+; (not mapped) name F2D35:0005 computer_repair_holder
+; (not mapped) name F2D35:0009 computer_factory
+name F2D35:000E approach_turns
+; (not mapped) name F2D36:0004 task_path_count
+; (not mapped) name F2D36:0006 plan_foe
+; (not mapped) name F2D36:0007 plan_unit
+; (not mapped) name F2D36:0008 plan_kind
+; (not mapped) name F2D36:000A plan_aim
+; (not mapped) name F2D36:000C plan_count
+; (not mapped) name F2D36:000E plan_score
+; (not mapped) name F2D37:0000 plan_square
+; (not mapped) name F2D37:0002 plan_got
+; (not mapped) name F2D37:0004 plan_other
+; (not mapped) name F2D37:0006 helper_unit
 ; the ticks a pass of the map's loop takes (4; also the number of the
 ; scores' file after a map), the position LOAD was given, the name made
 ; of a number (T26EA:000F writes it: a saved game, a map's files), the

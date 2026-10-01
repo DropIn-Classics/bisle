@@ -595,8 +595,8 @@ def move_toward(mem, n, player):
     S, T = mem.state(player), mem.table(player)
     squares = mem.squares(player)
     bit = 2 if player else 1
-    rec = T + 9 * n                              # the record of the unit as given
     n = first_half(mem, n)
+    rec = T + 9 * n                              # the first half's record, as the code
     step = mem.b(S + 7)
     if step == 0:
         if not mem.w(F + 0x2510) & 0x80:
@@ -609,7 +609,7 @@ def move_toward(mem, n, player):
     elif step == 3:
         count = mem.w(F + 0x0B62)
         src, dst = mem.paths(player) + 0x1F40, mem.aims(player)
-        mem.sw((mem.load + ORDER) * 16 + 0x14, count)
+        mem.sw((mem.load + 0x2D35) * 16 + 0x14, count)
         mem.m[dst:dst + 2 * count] = mem.m[src:src + 2 * count]
         mem.sb(S + 7, 4)
     elif step == 4:
@@ -622,7 +622,7 @@ def move_toward(mem, n, player):
     elif step == 6:
         mem.sb(S + 7, 0)
         path, stops = mem.aims(player), mem.paths(player)
-        for d in range(s16(mem.w((mem.load + ORDER) * 16 + 0x14))):
+        for d in range(s16(mem.w((mem.load + 0x2D35) * 16 + 0x14))):
             for i in range(s16(mem.w(F + 0x0B62))):
                 sq = mem.w(stops + 2 * i)
                 if sq != mem.w(path + 2 * d):
@@ -648,8 +648,8 @@ def approach(mem, n, player):
     S, T = mem.state(player), mem.table(player)
     squares = mem.squares(player)
     bit = 2 if player else 1
-    rec = T + 9 * n
     n = first_half(mem, n)
+    rec = T + 9 * n
     step = mem.b(S + 7)
     if step == 0:
         if not mem.w(F + 0x2510) & 0x80:
@@ -1245,7 +1245,12 @@ def plan(mem, player, say):
             mem.sb(G + 7, 0)
             mem.sb(S + 7, 1)
         elif sub == 1:
-            next_unit(lambda n: not half(n) and same_side(player, f(n)) and not f(n) & 0xC200 and com(n) & 2, 4)
+            n = cur()
+            while n <= NONE and not (not half(n) and same_side(player, f(n)) and not f(n) & 0xC200 and com(n) & 2):
+                n += 1
+            if n <= NONE:                       # F2D36:0007 stays as it is when none is found
+                mem.sb(G + 7, n)
+            mem.sb(S + 7, 2 if n <= NONE else 4)
         elif sub == 2:
             clear_marks(mem, 8 if player else 4)
             fire_marks(mem, cur(), player)
