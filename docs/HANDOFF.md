@@ -1262,6 +1262,25 @@ games, each its own folder mounted as C: and started there:
   cursor, keys held 0.15 s moved it one or two squares. Not seen: a
   unit of two squares under way, a move that leaves the window (whether
   the window follows).
+- The squares' explosions after a fight (BATTLE.hints at "The fights",
+  `screens.py --field RAM --explosions N`): while the fight scene has
+  the attacking player's half, the other player's half shows his map
+  around the attacker (in the run), the attacker's square hatched (the mark 40h or
+  80h, PATT.LIB's entry 1) and the target's ringed (1 or 2, entry 0);
+  change_phase sets these marks before the fight and clears them. When
+  a unit is gone, its square shows the ground and BUM.LIB's entries 5
+  down to 1, one every 4 ticks, then the bare ground (unit_explode's
+  records at F27EE:2472). Runs (scratch `ex.py`: atc.keys with at.pk's
+  pokes and `-poke LT0408_000B#2 F27EE:29EC 01`, the target's count 1;
+  `-break LT0408_25C8#1..6` and `LT0408_0E4A#1`, -ram -vram): player
+  1's half, 32000 pixels, the same on both pages in all seven with
+  `--explosions 1 --line1 unit:D` (the line is the target's, by
+  unit_line in change_phase). Not compared: the two halves together
+  (the other is scene.py's), a dead attacker (the record 0), a unit of
+  two squares, an explosion outside the window. This also says what
+  two marks of the map's screen are: 40h/80h the attacker during a
+  fight; 10h was on a unit with an order in its own player's window
+  (seen, the code that sets it not read).
 - MOON.hints: T2084 has `start=8`: MOON's fight_step (T2066) ends in the
   frame's first 8 bytes (read; the build is identical either way).
   xfer.py carried the scene's names to MOON.hints (their beginnings
@@ -1367,7 +1386,7 @@ games, each its own folder mounted as C: and started there:
    fight scene pass by pass, `scene.py`; the map's whole screen with
    both windows, marks, lines, cursors and the overview, `screens.py
    --field`, a move under way too), then what is left of the screen: a unit hidden from the other
-   player, the squares' explosions after a fight, and the sounds: FIGHT.FXX, GAME.FXX, the .SND files and the
+   player, and the sounds: FIGHT.FXX, GAME.FXX, the .SND files and the
    records the fight scene hands to CODE:16F8 (not read).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.

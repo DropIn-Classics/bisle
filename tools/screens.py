@@ -109,8 +109,16 @@ but for a unit poked into the run for entry 4.  Ten of a move (the
 reach, the path marked, the unit under way and at its aim, with
 --line0 6 after the arrival) had all on the page shown.  Not seen: marks of
 player 1, a unit with 2 in its +6 (drawn only for its own side), a dot
-of +20h's colour, the cursor's states 5 and 6 over the map, the
-squares' explosions.
+of +20h's colour, the cursor's states 5 and 6 over the map.
+
+--field RAM --explosions N draws only player N's half as change_phase
+shows it while the fight scene has the other (field_explosions below):
+the map, the attacker's and the target's squares marked, the squares'
+explosions, the line --lineN names.  Checked against seven dumps of a
+fight whose target was poked to die (stopped at each call of
+T0408:25C8 and after the loop): the half's 32000 pixels on both pages
+in each.  Not seen: the attacker gone, a unit of two squares (the marks
+of its second square are not drawn here).
 
 --building draws the building's screen (draw_building below) of each
 player whose cursor has the state 2 (+17h) in the run's memory.  Checked
@@ -271,6 +279,7 @@ class Files:
         self.char24 = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'CHAR24.LIB')))]
         self.patt = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'PATT.LIB')))]
         self.exp = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'EXP.LIB')))]
+        self.bum = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'BUM.LIB')))]
         self.bigunit = mapfiles.sorted_entries(game, 'BIGUNIT')
         self.unit = mapfiles.sorted_entries(game, 'UNIT')
         self.ground = mapfiles.ground_images(game)
@@ -1048,6 +1057,45 @@ def field_window(s, ram, player):
             s.unit24(x, y, f.patt[0], 0x30 if player else 0x20)
 
 
+EXPLOSIONS = 0x2472                     # F27EE: unit_explode's four records of 7 bytes
+C_EXPLOSION = 8                         # AMOK.DAT: an explosion's steps
+FIGHT = 0x2716                          # F27EE: the fight record (far pointers to the two units first)
+
+
+def field_explosions(s, ram, player):
+    """the squares' explosions after a fight as change_phase's loop
+    (T0408:0C7D) leaves them on the page shown, in a player's window:
+    for each of the four records (+0 the square, +2 the step, FFh none)
+    T0408:25C8 draws the ground's hexagon and BUM.LIB's entry of the step
+    at the square's place when the step is below AMOK's +8, then the step
+    goes down by one; the page shows the step before the record's.
+    -> how many are drawn"""
+    f = s.f
+    width, first = ram.word(MAP_WIDTH), ram.word(PLAYERS + PLAYER_REC * player + 2) >> 1
+    off, seg = struct.unpack_from('<HH', ram.bytes(MAPS + 4 * player, 4))
+    # the marks change_phase sets for the window before the fight (T0408:0680..0846) and
+    # clears again: 40h (player 1's window: 80h) on the attacker's square, 1 (2) on the target's
+    for at, entry, base in ((FIGHT, f.patt[1], 0), (FIGHT + 4, f.patt[0], 0x30 if player else 0x20)):
+        unit = struct.unpack_from('<H', ram.bytes(at, 2))[0]
+        square = (struct.unpack_from('<H', ram.bytes(unit + 0x0B + 2 * (1 - player), 2))[0] - 1) >> 1
+        col, row = square % width - first % width, square // width - first // width
+        if 0 <= col < COLUMNS and 0 <= row < ROWS:
+            s.unit24(WINDOW * player + 16 * col, (12 if col & 1 else 0) + 24 * row, entry, base)
+    n = 0
+    for i in range(4):
+        square, step, ground, unit = struct.unpack_from('<HbHH', ram.bytes(EXPLOSIONS + 7 * i, 7))
+        col, row = (square >> 1) % width - first % width, (square >> 1) // width - first // width
+        if step < 0 and unit == 0xFF and 0 <= col < COLUMNS and 0 <= row < ROWS:
+            # it has run: the square has the record's ground and no unit, drawn by redraw_square
+            s.hexagon(WINDOW * player + 16 * col, (12 if col & 1 else 0) + 24 * row, f.ground[ground])
+        if 0 <= step + 1 < f.amok[C_EXPLOSION] and step >= 0 and 0 <= col < COLUMNS and 0 <= row < ROWS:
+            x, y = WINDOW * player + 16 * col, (12 if col & 1 else 0) + 24 * row
+            s.hexagon(x, y, f.ground[ram.far(seg, off + square)])
+            s.entry(x, y, f.bum[step + 1], 0)
+            n += 1
+    return n
+
+
 def loaded_pmp(files, ram):
     """the entry of the map's .PMP: the one of the game's whose bytes the
     run's memory holds (the map's loop keeps the pointer in its frame)"""
@@ -1107,7 +1155,7 @@ def cursor_unit(ram, player):
     return n - 1 if word4 & 0x40 and not word4 & 0x80 else n
 
 
-def draw_field(files, ram, lines=(None, None)):
+def draw_field(files, ram, lines=(None, None), explosions=None):
     """the map's whole screen as the map's loop (T0708) leaves it, read
     from the code:
 
@@ -1164,6 +1212,12 @@ def draw_field(files, ram, lines=(None, None)):
         state, mode = ram.byte(rec + 0x17), ram.byte(rec + 0x18)
         over = None
         field_window(s, ram, player)
+        if player == explosions:
+            shows.append('the map in change_phase, %d explosions' % field_explosions(s, ram, player))
+            if isinstance(lines[player], tuple):
+                u = ram.bytes(UNITS + UNIT_REC * lines[player][1], UNIT_REC)
+                unit_line(s, a, player, u, ram.bytes(TYPES + TYPE_REC * u[8], TYPE_REC), ram.bytes(SUFFIXES, 12))
+            continue
         if state == 2:
             shows.append('a building')
             over = draw_building(files, building_values(ram, player), ram.clip())
@@ -1217,7 +1271,10 @@ def field_main(a, files, ram, vram, game):
             lines.append(('unit', int(arg[5:], 16)))
         else:
             lines.append(ram.message(int(arg, 16)))
-    pix, shows = draw_field(files, ram, lines)
+    pix, shows = draw_field(files, ram, lines, a.explosions)
+    if a.explosions is not None:        # the other half has the fight scene (scene.py)
+        x0 = WINDOW * a.explosions
+        pix = [c if x0 <= i % WIDTH < x0 + WINDOW else -1 for i, c in enumerate(pix)]
     for player in (0, 1):
         rec = ram.bytes(PLAYERS + PLAYER_REC * player, PLAYER_REC)
         print('player %d: %s; state %d, +18h %02X, cursor %d at %d, %d, +1Ch %04X, unit %02X' % (
@@ -1354,6 +1411,9 @@ def main():
     ap.add_argument('--line0', metavar='WHAT', help="with --field: player 0's message line: unit (the unit of the "
                     "cursor record's +1Eh), unit:N, a text's number (hex) or clear (default: as the picture has it)")
     ap.add_argument('--line1', metavar='WHAT', help="the same for player 1")
+    ap.add_argument('--explosions', metavar='PLAYER', type=int, choices=(0, 1),
+                    help="with --field: only this player's half, as change_phase shows it after a fight: the "
+                    "map with the squares' explosions, no cursor, the line only as --lineN says")
     ap.add_argument('--hi', metavar='FILE', help='the .HI file for --scores (default: the table without a file)')
     ap.add_argument('--id', dest='menu_id', type=int, default=3, help='the menu (default 3, the title menu)')
     ap.add_argument('--sel', type=int, help='the chosen item: draw the picture behind and the cursor too')

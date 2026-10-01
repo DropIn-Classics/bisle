@@ -499,9 +499,33 @@ name T0E9B:1E90 square_distance
 ; +1, the experience, at most 6: one more for a unit whose enemy lost
 ; something (unless the enemy has 20h in its +6), one more when the enemy
 ; is gone. Read; the +1 was seen to go from 0 to 1 between two fights of
-; a unit. The squares' animation (0C04 on, by the records F27EE:2472 of 7
-; bytes that unit_explode fills: the square, the steps, the two bytes the
-; square gets when it has run) is not read beyond that.
+; a unit. What the other player's half shows meanwhile (the scene has the
+; attacker's; M below): before the fight (T0408:0680..08D0) the attacker's
+; square gets the mark 40h (M 1: 80h) and the target's 1 (2), each with
+; the other half of a unit of two squares; T0E9B:15DD (player, square)
+; puts M's window around a square (its first column and row even, the
+; square 5 columns and 4 rows in where the map allows) and the cursor on
+; it: the attacker's in the run; draw_window and draw_marks with every unit's two
+; directions (+0Fh, +10h) exchanged for the call. The squares' animation
+; (T0408:0C04 on, when a unit is gone) by the four records F27EE:2472 of
+; 7 bytes that unit_explode fills (+0 the square, +2 the step, AMOK's +8
+; at first, one more for the second square of a unit of two; +3 and +5,
+; words, the two bytes the square gets when it has run; FFh in +2: none):
+; 15h retraces' wait, a sound (with F27EE:250C bit 80h: four records at
+; the far pointer F2D8A:000C, then CODE:16F8), then passes of 4 ticks
+; (F27EE:251B): for each record with a step T0408:25C8 (record, map far,
+; the window's first square, player) draws the ground's hexagon and
+; BUM.LIB's entry of the step (the list at F27EE:0AB7, base 0) on a
+; square in the window, when the step is below AMOK's +8; the step goes
+; down by one, and below 0 the square gets its two bytes and is drawn
+; again by redraw_square (with the two maps' pointers F27EE:4152 and 4156
+; exchanged for the call and the cursor's +17h 0), so that entry 0 is
+; never on the page shown. T0408:2D57 (0 or 1: which unit), called with
+; unit_explode, is a sound (the type's +41h, +43h; CODE:16F8). Runs: an
+; attack with the target's count poked to 1 at the change, stopped at
+; each of the six calls of T0408:25C8 and after the loop: tools/screens.py
+; --field --explosions had M's half pixel for pixel (the two marks, the
+; entries 5 to 1, then the bare ground).
 ;
 ; The whole routine, `change_phase` (keys, far ?, far ?, far ?: buffers):
 ; D is the player whose cursor record's +16h is 2 (attack), M the other.
