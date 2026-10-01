@@ -33,7 +33,9 @@ Python 3 with `capstone` (`pip install capstone`).
   pictures; `libfiles.py`: the graphics libraries; `mapfiles.py`: the
   maps and their overviews; `datfiles.py`: the tables of unit types,
   ground, maps' codes and AMOK.DAT; `txtfiles.py`: the texts and the
-  small font; `screens.py`: the game's screens drawn from a run's memory
+  small font; `sndfiles.py`: the songs and the sound effects, played
+  again into the AdLib's registers and compared with a run's;
+  `screens.py`: the game's screens drawn from a run's memory
   and compared with its video memory), and for the rules: `fight.py`
   (a fight's outcome), `scene.py` (the fight scene, a pass at a time:
   its values and its picture), `moves.py` (where a unit can move and

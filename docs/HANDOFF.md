@@ -12,9 +12,10 @@ intro, then BATTLE.EXE); of BATTLE.EXE the data formats, the screens,
 the menus, the map's screen, the fight's reckoning and its scene, a unit's reach, path and
 targets, the carrying out of a move, the change of phase and a map's
 end with its statistics, and the computer player's assessment, plan and
-commands, and how it steers its cursor to carry the commands out, are
-read and checked against runs (below); the sounds and the animations of
-ANIM\ are not; the port is the template's.
+commands, and how it steers its cursor to carry the commands out, and
+the sound (the songs and the effects, with the AdLib) are read and
+checked against runs (below); the PC speaker's sound is read, not run;
+the animations of ANIM\ are not read; the port is the template's.
 
 ## Start here (next session)
 
@@ -77,7 +78,8 @@ games, each its own folder mounted as C: and started there:
 | `MAP/NN.FIN`, `.SHP`, `.COM`, `.PMP` | per map, all packed: the map, what its buildings hold, data for the computer player, the picture of the map's overview (`tools/mapfiles.py`); MOON has no `.PMP` |
 | `LIB/*.LIB`, `LIB/*.DAT` | graphics libraries: sprites of units, terrain, cursor, frame, fonts, fight scenes (`tools/libfiles.py`); a `.DAT` gives the order of a library's entries |
 | `*.IFF`, `*.LBM`, `*.PAL`, `NN.PAL` | pictures and palettes by their names; not looked at |
-| `*.SND`, `*.PND`, `*.FXX`, `*.PXX` | sound or animation data by their names; not looked at |
+| `*.SND`, `*.PND`, the intros' `*.MDI`, `*.PDI` | the songs, MIDI files with the AdLib's own events; `.PND`/`.PDI` the PC speaker's (`tools/sndfiles.py`) |
+| `*.FXX`, `*.PXX`, ANIM's and the intros' `*.FX`, `*.PX` | the sound effects, records of 40h bytes; the P files are the same bytes (`tools/sndfiles.py`) |
 | `UNIT.DAT`, `GROUND.DAT` | the tables of unit types and ground, packed (`tools/datfiles.py`) |
 | `CODES.DAT` | the maps' codes and order, packed (`tools/datfiles.py`) |
 | `AMOK.DAT` | the buildings' ground values, colours (`tools/datfiles.py`); packed only in MOON |
@@ -1281,6 +1283,76 @@ games, each its own folder mounted as C: and started there:
   two marks of the map's screen are: 40h/80h the attacker during a
   fight; 10h was on a unit with an order in its own player's window
   (seen, the code that sets it not read).
+- The sound (`tools/sndfiles.py`, BATTLE.hints at sound_init; the
+  tool's docstring has the formats and the rules in full). All of it is
+  in CODE:0215 .. 1B79, three layers: a driver for the AdLib's registers
+  (18 operators of 14 values, nine voices or six and five drums, a
+  timbre, a volume, a pitch bend, note on and off), a player of MIDI
+  files, and the effects. A song (.SND; the intros' .MDI) is a MIDI
+  file of format 0, one track, 420 ticks a quarter note, with the
+  AdLib's own events in it (FF 7F 00 00 3F: a voice's timbre of 28
+  values, the percussion mode, the bend's range); the player has a
+  timer of its own with a period of 8 ticks and drops the rest of a
+  wait divided by 8, and begins the song again at its end. An effect
+  file (.FXX) is records of 40h bytes: ticks, a frequency, a step, a
+  timbre. The game asks for effects in four records of 6 bytes
+  (F2D8A:0010: the effect, the volume, a count; FFFFh silences) which
+  effects_start takes in the passes of the game's loops; the four
+  channels are the voices 2, 4, 3 and 5, taken from the song meanwhile,
+  and a timer of 72.8 a second adds the step to the frequency. Unless
+  the AdLib is used the names' letter after the dot becomes a P: .PND
+  and .PXX are the PC speaker's (the songs arranged otherwise, the
+  effects the same bytes); with the speaker a song's notes take turns
+  on the one voice. The mode is main's: `/s` the speaker, else the
+  probe; `/m` another text than "Color." and F2740:02C8 = 2 (what for is
+  not read).
+  The program's timers (T2354, read in full; BATTLE.hints at timer_add):
+  up to 16, a period each in counts of the PIT (so timer_keys' 4000h is
+  72.8 a second, which was a guess before), the PIT run at the shortest
+  period, a timer called at the first interrupt at or after its time.
+  sndfiles.py reads the 68 song and effect files of the three games and
+  writes them back identical (ISLE's and DESERT's LOOSER.PND is cut
+  short at 3000h bytes, no end event: the speaker's song after a lost
+  map would run past its buffer, presumably; MOON's .PND are its .SND,
+  its TITEL ISLE's), and `--run LOG` does the routines again from a
+  run's log (-log on the register write's two outputs, the song's start,
+  stop and step, the effects asked for and their tick, the loudness; the
+  tables from the player's BATTLE.EXE) and compares every value written
+  to the AdLib: the title for 30 s (1889 writes) and the battle against
+  the computer to 215 s (fights.keys: the title, the menu's and the
+  map's effects, GAME.SND, two changes with fights; 51525 writes), all
+  the same. Seen on the way:
+  - a register write is two outputs and the timer's interrupt can fall
+    between them: twice in the battle a value of the main program's
+    went to register B5h, which the interrupt's routines had written
+    last (the original's doing: a wrong key-off or octave of voice 5);
+  - set_palette has the interrupts off while it writes the 256 colours,
+    each after a wait for the display's blank (a scan line: some 8 ms
+    in all, about the song's period), so in a fade the timers lose
+    ticks: the waits between the song's steps were its periods to a
+    millisecond but for two of 284 and 304 ms too long, at 4.5 s and
+    13.8 s (the title's fade_in and fade_out: a run with -log on them
+    and on set_palette), and 79 of 1185 off by up to 2.7 ms, each made
+    up by the next;
+  - GAME.SND sets the percussion mode (register BDh had bit 5 in the
+    run), which answers whether the music uses it;
+  - effects_start writes a volume as a word at DATA:1CCA + voice instead
+    of + 2 * voice (the song's own volumes of two voices spoilt; kept).
+  Not run: the speaker (`/s`), a song's end and beginning again,
+  WINNER.SND and LOOSER.SND, a volume below 0, the animations' and the
+  intros' sounds (the intros have the same file formats; their code is
+  not compared), DESERT.EX2, MOON.EXE. Not looked for: whether a pitch
+  bend other than none came in the runs' steps. xfer.py carried all the
+  names to MOON.hints, each 7Eh further on in its CODE (a steady shift;
+  not looked at in MOON.ASM), timer_remove and timer_period to T249A at
+  the same offsets.
+  The log of a run: `run.py -until T -keys FILE -dos -log CODE:14BC -log
+  CODE:14C7 -log CODE:0B76 -log CODE:168D -log CODE:1334 -log CODE:1711
+  -log CODE:172B -log CODE:1738 -log CODE:188A -log CODE:1792
+  ISLE/BATTLE.EXE > LOG` (22 MB for 215 s). Scratch: `snd1.py`,
+  `snd2.py` (the driver's tables printed), `snd3.py` (which files are
+  the same; the effects a log asks for), `sndt.py`, `sndlate.py` (the
+  steps' times).
 - MOON.hints: T2084 has `start=8`: MOON's fight_step (T2066) ends in the
   frame's first 8 bytes (read; the build is identical either way).
   xfer.py carried the scene's names to MOON.hints (their beginnings
@@ -1386,14 +1458,15 @@ games, each its own folder mounted as C: and started there:
    fight scene pass by pass, `scene.py`; the map's whole screen with
    both windows, marks, lines, cursors and the overview, `screens.py
    --field`, a move under way too), then what is left of the screen: a unit hidden from the other
-   player, and the sounds: FIGHT.FXX, GAME.FXX, the .SND files and the
-   records the fight scene hands to CODE:16F8 (not read).
+   player. The sounds are read and done again (`sndfiles.py`); left
+   there a run with the speaker (`/s`; the runner has no speaker sound,
+   but the PIT's channel 2 could be logged as the AdLib's writes were).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.
 5. Later: the AdLib sound refined (`-oplwav` against the game in GOG's
    DOSBox; what differs goes into doskit's runtime/opl.c, whose
-   modulation depth, attack curve and drums are choices). Whether the
-   music uses the rhythm mode (register BDh bit 5) is not looked into.
+   modulation depth, attack curve and drums are choices). The music
+   uses the rhythm mode (GAME.SND; above), so the drums matter.
    MOON.EXE's and the intros' last library gaps only if a run reaches
    them.
 
@@ -1420,8 +1493,9 @@ For the port (behaviour):
    map's loop does with F27EE:250E's bits at the end against the
    computer, and which key ends "YOU LOST YOUR HQ" there.
 3. The clock: the map's loop runs every 4 ticks of timer_keys, 18.2
-   times a second (above). Left: whether timer_add's (T2354:0713) period
-   is the PIT's count, the loops of the menus and the title, the values
+   times a second (above); timer_add's period is the PIT's count (read,
+   and the song's steps timed in runs). Left: the loops of the menus and
+   the title, the values
    2 and 0 of F27EE:251B, why the title menu takes keys only from about
    30 s.
 4. The palette level: fade_in and fade_out give set_palette its levels
@@ -1436,8 +1510,10 @@ For the port (behaviour):
    screen takes its code by the same number).
 6. The animations: play_anim's names from ANIM\anim.fx (presumably),
    the .Axx/.FX/.PX formats, end_credits (T25A6:0655) and ab.fx.
-7. Sound: where sound_init's mode comes from, whether the music uses
-   the OPL's rhythm mode.
+7. Sound: the speaker's songs and effects in a run (read only); what
+   the port does where the original loses the timers' ticks in a fade
+   and where a value goes to the wrong register (both are the original's
+   timing, not its rules); what F2740:02C8 (`/m`) is for.
 8. The libraries' colour bases and palettes where not seen (the
    fonts; libfiles.py draws all at base 0 in 00.PAL; the fight scene's
    are seen: FIGHT 5Fh, RAND 40h, BUM 0 and 20h or 30h, a shadow 50h), and

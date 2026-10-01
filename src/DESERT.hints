@@ -272,9 +272,30 @@ words T2112:05E6 7 T2112 ; from T2112:005A
 words T223C:00B6 7 T223C ; from T223C:0074
 words T2248:1043 5 T2248 ; from T2248:100B
 ; T2354:0713 stores DX:AX as a far handler and CX:BX beside it in tables
-; at DATA:0D9E and DATA:0CBE (a timer callback and its period, presumably:
-; T2354 sets INT 08h, see below; what the period counts is not checked)
+; at DATA:0D9E and DATA:0CBE: a timer callback and its period, a long of
+; the PIT's counts (1193182 a second; CX 1, BX 0 is 10000h, 18.2 a
+; second). Read in full: up to 16 timers, the number of the last (twice)
+; in DATA:0CBC; a timer has its period (0CBE, 0CDE), the counts left
+; (0CFE, 0D1E), a flag "due" (0D3E), its handler (0D9E) and a handle
+; (0D5E, 0D7E: timer_add gives the handle back, timer_remove and
+; timer_period take it). The PIT runs at the shortest period of all
+; (DATA:0DE6, 0DE8; set by the three routines and written to the PIT by
+; int08 when it changed). int08 takes the period that has just run
+; (DATA:0DDE, 0DE0) from each timer's counts left; a timer at or below 0
+; is due and gets its period added; then the handlers of the due timers
+; are called (far, DS = DATA), the last added first, timer 0 last: that
+; is T2354:063C, the INT 08h handler that was there before, with the
+; period 10000h. A timer is so called at the first interrupt at or
+; after its time, and loses nothing over the long run; interrupts held
+; off for longer than the PIT's period are lost for all timers (runs:
+; tools/sndfiles.py --run, the song's steps).
+; timer_remove (handle in AX) moves the last timer into the freed place;
+; timer_period (handle in AX, CX:BX) sets a period, which counts from the
+; timer's next time on. T2354:0858, 086D and 0879 are the three with
+; their arguments on the stack (nothing calls them; read from the bytes).
 name T2354:0713 timer_add
+name T2354:0778 timer_remove
+name T2354:0812 timer_period
 ptr CODE:1514 CODE ; mov ax,1547h / mov dx,CODE / call timer_add
 ptr CODE:15B8 CODE ; 16EDh, the same
 ptr CODE:15CF CODE ; 19C0h
@@ -826,7 +847,8 @@ name T1F5A:0736 scene_step_unit
 ; 6 bytes, number 0 or 2 by the attacker's player: the sound, 40h + 0Ah *
 ; the count, C8h) and places the units; when the side has arrived the
 ; record is set again (the sound, 0, FFFFh), unless the type's +43h has
-; 1. What the record's words are to the sound routine is not read. Not
+; 1. The record's words are the effect, the volume and a count, FFFFh
+; to silence the channel (effects_start, below). Not
 ; named: xfer.py puts a name here 5 bytes before MOON.EXE's routine
 ; (T2084:09CF; it gives T2084:09CA, inside the table before it).
 ; T1F5A:0C58 and T1F5A:101C: the attacker's and the target's shots made:
@@ -1649,14 +1671,133 @@ name T0D36:1592 fatal_error
 ; with CODE:0AC2: OPL timers reset, status AND E0h must be 0; timer 1
 ; started (reg 2 = FFh, reg 4 = 21h), 200 reads of the status, then AND
 ; E0h must be C0h; 1 if both hold. Mode 1 means the speaker, 2 AdLib
-; without the probe, else the probe decides (DATA:16EC); the timer
-; callbacks it adds differ (CODE:16ED alone, or CODE:19C0 and 16ED). Where
-; the mode comes from and where "AdLib." / "Speaker." (F2736) are printed
-; is not looked into. doskit's runner answers 06h at 388h, so the probe
-; fails there and every run printed "Speaker."; the GOG game (DOSBox)
-; plays AdLib (heard by the user).
+; without the probe, else the probe decides (DATA:16EC, 1 the AdLib); the
+; timers it adds differ: with the AdLib effects_timer at 4000h counts
+; (72.8 a second), else speaker_timer at 3A98h (79.5) and effects_timer
+; at 900h (518). The mode is main's (T0708:000E: argc, argv): 1 with an
+; argument /s or /S, else 0; /m or /M sets F2740:02C8 to 2 (0 otherwise)
+; and prints the text at F2736:0027 instead of 001F ("Color." in the runs);
+; then sound_init and the text 0034 ("AdLib.") or 003C ("Speaker.").
+; doskit's runner answered 06h at 388h before it had the OPL's timers, so
+; the first runs printed "Speaker."; the GOG game (DOSBox) plays AdLib
+; (heard by the user), and so do the runs now.
+;
+; All of CODE:0215 .. 1B79 is the sound, read in full and done again by
+; tools/sndfiles.py, whose docstring has the files' formats and the
+; rules; its --run compares every value a run writes to the AdLib's
+; registers with its own (two runs, 1889 and 51525 writes, all the
+; same). In three layers:
+;
+; The registers (CODE:0215 .. 0B5F, 13E6 .. 14F1). opl_write (register,
+; value): the number to 388h, 6 reads, the value to 389h, 35 reads; not
+; safe against the timer's interrupt between the two outputs (in the
+; runs twice a value went to the register the interrupt's routines had
+; written last). 18 operators have 14 values each (DATA:1B33: key scale,
+; multiple, feedback, attack, sustain level, sustained, decay, release,
+; level, tremolo, vibrato, key scale rate, 0 for the two side by side, the
+; wave form) and tables give an operator's register offset (DATA:13E9),
+; whether it is a voice's second (13FB), its voice (140D; 141F in the
+; percussion mode) and a voice's two operators (13C1; 13D3 in the
+; percussion mode, FFh none). opl_reset clears the registers 1 to F5h and
+; sets nine voices with the timbres of DATA:1351 and 135F, a bend range
+; of 1 and the wave forms allowed. opl_set_mode (1: the percussion mode,
+; 11 voices, of which 6 to 10 are the drums with the timbres DATA:136D
+; .., their bits in register BDh by DATA:134C). opl_set_timbre (voice,
+; 28 words far: 13 for each operator, the two wave forms). opl_set_volume
+; (voice, 0..7Fh): times the voice's loudness (DATA:1336, 7Fh) over 7Fh
+; into DATA:1AF6, then the level of the voice's second operator (and of
+; a drum's only one) scaled by it. opl_set_bend (voice, 0..3FFFh, 2000h
+; none). note_on (voice, note): the note less 12, the key on; a drum's
+; bit set (drum 6 and 8 with a frequency, 7 a fifth above 8). note_off.
+; opl_frequency (voice, note, bend, key): the note * 16 + the bend's part
+; (its difference from 2000h / 32 * the range; the range multiplies by a
+; jump into a row of ADD AX,CX at CODE:140C) in sixteenths of a semitone,
+; held within 0 and 5FFh; the frequency number from DATA:144E (12 notes
+; of 16 words), the octave from DATA:15CE, the note in it from 162E;
+; registers A0h and B0h + voice.
+;
+; The songs (CODE:0B60 .. 13E4): MIDI files. song_start (song far)
+; silences the 11 voices twice, adds song_timer and reads the header
+; (song_rewind: up to 16 tracks, each a pointer DATA:1C30, a time 1C70
+; and a status 1CB0). song_timer counts CS:14F0 down and at 0
+; calls song_step, which plays the events up to the next that is later
+; and gives the wait back: the ticks / 8, in the timer's periods, which
+; song_tempo sets to tempo / 125 * 1194 / division counts. At the end of
+; all tracks the song begins again. The events: tools/sndfiles.py.
+; DATA:1436 (1, nothing writes it) lets the notes sound; DATA:1CCA are
+; the voices' volumes as the song set them (words).
+;
+; The effects (CODE:15F7 .. 1B79). load_song and load_effects (load_file's
+; arguments) keep the file's far pointer (CS:164D, CS:16E9); unless the
+; AdLib is used they make the letter after the name's dot a P first
+; (.PND, .PXX). play_song starts the loaded song, stop_song silences the
+; voices and the speaker. The game asks for effects in four records of
+; 6 bytes at F2D8A:0010 (the far pointer F2D8A:000C points there): +0 the
+; effect (a record of 40h bytes in the file), +2 the volume, +4 a count.
+; effects_start, called in the passes of the game's loops, takes each
+; record with a count and clears the count: the channel is silenced
+; (a timbre of CS:1986 and note_off) and, unless the count has bit 15,
+; started: the volume (a volume below 0 keeps the one and the effect of
+; before), the record's ticks, frequency and step, its timbre, note 19h
+; on. The channels are the voices 2, 4, 3, 5 (DATA:16D6), so an effect
+; takes a voice from the song. effects_timer -> effects_tick: for each
+; channel with ticks left the frequency plus the step to A0h/B0h with
+; the key on in octave 2; at the last tick the channel is silenced, the
+; count goes down and, when it is not 0, the effect starts again.
+; effects_start writes the volume as a word at DATA:1CCA + voice, not
+; + 2 * voice (kept: it is what the program does). effects_volume
+; (channel, 0..7Fh) sets the loudness of the channel's voice (DATA:1336).
+;
+; The speaker (read, not run): a song's note_on goes to speaker_note
+; (voice, note): the PIT's count for the note from CS:1AB9 (the voices 5
+; and up an octave lower) and 5 ticks (2 for the voices 5 and up);
+; speaker_timer plays one voice with ticks left each call, in turn;
+; note_off does nothing. An effect: the record's frequency as the PIT's
+; count at its start, then each of effects_timer's calls one channel in
+; turn: (0 - 4 * the frequency) AND 1FFFh, + 100h.
 name CODE:1588 sound_init
 name CODE:0AC2 adlib_probe
+name CODE:0215 opl_init
+name CODE:0232 opl_reset
+name CODE:02AE opl_set_mode
+name CODE:0301 opl_set_wave
+name CODE:0340 opl_set_range
+name CODE:035E opl_set_depths
+name CODE:037B opl_set_timbre
+name CODE:042F opl_set_volume
+name CODE:04B5 opl_set_bend
+name CODE:04EC note_on
+name CODE:0597 note_off
+name CODE:06CD opl_set_operator
+name CODE:07F4 opl_write_level
+name CODE:0A19 opl_write_bd
+name CODE:0A99 opl_write_frequency
+name CODE:13E6 opl_frequency
+name CODE:14B2 opl_write
+name CODE:0B76 song_start
+name CODE:0BED song_silence
+name CODE:0D0F song_number
+name CODE:0D9F song_rewind
+name CODE:0E37 song_begin
+name CODE:0E9F song_tempo
+name CODE:0EF8 song_next
+name CODE:0FE7 song_note
+name CODE:103C song_channel
+name CODE:11C4 song_meta
+name CODE:1334 song_step
+name CODE:1547 song_timer
+name CODE:15F7 load_song
+name CODE:1655 play_song
+name CODE:168D stop_song
+name CODE:169E load_effects
+name CODE:16ED effects_timer
+name CODE:16F8 effects_start
+name CODE:177A effects_volume
+name CODE:17A7 effect_start
+name CODE:188A effects_tick
+name CODE:1964 effect_silence
+name CODE:19C0 speaker_timer
+name CODE:1A67 speaker_note
 ; saving and loading a game: the file is <name>.DAT in the game's folder,
 ; the name at F27EE:249C ("00" in the runs), made by make_path with no
 ; directory. save_game ran at D (a run, 00.DAT created and written),
