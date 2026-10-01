@@ -38,7 +38,7 @@ segment T1C22 1C22 CODE start=9 prefix=T1C22_
 segment T1D2C 1D2C CODE start=A prefix=T1D2C_
 segment T1FF9 1FF9 CODE start=C prefix=T1FF9_
 segment T2066 2066 CODE start=A prefix=T2066_
-segment T2084 2084 CODE prefix=T2084_
+segment T2084 2084 CODE start=8 prefix=T2084_   ; T2066's last routine (fight_step) ends in its first 8 bytes (read: its two exits; not run)
 segment T2250 2250 CODE start=C prefix=T2250_
 segment T22D3 22D3 CODE start=2 prefix=T22D3_
 segment T237F 237F CODE start=7 prefix=T237F_
@@ -577,7 +577,7 @@ name T12F0:192A count_slots
 ; square the attacker's +11h names) and fills the fight record
 ; F27EE:2716 for each (tools/fight.py has its fields), then calls
 ; T1F3C:000A in every pass until it returns not 0: the fight scene
-; (T2112, T1F5A; not read), which reckons the outcome once, at its first
+; (fight_step, below), which reckons the outcome once, at its first
 ; call. After it (T0408:09F7 on): a unit left with a count of 0 is taken
 ; off the map (T0408:2415); what a unit that holds others (1000h in its
 ; +4) lost, each unit inside loses too (T0408:28EA: one with no more than
@@ -795,49 +795,106 @@ name T12F0:1525 direction
 ; divide error; not seen.
 name T22D3:0002 fight_reckon
 name T2066:000A fight_step
-; The fight scene (T1F3C, T2112, T1F5A, T223C: read in outline, nothing
-; of it run or done again by a tool yet). fight_step counts its calls in
-; the fight record's +26h. The first call reckons (fight_reckon), keeping
-; the two counts of before and after in F2D37:00CC, 01D9 (attacker,
-; target; held within 1..6 for the scene) and 01DA, 0067; the first two
-; calls draw the scene into the attacker's half of the screen (x 0 or
-; A0h by bit 1 of his +4): T2112:000B the ground, by the scene's kind
-; (+5 of the two ground records, 1..7) a list of pieces at F2D5F:0006..
-; (a count, then entry, x, y each; the target's ground above, the
-; attacker's 5Ah lower), drawn through the record's far routine +5Ah
-; from the list of entries at its +42h, or for a target next to the
-; attacker columns of random height (T2112:0278); then pieces where the
-; two kinds differ (2 or 5 against others, 7 against others), and
-; T2112:05F4, 0670, 06EE, 076B the frame's four pieces (the record's
-; +3Eh list through +56h). Then, a call a pass:
-;   T1F5A:093C until it returns 1 (F2D37:0008): the units come in. Its
-;   first call starts a sound for each side (the type's +41h, through
-;   the record's +4Ah list and +4Eh routine, when the record's +2Ch has
-;   bit 1) and T1F5A:0001 gives each unit of a side (10h bytes each at
-;   F2D37:0068 and 00CE) its place in a script: T223C:0001 (unit, ground)
-;   chooses the script by the unit (bits 4 or 20h of its +6, 10h or 8 of
-;   its +4) or else the ground's kind, in F2D66. T1F5A:0736 plays a
-;   unit's script: FEh, x, y, direction sets its place, FFh ends it, else
-;   a direction and a length, gone at the pace of F2D37:000E by the
-;   type; T1F5A:0322 draws the unit (the entry by type and direction from
-;   the record's +32h list, 18h bytes a type; a type with 40h in its
-;   +0Ch a second part beside it; a shadow for an air unit, bit 10h),
-;   the target's side mirrored. T1F5A:0176 says which of the frame's
-;   pieces a sprite touched, and those are drawn again.
-;   T1F5A:1A21 until it returns 1 (F2D37:0009): the shots. Its first
-;   call sets up a shot for each unit (1Ch bytes each at F2D37:012E and
-;   01DC; T1F5A:0C58 the attacker's, T1F5A:101C the target's, none when
-;   the target cannot answer: the rules of fight_reckon again, in
-;   F2D37:0284): from a unit to one of the other side, its picture by
-;   the way it flies (T1F5A:01E4, eight ways), a random wait before it
-;   starts; the shots beyond those that hit go 20h up or down at random.
-;   T1F5A:1548 moves a shot at the pace of F2D37:002A by the type, with
-;   a sound at its start (the type's +42h) and at its end, where an
-;   explosion of six pictures follows and a unit that is hit is no longer
-;   drawn (its record's +1 set).
-; Then the four sounds are stopped, the count cleared, and fight_step
-; returns 1. The random numbers are the record's +62h routine's; which
-; routines the record's far pointers +4Eh..+66h are is not looked up.
+; The fight scene (T1F3C, T2112, T1F5A, T223C), read in full:
+; tools/scene.py has every rule in its docstring and does a call of
+; fight_step again from a run's memory, the scene's values and the
+; picture, and both were the game's in the runs HANDOFF.md names.
+; change_phase loads FIGHT.LIB, BUM.LIB, RAND.LIB and FIGHT.FXX before
+; the first fight (a run with -dos) and puts their lists into the fight
+; record: +32h UNIT.LIB's entries (set by T0708 when the map begins),
+; +3Ah BUM.LIB's, +3Eh RAND.LIB's, +42h FIGHT.LIB's, +46h a buffer for a
+; packed entry, +4Ah the sounds' records (the far pointer F2D8A:000C).
+; fight_step counts its calls in the record's +26h. The first call
+; reckons (fight_reckon), keeping the two counts of before and after in
+; F2D37:00CC, 01D9 (attacker, target; held within 1..6 for the scene)
+; and 01DA, 0067; the first two calls draw the ground and the frame, a
+; page each, into the attacker's half of the screen (x 0 or A0h by bit 1
+; of his +4). Then, a call a pass, T1F5A:093C until it returns 1
+; (F2D37:0008), then scene_shots until it returns 1 (F2D37:0009), then
+; the four sounds are stopped, the count cleared and fight_step returns 1.
+; The scene's values (F2D37): 000E a byte a type, the pace of a unit
+; coming in; 0029 two bytes a type, the kind of its shot (BUM.LIB's
+; entries 6 + 8 * kind ..) and the shot's pace; 005F and 0063 the calls
+; of T1F5A:093C and scene_shots (longs); 0068 and 00CE the units of the
+; two sides, 10h bytes each; 00C8 and 01D6 their colour bases; 00CA and
+; 01D8 the numbers of shots; 00CB the frame's pieces touched in a call;
+; 012E and 01DC the shots, 1Ch bytes each; 0284 1 when the target does
+; not answer.
+; T2112:000B (second player, not next to each other): the ground: by the
+; kind (+5 of the two ground records, 1..7) a list of pieces at
+; F2D5F:0006.. (a count, then entry, x, y each; the target's ground
+; above, the attacker's 5Ah lower), drawn by draw_packed in colour base
+; 5Fh; for a target not next to the attacker srand(the attacker's
+; record's offset) and black columns of random height between the two;
+; else pieces where the two kinds differ (2 or 5 against others, 7
+; against others).
+name T2250:000C scene_ground
+; the frame's four pieces (RAND.LIB's entries 0, 2, 3, 1; colour base
+; 40h): above, below, left, right
+name T2250:0639 frame_above
+name T2250:06B5 frame_below
+name T2250:0733 frame_left
+name T2250:07B0 frame_right
+; T1F5A:0001: the counts held within 1..6, and each unit of a side its
+; place in the side's script (the nth FEh on). Not named: xfer.py carries
+; a name here to MOON.EXE's T1BCB:0001, another routine; MOON.EXE's is
+; T2084:0008 (read there: the same).
+; T1F5A:0176 (x, y) -> the frame's pieces a sprite there reaches into
+; (1 above y 0Ch, 2 below 90h, 4 left of x0 + 8, 8 right of x0 + 78h);
+; the callers OR it into F2D37:00CB and those pieces are drawn again.
+; (not mapped) name T1F5A:0176 frame_touched
+; T1F5A:01E4 (x1, y1, x2, y2) -> which of a shot's eight pictures: 0 up,
+; then clockwise; upright or level when the other width is less than
+; half.
+name T2084:0227 shot_way
+; T1F5A:0322 (unit of the scene far, target's side): draws it unless its
+; +1 is set: UNIT.LIB's entry type * 6 + direction (the target's turned
+; by 3) at x0 + x, 9Ch - y, the target's at x0 + 80h - x, y; for a type
+; with 40h in its +0Ch the next type's entry beside it, for a unit with
+; 10h in its +4 the entry once more in colour base 50h, 3 left and 2
+; lower (a shadow); its place into the unit's +0Ch, +0Eh.
+name T2084:03B2 scene_draw_unit
+; T1F5A:0736 (unit far, side) -> 1 at its script's end: a step of the
+; script (FEh, x, y, direction: its place; FFh the end; else a direction
+; and a length, gone at the type's pace), then scene_draw_unit.
+name T2084:07C7 scene_step_unit
+; T1F5A:093C -> 1 when all units have arrived. Its first call starts a
+; sound for each side (the type's +41h, FFh none; the sound's record,
+; 6 bytes, number 0 or 2 by the attacker's player: the sound, 40h + 0Ah *
+; the count, C8h) and places the units; when the side has arrived the
+; record is set again (the sound, 0, FFFFh), unless the type's +43h has
+; 1. What the record's words are to the sound routine is not read. Not
+; named: xfer.py puts a name here 5 bytes before MOON.EXE's routine
+; (T2084:09CF; it gives T2084:09CA, inside the table before it).
+; T1F5A:0C58 and T1F5A:101C: the attacker's and the target's shots made:
+; from a unit to one of the other side, hitting (flag 10h) as many as
+; the other side lost, the others' aim random(-20h, 20h) lower; a wait
+; of random(0, 2710h) AND 0Ch calls; when the losses are more than the
+; shots, shots that are not drawn (flag 20h) for the units left. The
+; target's are not made (F2D37:0284) when it cannot answer by
+; fight_reckon's rules or the squares are further apart than its range.
+name T2084:0CF5 make_shots
+name T2084:10B7 make_answer
+; T1F5A:1548 (shot far) -> 1 when it is over: it waits, flies (drawn,
+; then moved by the type's pace along its line; a sound when it starts,
+; the type's +42h, with 5Fh for a type with 2 in its +43h, else 7Fh),
+; explodes at its last step (sound 3, with 7Fh for a hit, else 5Ah; the
+; unit it hits gets 1 in its +1) and
+; shows BUM.LIB's entries 5 down to 0 (colour base 30h for a hit, else
+; 20h).
+name T2084:15E7 step_shot
+; T1F5A:1A21 -> 1 when all shots are over: its first call makes them; a
+; call draws the target's units, the attacker's, and steps each shot.
+name T2084:1B5C scene_shots
+; T223C:0001 (unit far, ground far) -> the script of the unit's side, in
+; F2D66: 128h for a unit with 4 or 20h in its +6, 0Eh for one with 10h
+; in its +4, 40h for one with 8, else by the ground's kind 72h, A6h,
+; A6h, C8h, 0Eh, FEh, FEh.
+name T237F:0007 unit_script
+; T24D8:0008 (x, y, entry far, long, base, buffer far): draw_entry, of
+; the buffer when T2701:000E unpacked the entry into it (an entry that
+; begins with TPWM, as MOON's), else of the entry.
+; (not mapped: T261E:0008 would be draw_entry_unpacked and draw_packed) name T24D8:0008 draw_packed
 ; T0408:29C6 (attacker, target, squares far, window): the record's two
 ; percentages, +24h on the attacker's hit value for the attacker's side's
 ; units around the target (the bytes F27EE:000E.. by where they stand
@@ -1068,18 +1125,34 @@ name T238E:0F28 play_anim
 ; headquarters taken by keys after one round (HANDOFF.md): the two
 ; curves, RATING : 1210 ROUNDS : 1 SCALE : 1 - 1, HEADQUARTER REPORTS A
 ; NEW KEYWORD : EAGLE (map 04's code), then the name went to MAP\03.HI.
-; The curves (read, not drawn by a tool yet): T15AC:071F (player, far
-; row) puts the player's history in order (after 64 points the oldest
-; first) and returns the number of points, F27EE:2497. T15AC:07EC (x, y,
-; far row, far entry, colour, the maximum as a long) draws one: a point
-; every 16 pixels for fewer than 16 points, every 8 for fewer than 32,
-; else every 4 (the SCALE's texts 15h, 16h, 17h); a point's height is
-; its count * 40h / the maximum (the larger of the two players' highest
-; counts, T15AC:0650), up from y; from point to point a line in the
-; colour (T2541:0004, a line between the drawing record's two points)
-; and STATS.LIB's entry drawn at every x along it (T15AC:095B). The
-; curves start at x 1Dh, y 48h and A8h, colours 3 and 12h.
+; The curves: T15AC:071F (player, far row) puts the player's history in
+; order (after 64 points the oldest first) and returns the number of
+; points, F27EE:2497. T15AC:07EC (x, y, far row, far entry, colour, the
+; maximum as a long) draws one: a point every 16 pixels for fewer than 16
+; points, every 8 for fewer than 32, else every 4 (the SCALE's texts
+; 15h, 16h, 17h); a point's height is its count * (400000h / the
+; maximum) >> 16 (the maximum the larger of the two players' highest
+; counts, T15AC:0650; 40h for 0), up from y; from point to point a line
+; in the colour (draw_line) and STATS.LIB's entry (1 pixel wide, 3 or 4
+; high) drawn at every x along it (T15AC:095B, its y by a slope of
+; 16.16). The curves start at x 1Dh, y 48h and A8h, colours 3 and 12h.
+; tools/screens.py --stats draws the screen from a run's memory: all
+; 64000 pixels in the video memory in two runs (a map won after one
+; round, level curves of 3 points; the battle against the computer lost,
+; 22 points, SCALE 1 - 2). Not seen: 32 points and more, 64 and more, the
+; last map's text.
 name T1682:000B after_map
+name T1682:0730 history_rows
+name T1682:07FF draw_curve
+; T2541:0004: a line between the drawing record's two points (+2, +4 and
+; +6, +8) in its colour (+0), to the page drawn to: draw_column or
+; draw_row for an upright or level one; else from the left point a pixel
+; a column (wider than high) or a row, the other coordinate one on
+; whenever a 16-bit sum of the smaller width * 10000h / the larger
+; (T26FE:000A, a long division) overflows; the right point is not drawn,
+; but for a line as wide as high one pixel more is. tools/screens.py has
+; it (the curves above).
+name T2687:0004 draw_line
 ; the file routines (assembly, read from the code; the opens, reads and
 ; closes are seen in -dos traces of runs):
 ; T2690:0004 (mode, name far): mode 1 creates the file (INT 21h 3Ch), else
@@ -1565,8 +1638,9 @@ name T148F:0480 load_game
 ; pointer into DATA and the address of its own further arguments (an
 ; output routine for a formatter, presumably; not checked)
 ptr CODE:31A7 CODE
-; T0708 fills a record's fields 4Eh..68h with far pointers to routines
-; (what the record is: not checked)
+; T0708 fills the fight record's fields 4Eh..68h (F27EE:2716) with far
+; pointers to routines: the sounds' start, restore_sprites, draw_entry,
+; draw_packed, srand, random and CODE:2D44 (the absolute value)
 ; (not mapped) ptr T0708:10FC CODE     ; +4E CODE:16F8
 ; (not mapped) ptr T0708:110B T2467    ; +52 T2467:0006
 ; (not mapped) ptr T0708:111A T2470    ; +56 T2470:0008

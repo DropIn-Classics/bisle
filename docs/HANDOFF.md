@@ -9,12 +9,12 @@ to 98%, the intros' to 92%.
 their programs byte for byte
 (`doskit/tools/check.py`: all ok). BI.EXE is read in full (which
 intro, then BATTLE.EXE); of BATTLE.EXE the data formats, the screens,
-the menus, the fight's reckoning, a unit's reach, path and targets, the
-carrying out of a move, the change of phase and a map's end, and the
-computer player's assessment, plan and commands, and how it steers its
-cursor to carry the commands out, are read and checked against runs
-(below); the fight scene and the animations are not; the port is the
-template's.
+the menus, the fight's reckoning and its scene, a unit's reach, path and
+targets, the carrying out of a move, the change of phase and a map's
+end with its statistics, and the computer player's assessment, plan and
+commands, and how it steers its cursor to carry the commands out, are
+read and checked against runs (below); the sounds and the animations of
+ANIM\ are not; the port is the template's.
 
 ## Start here (next session)
 
@@ -1128,18 +1128,71 @@ games, each its own folder mounted as C: and started there:
   in MOON.ASM: routine starts); five others it put 8 to 10h bytes before
   MOON's routines and are left without a name in BATTLE.hints (the
   comment there has both programs' addresses).
-- The fight scene, read in outline only (BATTLE.hints at fight_step has
-  it; T1F3C, T2112, T1F5A, T223C): the scene drawn in the attacker's
-  half of the screen from lists of pieces by the two grounds' kinds, the
-  units of both sides coming in along scripts chosen by unit and ground,
-  then a shot for each unit and explosions for those hit, with sounds.
-  Nothing of it is run or done again by a tool: the next step is a
-  `screens.py --fight` that draws a pass from a run's memory (the units'
-  records F2D37:0068 and 00CE, the shots' 012E and 01DC) and compares it
-  with the video memory, for which the fight record's far pointers
-  (+32h..+66h: the lists of entries and the drawing, sound and random
-  routines) have to be looked up first, and the passes with random
-  numbers (the shots' waits, the misses) taken from the memory.
+- The fight scene (`tools/scene.py`, BATTLE.hints at fight_step; the
+  tool's docstring has the rules in full). change_phase loads FIGHT.LIB,
+  BUM.LIB, RAND.LIB and FIGHT.FXX before a change's first fight (-dos)
+  and calls fight_step once a pass (2 ticks) until it returns 1; each
+  pass ends with flip_page, copy_page and restore_sprites. The scene is
+  in the attacker's half of the screen: the first two calls draw the
+  ground (FIGHT.LIB's pieces by the two squares' ground kinds, the
+  target's above; colour base 5Fh; black columns of random height
+  between the two when the target is not next to the attacker) and the
+  frame (RAND.LIB); then the units come in (UNIT.LIB's entries, the
+  map's own sprites, as many as each side's count, each along a script
+  of places, directions and lengths chosen by the unit or its ground, at
+  a pace by its type); then every unit fires a shot (BUM.LIB) at one of
+  the other side, as many hitting as the other side lost, the others
+  aimed off at random, each after a random wait; a shot ends in an
+  explosion of six pictures and a unit that is hit is no longer drawn.
+  A fight of 6 against 6 took 62 calls, about 2 s. scene.py does a call
+  again from a run's memory at fight_step's entry (the reckoning of the
+  first call by fight.py) and compares with the memory and the video
+  memory at the next entry: the scene's values (F2D37:0008..0284), the
+  count of calls, both units' records and rand's long, and every pixel
+  it drew on the page shown (27208: the half's ground, frame and
+  sprites). Runs (the battle against the computer, fights.keys; `-break
+  fight_step#N`, -ram -vram; `build/scratch/fsc.py N..`, then `fsv.py`):
+  - the first fight (154 s; T-3 SCORPION 6 against 6, ground kind 6,
+    next to each other, 5 and 5 left), the calls 1..5, 20..45, 50, 55
+    and 58..62 of its 62 (38): all the same, bytes and pixels;
+  - the same fight with values poked in before its first call (`-poke
+    LT0408_0981#1 F27EE:OFF HEX`; `build/scratch/fplan.py NAME OFF=HEX..`
+    does the whole scene on a copy of the first dump to choose the
+    calls: the first three, some of the coming in, the shots' first
+    calls, some of the flight and the explosions, the last): not next to
+    each other (the record's +22h 0: the columns, the target does not
+    answer); the attacker an XA-7 RAVEN in the air (type 10 and 10h in
+    its +4: the shadow, the target cannot fire at its class); the
+    attacker a W-1 FORTRESS (type 21, 8 in its +4, counts 1 and 6: two
+    squares, the sea's script, one unit against six, three hits: one
+    shot and two that are not drawn); the same as the target; the
+    target's count 2 (6 shots at 2 units, both gone) and the attacker's
+    2; the grounds' kinds 4 and 5 with 4 and 20h in the units' +6 (the
+    script 128h: the units stand at once), 2 and 7, 5 and 1, 7 and 3 (the
+    pieces between two grounds, the other scripts): 5 to 11 pairs of
+    calls each, 90 in all, all the same, bytes and pixels.
+  Not seen: a fight of other units than T-3 SCORPION without a poke, a
+  target that answers nothing by its own type, shots of the target that
+  are not drawn, MOON's and DESERT's scenes (MOON's entries are packed:
+  draw_packed). Not done: the sounds (the scene writes records of 6
+  bytes behind the far pointer F2D8A:000C and calls CODE:16F8; the
+  type's +41h..+43h: BATTLE.hints), the squares' explosions on the map
+  after the fight (change_phase, F27EE:2472).
+- MOON.hints: T2084 has `start=8`: MOON's fight_step (T2066) ends in the
+  frame's first 8 bytes (read; the build is identical either way).
+  xfer.py carried the scene's names to MOON.hints (their beginnings
+  looked at in MOON.ASM: the same routines) but two: T1F5A:0001 went to
+  another routine (T1BCB:0001; MOON's is T2084:0008) and T1F5A:093C 5
+  bytes before MOON's (T2084:09CF); both are left without a name in
+  BATTLE.hints. history_rows, draw_curve and draw_line were carried
+  right (looked at).
+- Background runs: a batch of the session's shell is stopped after 30
+  minutes unless a longer time is asked for; two batches at once ran
+  without trouble (a run to 154 s takes 40 to 60 s then).
+- Scratch scripts of this step (build/scratch): `fsc.py N..` (the dumps
+  at fight_step's Nth entry; ARGS for runner options, PRE for the files'
+  prefix), `fsv.py [PRE]` (scene.py on every pair of dumps), `fplan.py`
+  (a poked variant planned), `fpk.py` (the reckoning with pokes).
 - A real end of a map and the statistics (BATTLE.hints at after_map; the
   run above with two changes first, so that a round is played: `64:phase
   76:phase`, the cursor's keys from 88, the change at 113, space at 140
@@ -1153,8 +1206,22 @@ games, each its own folder mounted as C: and started there:
   With no round played (F27EE:251D 0) after_map does nothing: the run
   without the two changes went from the animation straight to the name,
   and the poked ends of map 16 before had their name in MAP\04.HI for
-  that (F27EE:251B still the loop's 4). The statistics' screen is not
-  drawn by a tool yet (T15AC:071F, 07EC: the curves, not read).
+  that (F27EE:251B still the loop's 4). `tools/screens.py --stats`
+  draws the statistics' screen from a run's memory (BATTLE.hints at
+  after_map and draw_line): STATS.IFF, the two curves (a point a change
+  of phase, 16, 8 or 4 pixels apart by their number; the height the
+  count * 64 / the highest count of both; a line by draw_line,
+  T2541:0004, and over it STATS.LIB's entry, a pixel wide, at every x)
+  and the texts. Two runs, all 64000 pixels in the video memory on the
+  page shown: this map won (-ram -vram at 170 s: level curves of 3
+  points, SCALE 1 - 1) and the battle against the computer lost
+  (fights.keys, the screen up from 534.6 s, -ram -vram at 545 s: MISSION
+  NOT COMPLETED, RATING 0, ROUNDS 11, 22 points, SCALE 1 - 2, curves
+  that fall and rise). Not seen: 32 points and more (SCALE 1 - 4), 64
+  and more (the rows turned round), the last map's text. Seen on the
+  way, not looked into: in that battle a tap of space at 530 s alone did
+  not end "YOU LOST YOUR HQ" (nothing more until 600 s); fights.keys'
+  request for the change at 530 s and F1 at 534 s did.
 - The cursor's keys: taps in the same direction get faster (the third
   tap on moves two squares; T0D36:058B, the cursor record's +2Bh..+2Eh:
   not read), so a far square is best reached by a fixed row of taps and
@@ -1211,12 +1278,14 @@ games, each its own folder mounted as C: and started there:
    draw_shop_window and draw_box in T1479: the buildings' screens are
    drawn as they open and in use, by keys, with the message line; left
    there a repair that repairs and a unit that holds others; the
-   statistics after a map (after_map) are not drawn yet; the menus, a
-   code typed, LOAD's
-   messages, the scores with a file and their name are drawn in full
-   now), then the rest of the screen: the cursor's entries, the overview's frame, the
-   frame's texts, what the windows show of a map (scrolling, the units'
-   directions, a unit hidden from the other player).
+   statistics after a map, the menus, a code typed, LOAD's messages,
+   the scores with a file and their name are drawn in full, and the
+   fight scene pass by pass, `scene.py`), then the rest of the screen:
+   the cursor's entries, the overview's frame, the frame's texts, what
+   the windows show of a map (scrolling, the units' directions, a unit
+   hidden from the other player, the squares' explosions after a
+   fight), and the sounds: FIGHT.FXX, GAME.FXX, the .SND files and the
+   records the fight scene hands to CODE:16F8 (not read).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.
 5. Later: the AdLib sound refined (`-oplwav` against the game in GOG's
@@ -1243,10 +1312,11 @@ For the port (behaviour):
    100h is not looked into). F27EE:250E and the players' bit 2 are the
    menu's (above); what the map does with them is not read.
    BATTLE.hints at play_anim.
-2. A map's end: a headquarters taken is run and read (above); left: an
-   end by units, the last map (CODES.DAT's +8 bit 0) without a poke, the
-   statistics' curves and its SCALE (T15AC:071F, 07EC), what the map's
-   loop does with F27EE:250E's bits at the end against the computer.
+2. A map's end: a headquarters taken is run and read, the statistics
+   are drawn (above); left: an end by units, the last map (CODES.DAT's
+   +8 bit 0) without a poke, statistics of 32 points and more, what the
+   map's loop does with F27EE:250E's bits at the end against the
+   computer, and which key ends "YOU LOST YOUR HQ" there.
 3. The clock: the map's loop runs every 4 ticks of timer_keys, 18.2
    times a second (above). Left: whether timer_add's (T2354:0713) period
    is the PIT's count, the loops of the menus and the title, the values
@@ -1266,8 +1336,9 @@ For the port (behaviour):
    the .Axx/.FX/.PX formats, end_credits (T25A6:0655) and ab.fx.
 7. Sound: where sound_init's mode comes from, whether the music uses
    the OPL's rhythm mode.
-8. The libraries' colour bases and palettes where not seen (BIGUNIT,
-   FIGHT, the fonts; libfiles.py draws them at base 0 in 00.PAL), and
+8. The libraries' colour bases and palettes where not seen (the
+   fonts; libfiles.py draws all at base 0 in 00.PAL; the fight scene's
+   are seen: FIGHT 5Fh, RAND 40h, BUM 0 and 20h or 30h, a shadow 50h), and
    what happens with BIGUNIT's missing MAA and with MOON's BIGUNIT
    without a .DAT (its PART and UNIT are taken in the library's order:
    seen).
@@ -1288,7 +1359,8 @@ For the port (behaviour):
     1 and 2 and its messages in a run; the
     targets word's bits above 80h; flag 1 of
     a type's +0Eh in a run of such a type; the low bits of its +10h and
-    where a unit gets 8000h in its +6; its +41h..+43h (the fight scene); the
+    where a unit gets 8000h in its +6; its +41h..+43h (the fight scene's
+    sounds: read, the sounds themselves not looked at); the
     ground's flags besides the buildings' and 4000h; the tables as the
     game shows them on its screens (not compared); MOON.EXE's reading of
     its UNIT.DAT and GROUND.DAT (MOON's masks differ, and one type has a

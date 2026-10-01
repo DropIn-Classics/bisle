@@ -115,8 +115,13 @@ UNIT.DAT: 27 records of 44h bytes, the unit types (a map's unit byte
                   the sizes of what is inside; make_unit puts it in the
                   cargo record's +16h, +17h
     +40 size      what the unit takes of that room
-    +41 fight     three bytes read by the fight scene (T1F5A, seen) and
-                  T0408:2DF7; +43 holds flags 1, 2.  Not read further
+    +41 fight     three bytes for the fight scene's sounds (scene.py;
+                  the sounds themselves are not looked at): +41 the
+                  sound its units come in with (FFh none), +42 that of
+                  its shot, +43 flags: 1 the first sound is not ended
+                  when the units have arrived, 2 the shot's sound gets
+                  5Fh instead of 7Fh (its loudness, presumably).
+                  T0408:2DF7 reads them too (not read)
 
 GROUND.DAT: records of 6 bytes (110 in ISLE and DESERT, all the table
 at F27EE:0751 has room for up to the next variable; 150 in MOON), the
@@ -135,9 +140,10 @@ ground values of a map's squares:
     +4 cost2      the same for a unit with flag 10h in its +4 (the air
                   units, by the class), whatever the mask; not seen in
                   the run
-    +5 scene      1..7: the fight scene's choice (a switch in T2112:0000,
-                  a table at F2D65:000E; seen): the background,
-                  presumably
+    +5 scene      1..7: the fight scene's ground (its list of
+                  FIGHT.LIB's pieces and the way the units come in:
+                  scene.py) and the two signed bytes at F2D65:000E that
+                  fight_reckon adds to attack and defence (fight.py)
 
 CODES.DAT: records of 10 bytes, one a map in the maps' order (the menu,
 T1090, loads it and takes the length / 10 for their number: 34 in each

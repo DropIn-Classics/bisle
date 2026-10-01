@@ -9,6 +9,7 @@ as BATTLE.EXE draws them, and compared with the run's video memory.
     screens.py --menu RAM --message position|insert [--vram VRAM] ...
     screens.py --menu RAM --message name [--typed TEXT] [--vram VRAM] ...
     screens.py --scores RAM [--hi FILE] [--map N] [--vram VRAM] [--png DIR] ...
+    screens.py --stats RAM [--vram VRAM] [--png DIR] ...
 
 RAM is a run's memory (run.py -ram), VRAM its video memory (run.py
 -vram), both of the same moment.  --status draws the status screen of
@@ -64,6 +65,18 @@ folder: 00495 HANS and three times 00000 EMPTY under the code EAGLE,
 there), the same again over that file with another name (the same score
 twice: the file's first comes first), and RATING with that file put in
 as MAP\\00.HI (-put; FIRST, the same table).
+
+--stats draws the statistics after a map (after_map, T15AC:0007;
+draw_stats below) from the run's memory while they are up.  Checked
+against a run (ISLE's map 03, the other player's headquarters taken after
+a round: HANDOFF.md has the keys; space at 140 s, -ram -vram at 170 s):
+won, RATING : 1210, ROUNDS : 1, SCALE : 1 - 1, the keyword EAGLE, two
+level curves of 3 points; and against the battle with the computer lost
+(HANDOFF.md's fights.keys, -ram -vram at 545 s; the screen is up from
+534.6 s): MISSION NOT COMPLETED, RATING : 0, ROUNDS : 11, SCALE : 1 - 2,
+curves of 22 points that fall and rise.  All 64000 pixels in the video
+memory on the page shown in both.  Not seen: 32 points and more (SCALE
+1 - 4), 64 and more (the rows turned round), the last map's text.
 
 --building draws the building's screen (draw_building below) of each
 player whose cursor has the state 2 (+17h) in the run's memory.  Checked
@@ -801,6 +814,157 @@ def draw_scores(files, v):
     return s.pix
 
 
+def s16(v):
+    v &= 0xFFFF
+    return v - 0x10000 if v & 0x8000 else v
+
+
+def line(s, x1, y1, x2, y2, colour):
+    """T2541:0004, a line between the drawing record's two points: from
+    the left point on, a pixel a column when it is wider than high (or as
+    wide, going up: then one column more), else a pixel a row (as wide,
+    going down: one row more); the other coordinate goes one on whenever
+    a 16-bit sum of (the smaller width * 65536 / the larger) overflows.
+    The right point itself is not drawn but in the two cases of one
+    more.  A level line is draw_row's, an upright one draw_column's (both
+    with their ends)."""
+    if x1 == x2 or y1 == y2:
+        s.fill(x1, y1, x2, y2, colour)
+        return
+    if x2 < x1:
+        x1, y1, x2, y2 = x2, y2, x1, y1
+    dx, dy = x2 - x1, abs(y2 - y1)
+    sy = 1 if y2 > y1 else -1
+    x, y, acc = x1, y1, 0
+    if dx < dy or dx == dy and sy > 0:
+        if dx == dy:
+            dy += 1
+        frac = (dx << 16) // dy & 0xFFFF
+        for _ in range(dy):
+            s.put(x, y, colour)
+            y += sy
+            acc += frac
+            if acc > 0xFFFF:
+                acc &= 0xFFFF
+                x += 1
+    else:
+        if dx == dy:
+            dx += 1
+        frac = (dy << 16) // dx & 0xFFFF
+        for _ in range(dx):
+            s.put(x, y, colour)
+            x += 1
+            acc += frac
+            if acc > 0xFFFF:
+                acc &= 0xFFFF
+                y += sy
+
+
+def along(s, x1, y1, x2, y2, entry):
+    """T15AC:095B: an entry at every x from x1 to x2, its y from y1 by the
+    slope as a long of 16.16 (the division cut off towards 0, of the
+    product the upper word)"""
+    if x2 == x1:
+        x2 += 1
+    d = (y2 - y1) << 16
+    slope = abs(d) // (x2 - x1) * (1 if d >= 0 else -1)
+    for x in range(x1, x2 + 1):
+        s.entry(x, s16((slope * (x - x1) >> 16) + y1), entry, 0)
+
+
+def curve(s, x, y, row, entry, colour, top):
+    """T15AC:07EC: a player's curve from x, y: a point every 16 pixels for
+    fewer than 16 points, every 8 for fewer than 32, else every 4; a
+    point's height its count * (400000h / the highest count of both
+    players, 40h for 0) >> 16, up from y; between two points the line in
+    the colour and over it the entry at every x"""
+    step = 4 if len(row) >= 0x20 else 8 if len(row) >= 0x10 else 0x10
+    scale = 0x400000 // (top or 0x40)
+    height = [s16(c * scale >> 16) for c in row]
+    for i in range(1, len(row)):
+        y1, y2 = y - height[i - 1], y - height[i]
+        line(s, x, y1, x + step, y2, colour)
+        along(s, x, y1, x + step, y2, entry)
+        x += step
+
+
+HISTORY = 0x248E                        # F27EE: the record of history_add
+
+
+def stats_values(ram, files):
+    """what after_map shows, from the run's memory while its screen is up:
+    the number of points (F27EE:2497) and the two rows (the far pointers
+    F27EE:248F and 2493; T15AC:071F has put them in order by then), the
+    score (the word F27EE:2597), the rounds (251D), whether the map is won
+    (F27EE:250C bit 10h), the map it was (251B) and the one that follows
+    (2523), and CODES.DAT's records of both"""
+    n = ram.byte(HISTORY + 9)
+    rows = []
+    for at in (HISTORY + 1, HISTORY + 5):
+        off, seg = struct.unpack_from('<HH', ram.bytes(at, 4))
+        rows.append([ram.far(seg, off + i) for i in range(n)])
+    codes = unpacked(find(files.game, 'CODES.DAT'))
+    old, new = ram.word(0x251B), ram.word(0x2523)
+    return {'rows': rows, 'score': ram.word(0x2597) & 0xFFFF, 'rounds': ram.word(0x251D) & 0xFFFF,
+            'won': bool(ram.word(STATE) & 0x10), 'old': old, 'new': new,
+            'last': bool(codes[10 * old + 8] & 1), 'code': bytes(c + 0x30 for c in codes[10 * new:10 * new + 5])}
+
+
+def draw_stats(files, v):
+    """the statistics after a map (after_map, T15AC:0007), read from the
+    code: the picture STATS.IFF, the two curves (player 0's from x 29, y
+    72 with STATS.LIB's entry 0 and colour 3, player 1's from y 168 with
+    entry 1 and colour 12h), and the texts of GAME.TXT in AMOK's +0Dh, the
+    values in AMOK's +0Bh: at y 86 text 1Ch (RATING) at x 40 and the score
+    at x 94, text 13h (ROUNDS) at 130 and the rounds at 184, text 14h
+    (SCALE) at 210 and text 15h, 16h or 17h (fewer than 16 points, fewer
+    than 32, more) at 258; at (40, 182) for a map won text 12h and the
+    following map's code (CODES.DAT's letters plus 30h) at x 262, or text
+    18h after the last map (the record's +8 bit 0), for one not won text
+    11h."""
+    s = Screen(files)
+    a = files.amok
+    pic = ifffiles.read(unpacked(find(files.game, 'STATS.IFF')))
+    for y in range(HEIGHT):
+        s.pix[y * WIDTH:(y + 1) * WIDTH] = pic['pixels'][y * pic['width']:y * pic['width'] + WIDTH]
+    stats = [e for _, e in libfiles.read(unpacked(find(find(files.game, 'LIB'), 'STATS.LIB')))]
+    top = max(max(row) if row else 0 for row in v['rows'])
+    curve(s, 0x1D, 0x48, v['rows'][0], stats[0], 3, top)
+    curve(s, 0x1D, 0xA8, v['rows'][1], stats[1], 0x12, top)
+    if not v['won']:
+        s.text(0x28, 0xB6, 0x11, a[C_TEXT])
+    elif v['last']:
+        s.text(0x28, 0xB6, 0x18, a[C_TEXT])
+    else:
+        s.text(0x28, 0xB6, 0x12, a[C_TEXT])
+        s.colour = a[0x0B]
+        s.chars(0x28 + 0xDE, 0xB6, [v['code']])
+    s.text(0x28, 0x56, 0x1C, a[C_TEXT])
+    s.colour = a[0x0B]
+    s.number(v['score'], 0x5E, 0x56)
+    s.text(0x82, 0x56, 0x13, a[C_TEXT])
+    s.colour = a[0x0B]
+    s.number(v['rounds'], 0xB8, 0x56)
+    n = len(v['rows'][0])
+    s.text(0xD2, 0x56, 0x14, a[C_TEXT])
+    s.text(0x102, 0x56, 0x17 if n >= 0x20 else 0x16 if n >= 0x10 else 0x15, a[0x0B])
+    return s.pix
+
+
+def stats_main(a, files, ram, vram, game):
+    v = stats_values(ram, files)
+    print('%s, score %d, rounds %d, map %d then %d (%s)%s; %d points: %s / %s' % (
+        'won' if v['won'] else 'not won', v['score'], v['rounds'], v['old'], v['new'], v['code'].decode('latin-1'),
+        ', the last map' if v['last'] else '', len(v['rows'][0]), *(' '.join(map(str, r)) for r in v['rows'])))
+    pix = draw_stats(files, v)
+    if vram:
+        report(pix, vram, ram)
+    if a.png:
+        os.makedirs(a.png, exist_ok=True)
+        to_png(os.path.join(a.png, 'stats.png'), game, pix)
+    return 0
+
+
 def menu_name(codes):
     return ''.join(' ' if c == 1 else chr(ord('A') + c - 17) if 17 <= c <= 42 else str(c - 5) if 5 <= c <= 14 else '?'
                    for c in menu_text(codes))
@@ -919,6 +1083,7 @@ def main():
     ap.add_argument('--building', metavar='RAM', help="draw the building's screens from a run's memory")
     ap.add_argument('--menu', metavar='RAM', help="draw the texts of a menu (--id) from a run's memory")
     ap.add_argument('--scores', metavar='RAM', help="draw the scores' screen (RATING) from a run's memory")
+    ap.add_argument('--stats', metavar='RAM', help="draw the statistics after a map from a run's memory")
     ap.add_argument('--hi', metavar='FILE', help='the .HI file for --scores (default: the table without a file)')
     ap.add_argument('--id', dest='menu_id', type=int, default=3, help='the menu (default 3, the title menu)')
     ap.add_argument('--sel', type=int, help='the chosen item: draw the picture behind and the cursor too')
@@ -935,10 +1100,12 @@ def main():
     a = ap.parse_args()
     game = a.game or os.path.join(game_dir(), 'ISLE')
     files = Files(game)
-    if [bool(a.status), bool(a.unit), bool(a.building), bool(a.menu), bool(a.scores)].count(True) != 1:
-        ap.error('one of --status, --unit, --building, --menu and --scores')
-    ram = Ram(open(a.status or a.unit or a.building or a.menu or a.scores, 'rb').read(), int(a.load, 16))
+    if [bool(a.status), bool(a.unit), bool(a.building), bool(a.menu), bool(a.scores), bool(a.stats)].count(True) != 1:
+        ap.error('one of --status, --unit, --building, --menu, --scores and --stats')
+    ram = Ram(open(a.status or a.unit or a.building or a.menu or a.scores or a.stats, 'rb').read(), int(a.load, 16))
     vram = open(a.vram, 'rb').read() if a.vram else None
+    if a.stats:
+        return stats_main(a, files, ram, vram, game)
     if a.scores:
         return scores_main(a, files, ram, vram, game)
     if a.unit:
