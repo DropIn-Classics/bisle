@@ -22,9 +22,10 @@ the template's.
 - `game/` holds the installed GOG folder as it is (no CD image: GOG
   ships the three games as folders for DOSBox); it is not in the
   repository.
-- The kit is at its merge 2fca87a (the plugin together with what came
-  from the remote: -keyat/-keysat in the runner, the selftest on
-  Windows), which is pushed; check.py says all ok with it, the port's
+- The kit is at ed24ccd (after the merge 2fca87a it got, for ports, the
+  runtime's cdaudio, a CD's audio tracks from a cue sheet, and the VGA's
+  start address latched at the retrace; nothing of the tools or the
+  runner changed); check.py says all ok with it, the port's
   comparisons were not run again. Not pushed yet when this was written:
   the project's commits made after a5d390a on the Windows machine
   (60857eb to fc687ae) and their merge with d680857.
