@@ -21,8 +21,8 @@ AdLib), the menus with the code typed, the scores and their name, a
 map's setup and the map's loop with the cursors on the map (a unit's
 line, a unit chosen, its reach and targets, an attack order, the
 overview), the screens over a window (status, a unit, a building with
-its slots). Not yet (`todo.c`: the program ends with the routine's name):
-a move carried out, the change of phase with the fights, the computer player, saving and
+its slots), a move carried out. Not yet (`todo.c`: the program ends
+with the routine's name): the change of phase with the fights, the computer player, saving and
 loading, the animations, what follows a map.
 
 | File | The original's | What |
@@ -43,6 +43,7 @@ loading, the animations, what follows a map.
 | `reach.c` | T0BA0 | where a unit can move and fire, the way to a square |
 | `orders.c` | T0B70, T11FD | an attack order, the line below a window |
 | `shop.c` | T1479, T24D8, T2701 | the screens over a window: status, a unit, a building |
+| `move.c` | T122D | a move: the way marked, the steps, what arriving does, taken back |
 | `phase.c` | T0408 | the score (the change of phase not yet) |
 | `battle.c` | T0708 | main: the start, a map's setup, the map's loop, after a map |
 | `todo.c` | - | what is not translated yet |
@@ -178,6 +179,19 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   factory (`list_makeable`, `draw_type_list`: the attack phase is not
   reached yet), a unit of two squares, another player's unit, player 1's
   window.
+- A move, the keys by the map loop's passes, stopped at the same pass
+  after the aim, during the steps and after the end: on the first map a
+  T-3 SCORPION chosen (fire and up) and moved a square (fire on the
+  square, fire again); on map 03 the unit beside the headquarters moved
+  into it (move_record's kind 5), the unit taken out of the depot (fire
+  and up in its screen) and moved two squares up (the cursor is back in
+  the depot's screen afterwards), an aim on a square out of reach
+  refused, and the unit given back into the depot after it (fire twice
+  quickly). In each the whole video memory and the program's memory were
+  the same but for the kinds of differences above. Not compared: a unit
+  taken aboard or going aboard another (kinds 1 and 2), a building of
+  the other side stood on (kind 4), a unit of two squares, `move_undo`
+  (the change of phase calls it), player 1's moves.
 - The window build was started for 8 s and ran (nothing looked at or
   heard: nobody was there).
 

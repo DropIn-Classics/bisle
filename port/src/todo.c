@@ -5,11 +5,6 @@
 
 #define TODO(name) bi_todo(#name)
 
-int move_aim(fptr cur, fptr map, int side) { (void)cur, (void)map, (void)side; TODO(move_aim); return 0; }
-int t122d_05b8(fptr cur, int side) { (void)cur, (void)side; TODO(t122d_05b8); return 0; }
-void unit_release(fptr cur, fptr map, int side, int kind) { (void)cur, (void)map, (void)side, (void)kind; TODO(unit_release); }
-void move_step(void) { TODO(move_step); }
-int stop_check(int off, int side, fptr map) { (void)off, (void)side, (void)map; TODO(stop_check); return 0; }
 int change_phase(fptr a, fptr b, fptr c, fptr d) { (void)a, (void)b, (void)c, (void)d; TODO(change_phase); return -1; }
 void history_add(int units0, int units1) { (void)units0, (void)units1; TODO(history_add); }
 void after_map(fptr buffer) { (void)buffer; TODO(after_map); }

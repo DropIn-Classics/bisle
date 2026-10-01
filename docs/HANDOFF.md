@@ -1514,6 +1514,14 @@ compared):
   passes after that opens a screen. Map 03 by passes of the menus' loop
   (T1090:058B): down 30, enter 40, enter 60, m a r s s at 70 to 110,
   enter 120, down 130, 140, 150, enter 160, enter 180.
+- On map 03 the unit out of player 0's depot (6, 14) reaches only the
+  squares above and to the right (the marks after fire and up in the
+  depot's screen); an aim elsewhere is refused (move_aim 12h, no
+  message), and fire twice quickly after a refused aim gives the unit
+  back into the depot (unit_release with 10h). The runner stops after
+  30 s unless `-until` says more (pcmp.py: UNTIL, 120 by default).
+- move_arrive's kind 5 draws the square + 1 again (redraw_square without
+  the - 1 the other kinds have); the port does the same.
 - T2701:000E unpacks a packed entry in memory as load_file does a file,
   a byte more than the length says; draw_packed (T24D8:0008) draws from
   the buffer when it returns 0. Above 64 KB, or when the buffer's offset
@@ -1531,8 +1539,8 @@ compared):
 ## Next
 
 0. The port: the sound, the menus, a map's setup and its loop with the
-   cursors and the screens over a window (T1479) are done; next what
-   port/src/todo.c lists, a module at a time: T122D (a move), T0408 (the
+   cursors, the screens over a window (T1479) and a move (T122D) are
+   done; next what port/src/todo.c lists, a module at a time: T0408 (the
    change of phase), T1F3C..T2190 (the fight), T178C..T1ED2 (the
    computer), T13CA, T15AC, T2248. Each step compared with the runner as
    port/README.md says.

@@ -298,12 +298,19 @@ void draw_status(int side);
 void list_makeable(int energy);
 int cargo_size(fptr rec, int side);
 
-/* ---- not translated yet (todo.c) ---- */
+/* ---- move.c: T122D, a move ---- */
+void unit_release(fptr cur, fptr map, int side, int kind);
 int move_aim(fptr cur, fptr map, int side);
 int t122d_05b8(fptr cur, int side);
-void unit_release(fptr cur, fptr map, int side, int kind);
 void move_step(void);
+int move_arrive(int side, fptr map);
 int stop_check(int off, int side, fptr map);
+int direction(int from, int to);
+void move_undo(int unit, fptr map, int side);
+int count_slots(int side, fptr rec, int used);
+void cargo_move(int side, fptr from, fptr to);
+
+/* ---- not translated yet (todo.c) ---- */
 int change_phase(fptr a, fptr b, fptr c, fptr d);
 long score(void);
 void history_add(int units0, int units1);
