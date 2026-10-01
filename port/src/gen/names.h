@@ -463,6 +463,30 @@
     X(F2C0A, computer_types, 0x0000) \
     X(F2C0A, computer_state, 0x00A2) \
     X(F2C0A, computer_keys, 0x11EE) \
+    X(F2D37, scene_arrived, 0x0008) \
+    X(F2D37, scene_shot, 0x0009) \
+    X(F2D37, scene_record, 0x000A) \
+    X(F2D37, scene_pace, 0x000E) \
+    X(F2D37, scene_shot_types, 0x0029) \
+    X(F2D37, scene_calls_units, 0x005F) \
+    X(F2D37, scene_calls_shots, 0x0063) \
+    X(F2D37, scene_b_after, 0x0067) \
+    X(F2D37, scene_units_a, 0x0068) \
+    X(F2D37, scene_base_a, 0x00C8) \
+    X(F2D37, scene_shots_a_count, 0x00CA) \
+    X(F2D37, scene_frame_bits, 0x00CB) \
+    X(F2D37, scene_count_a, 0x00CC) \
+    X(F2D37, scene_units_b, 0x00CE) \
+    X(F2D37, scene_shots_a, 0x012E) \
+    X(F2D37, scene_base_b, 0x01D6) \
+    X(F2D37, scene_shots_b_count, 0x01D8) \
+    X(F2D37, scene_count_b, 0x01D9) \
+    X(F2D37, scene_a_after, 0x01DA) \
+    X(F2D37, scene_shots_b, 0x01DC) \
+    X(F2D37, scene_b_silent, 0x0284) \
+    X(F2D5F, scene_pieces, 0x0000) \
+    X(F2D65, scene_ground_bonus, 0x000E) \
+    X(F2D66, scene_scripts, 0x0000) \
     X(F2D8A, effects_ptr, 0x000C) \
     X(F2D8A, effects_asked, 0x0010) \
     X(DATA, draw_colour, 0x00D6) \

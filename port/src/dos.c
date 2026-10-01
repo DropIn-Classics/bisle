@@ -307,11 +307,14 @@ void clock_lines(int lines)
  * the video memory to $BI_VRAM, and the program ends.
  * BI_KEYSAT="NAME N:HEX N:HEX ...;NAME N:HEX ...": at the Nth pass of
  * NAME the keyboard sends the byte HEX (a scancode; E0 first for the grey
- * keys), as the runner's -keysat and -keyat do. */
+ * keys), as the runner's -keysat and -keyat do.
+ * BI_POKE="NAME#N ADDR HEX ADDR HEX ...;NAME#N ...": at the Nth pass of
+ * NAME the bytes HEX go to the linear address ADDR (hex), as the
+ * runner's -poke does. */
 void bi_at(const char *name)
 {
     static struct { const char *name; long count; } places[32];
-    static const char *brk, *keys;
+    static const char *brk, *keys, *pokes;
     static long brk_pass;
     const char *ram, *vram, *p;
     size_t len = strlen(name);
@@ -327,8 +330,11 @@ void bi_at(const char *name)
         keys = getenv("BI_KEYSAT");
         if (!keys)
             keys = "";
+        pokes = getenv("BI_POKE");
+        if (!pokes)
+            pokes = "";
     }
-    if (!*brk && !*keys)
+    if (!*brk && !*keys && !*pokes)
         return;
     for (i = 0; i < 32 && places[i].name && strcmp(places[i].name, name) != 0; i++)
         ;
@@ -356,6 +362,36 @@ void bi_at(const char *name)
                     strtol(q, &e, 16);
                 q = e;
             }
+        }
+        p += group;
+        if (*p == ';')
+            p++;
+    }
+    for (p = pokes; *p; ) {
+        const char *end = strchr(p, ';');
+        size_t group = end ? (size_t)(end - p) : strlen(p);
+
+        if (group > len && !strncmp(p, name, len) && p[len] == '#') {
+            char *e;
+            const char *q;
+
+            if (strtol(p + len + 1, &e, 10) == count)
+                for (q = e; q < p + group; ) {
+                    unsigned long at = strtoul(q, &e, 16);
+                    int digit = 0, value = 0;
+
+                    if (e == q)
+                        break;
+                    for (q = e; q < p + group && *q == ' '; q++)
+                        ;
+                    for (; q < p + group && *q != ' '; q++) {
+                        value = value * 16 + (*q <= '9' ? *q - '0' : (*q | 0x20) - 'a' + 10);
+                        if (++digit == 2) {
+                            mem[at++ & (MEM_SIZE - 1)] = (uint8_t)value;
+                            digit = value = 0;
+                        }
+                    }
+                }
         }
         p += group;
         if (*p == ';')

@@ -5,7 +5,6 @@
 
 #define TODO(name) bi_todo(#name)
 
-int fight_step(fptr rec) { (void)rec; TODO(fight_step); return 1; }
 int save_game(fptr buffer) { (void)buffer; TODO(save_game); return 0; }
 void load_game(fptr buffer) { (void)buffer; TODO(load_game); }
 void play_anim(int number, fptr buffer, int a, int b, int c, fptr path) { (void)number, (void)buffer, (void)a, (void)b, (void)c, (void)path; TODO(play_anim); }

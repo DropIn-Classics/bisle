@@ -21,10 +21,10 @@ AdLib), the menus with the code typed, the scores and their name, a
 map's setup and the map's loop with the cursors on the map (a unit's
 line, a unit chosen, its reach and targets, an attack order, the
 overview), the screens over a window (status, a unit, a building with
-its slots), a move carried out, the change of phase (without the fight
-scene), the statistics after a map. Not yet (`todo.c`: the program ends
-with the routine's name): the fight scene, the films, the computer
-player, saving and loading, the credits.
+its slots), a move carried out, the change of phase with the fights and
+their scene, the statistics after a map. Not yet (`todo.c`: the program
+ends with the routine's name): the films, the computer player, saving
+and loading, the credits.
 
 | File | The original's | What |
 |---|---|---|
@@ -46,6 +46,7 @@ player, saving and loading, the credits.
 | `shop.c` | T1479, T24D8, T2701 | the screens over a window: status, a unit, a building |
 | `move.c` | T122D | a move: the way marked, the steps, what arriving does, taken back |
 | `phase.c` | T0408 | the change of phase, the score |
+| `fight.c` | T1F3C..T223C | the fight: its reckoning, the scene with the units and the shots |
 | `after.c` | T15AC | the numbers of units kept at each change, the statistics after a map |
 | `battle.c` | T0708 | main: the start, a map's setup, the map's loop, after a map |
 | `todo.c` | - | what is not translated yet |
@@ -203,6 +204,19 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   taken (the film is not translated), a unit taken aboard, a road or a
   depot built, the map's end by it, the statistics after a map
   (`after_map` is translated and not run yet).
+- A fight, on the first map: a unit of player 0 put beside one of player
+  1 by pokes into both programs (the unit's record and the unit's byte
+  of both maps; `BI_POKE`, the runner's `-poke`), player 1's attack
+  order by keys, the change of phase. Stopped at the 3rd, 20th, 45th and
+  60th call of fight_step and at a pass of the map's loop afterwards:
+  the whole video memory and the program's memory (the scene's values,
+  the units, the seed of rand) the same but for the kinds of differences
+  above; the same with the target's count poked to 1, which the fight
+  destroys (the explosion, the unit removed). Not compared: a fight over
+  a distance, a unit in the air (its shadow), a unit of two squares, a
+  unit that holds others, a target that cannot answer, the other
+  grounds' pieces and scripts (tools/scene.py did those from runs of the
+  original before).
 - The window build was started for 8 s and ran (nothing looked at or
   heard: nobody was there).
 

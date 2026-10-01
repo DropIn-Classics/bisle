@@ -2096,6 +2096,36 @@ name F2740:00A3 menu_items
 ; (not mapped) name F27E3:000E name_winner
 ; (not mapped) name F27E3:0015 name_looser
 ; (not mapped) name F27E3:001C lib_stats
+; the fight scene's values (fight_step; tools/scene.py has them in full):
+; the two flags of its parts, the far pointer to the fight record, a
+; type's pace, a type's kind of shot and its speed, the calls of the two
+; parts, the counts, the units (10h bytes each), the shots (1Ch each)
+name F2D37:0008 scene_arrived
+name F2D37:0009 scene_shot
+name F2D37:000A scene_record
+name F2D37:000E scene_pace
+name F2D37:0029 scene_shot_types
+name F2D37:005F scene_calls_units
+name F2D37:0063 scene_calls_shots
+name F2D37:0067 scene_b_after
+name F2D37:0068 scene_units_a
+name F2D37:00C8 scene_base_a
+name F2D37:00CA scene_shots_a_count
+name F2D37:00CB scene_frame_bits
+name F2D37:00CC scene_count_a
+name F2D37:00CE scene_units_b
+; (not mapped) name F2D37:012E scene_shots_a
+name F2D37:01D6 scene_base_b
+name F2D37:01D8 scene_shots_b_count
+name F2D37:01D9 scene_count_b
+name F2D37:01DA scene_a_after
+name F2D37:01DC scene_shots_b
+; (not mapped) name F2D37:0284 scene_b_silent
+; the grounds' lists of pieces, the two signed bytes a ground's scene adds
+; to attack and defence, the units' scripts
+; (not mapped) name F2D5F:0000 scene_pieces
+name F2D65:000E scene_ground_bonus
+; (not mapped) name F2D66:0000 scene_scripts
 ; the ticks a pass of the map's loop takes (4; also the number of the
 ; scores' file after a map), the position LOAD was given, the name made
 ; of a number (T26EA:000F writes it: a saved game, a map's files), the

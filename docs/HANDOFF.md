@@ -1544,6 +1544,22 @@ compared):
   code's five digits less 30h, +7 how many maps on, +8 bit 1 the last
   map). The curves are the units' numbers of history_add, scaled by
   400000h / the largest (16.16), 4, 8 or 16 pixels a number.
+- The port takes pokes as the runner does: `BI_POKE="PLACE#N ADDR HEX
+  ADDR HEX;..."` (linear addresses, at the Nth pass of a place); the
+  scratch pcmp.py gives one `POKE="place@ADDR#N LINEAR HEX ..."` to both.
+  A fight on the first map without the computer: at the map loop's 2nd
+  pass unit 2 to the square 019Ch (2AF27 9D019D01, and the unit's byte
+  of both maps: 31F0D FF, 32039 02, 33F11 FF, 3403D 02; 2AF1E 01 makes
+  its count 1); player 1 (in the attack phase first): v, d (the cursor on
+  his unit 8), fire with up, c (on the target), fire: the order; then
+  the change. The scene's first fight took 62 calls of fight_step, one a
+  picture.
+- In the scene the shadow of a unit in the air is looked for in the
+  frame 2 rows above the unit and drawn 2 rows below (T1F5A:0322: the
+  port does the same). The attacker's extra shot takes its unit by the
+  target's number modulo the count, the answer's by the shot's number.
+  fight_step's counts for the scene are the units' +2, also for a type
+  whose count is its +3.
 - T2701:000E unpacks a packed entry in memory as load_file does a file,
   a byte more than the length says; draw_packed (T24D8:0008) draws from
   the buffer when it returns 0. Above 64 KB, or when the buffer's offset
@@ -1562,8 +1578,8 @@ compared):
 
 0. The port: the sound, the menus, a map's setup and its loop with the
    cursors, the screens over a window (T1479), a move (T122D), the change
-   of phase (T0408) and T15AC are done; next what port/src/todo.c lists,
-   a module at a time: T1F3C..T2190 (the fight scene), T2248 (the
+   of phase (T0408), T15AC and the fight scene (T1F3C..T223C) are done;
+   next what port/src/todo.c lists, a module at a time: T2248 (the
    films), T178C..T1ED2 (the
    computer), T13CA, T15AC, T2248. Each step compared with the runner as
    port/README.md says.
