@@ -690,6 +690,35 @@ name T0F3E:1ABC four_squares
 ; its result's bit 10h clear +18h is 3 and the next fire calls T122D:05B8,
 ; then unit_release; with bit 10h timer 7 runs 4 passes and unit_release
 ; (flags 10h) gives the choice up.
+; What fire on a square offers (T0D36:0D82, the cursor's +1Ch): 0Eh
+; always (down the status or unit's screen, left the change of phase,
+; right the overview), 200h when no move runs; on a unit of the own side
+; that is no one's (2) and has not moved (200h): 10h in the move phase
+; (the cursor's +16h 1; not while a move runs), 1 in the attack phase; on
+; a unit that holds others and on a building's square 400h (with HIDE
+; SHOP, F27EE:250E bit 8, only one's own). Fire with up then (T0D36:0F51,
+; the cursor's +1Bh 4): reach with the unit's +0 as points and the ground
+; flags FFFFh for a unit with 1 in its +6, else 6 for player 1's and 3
+; for player 0's; more than one square in reach: unit_flag 100h, +18h
+; 16h, the unit in +1Eh; else message 22h. In the attack phase (+1Bh 0,
+; T0D36:1106): fire_reach for the type's two ranges (those above 1); no
+; target: message 1Bh; else unit_flag 100h and +18h 13h. A unit with
+; 4000h in its +6 (the pioneers): with nothing left to build (+0Ah)
+; message 1Ah, else T0E9B:1704 gives the squares to build on, marked as
+; targets (none: message 19h).
+; T0B70:000E (cursor far, map far, player) -> 1 when an order is given:
+; fire on a square with +18h 13h. Not a marked target: message 13h, 0
+; (timer 7, then order_release). A unit on it: unit_flag 200h, the unit's
+; +11h the square, +13h 9, +14h 2, the unit into the player's orders,
+; message 17h. The pioneers: +13h 0Bh (a site), or 0Dh on a square whose
+; ground is AMOK's +18h (a depot; message 15h when there are 10 depots),
+; +11h the square, message 14h; not into the orders. Seen in a run: an
+; order of player 0 by keys, fought at the next change as turn.py reckons
+; it (HANDOFF.md).
+name T0BDE:000E give_order
+; T0B70:0289 (cursor far, player): the targets' marks cleared, the unit's
+; 100h off.
+; (not mapped) name T0B70:0289 order_release
 ; T122D:02D8 (cursor far, map far, player) -> 1 (9 for a unit of two
 ; squares), or 12h: no move there. 12h when the cursor's square (the
 ; record's +0) has not the player's mark of reach, is the unit's own, or

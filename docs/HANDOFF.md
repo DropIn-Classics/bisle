@@ -991,8 +991,21 @@ games, each its own folder mounted as C: and started there:
   full building taken, the pioneers' orders (0Bh, 0Dh; the tool stops at
   0Dh), a repair (8000h in a unit's +6: where it is set is not read), a
   map's end by units (11h, 12h, 15h), a limit of turns, the same in
-  DESERT and MOON. Not read: the choice of the unit (T0D36:0F51 on), the
-  limit of turns in it, the animation's records.
+  DESERT and MOON. Not read: where the limit of turns counts, the
+  animation's records.
+- An attack order by keys (BATTLE.hints at give_order): in the attack
+  phase fire with up on a unit of one's own marks its targets
+  (fire_reach), fire on a target gives the order (`give_order`,
+  T0B70:000E: the unit's +11h the target's square, +13h 9, +14h 2, the
+  unit into the player's orders). Run: unit 10h put on (17, 3) among
+  player 1's units by pokes (as above, the squares 31F4F and 33F53),
+  `64:phase`, the cursor by 76..83 right, 85 left, 86, 87, 88 up, then 90
+  space+, 90.6 up+, 91.5 space-, 91.53 up-, 94 down, space at 96, the
+  change at 99: the second change fights unit 10h against unit 0Dh (6 ->
+  3 and 6 -> 5) and turn.py has every byte as the game's, with player 0
+  attacking this time. What fire offers on a square (the cursor's +1Ch)
+  and the choice of a unit to move or fire are read (BATTLE.hints
+  there); the pioneers' orders are read, not run.
 - A real end of a map and the statistics (BATTLE.hints at after_map; the
   run above with two changes first, so that a round is played: `64:phase
   76:phase`, the cursor's keys from 88, the change at 113, space at 140
