@@ -598,6 +598,21 @@ name T2503:0006 put_pixel
 ; to but not +18h. In the run the rectangle was 0, 0, 320, 179: the last
 ; row of SHOP.LIB's entry 2 (row 179) was not drawn. draw_entry_p's
 ; clipping is not read.
+; T1479:05AF (player, type, far pointers; called at T0708:25FF in the map's
+; loop when the cursor record's +17h is 4 and +18h is 0): the screen of a
+; unit: draw_shop_window, two boxes (T1479:0130; the first with the unit's
+; picture, the second with the numbers), the type's big picture and name
+; (T1479:0C93), SHOP.LIB entries at +74h, 86h and more. A run (first map
+; of ISLE, cursor one up from the start onto a unit, fire held 50 s to 51.5 s
+; with down pressed at 50.6 s: `-key 48 up -key 49 up -key 50 space+ -key
+; 50.6 down+ -key 51.5 space- -key 52 down-`) reached it once (-log) and
+; the shot at 55 s shows the picture of the T-3 SCORPION, its name, a column
+; of numbers with icons and a small unit; draw_status did not run (down
+; with fire on an empty square gives that). That the cursor's +1Bh 2 (the
+; unit's own) and state 4 are set by fire and down on a unit of the player
+; is read from T0D36:1484..158B and T0D36:10D4, not checked; what each
+; number is and where it comes from is not read yet.
+name T1479:05AF draw_unit_info
 name T1479:0DC5 draw_status
 name T1479:0004 draw_shop_window
 name T1479:0130 draw_box

@@ -549,6 +549,20 @@ games, each its own folder mounted as C: and started there:
   column and the lower row left out (0, 0, 320, 179 in the run, so row
   179 of the window's lower edge is not drawn), and the cursor is in the
   hexagon of entry 5.
+- The unit's screen (`draw_unit_info`, T1479:05AF, BATTLE.hints): in the
+  first map of ISLE, the cursor one up from its start onto a unit, fire
+  with down held (`-key 48 up -key 49 up -key 50 space+ -key 50.6 down+
+  -key 51.5 space- -key 52 down-`) opens it (-log: T1479:05AF once,
+  draw_status not; shot at 55 s): the unit's big picture and name ("T-3
+  SCORPION"), a column of numbers with icons and a small unit. Fire alone
+  on a unit shows only the bottom line ("5 3RD ARM. VEHICLES"). From the
+  code (T0D36:10D4, 1484..158B; not checked beyond the run): the cursor
+  record's +1Bh 2 and then state +17h 4 come from fire with down when the
+  cursor's +1Ch has bit 4 (set with 0Eh when +18h is 1); the map's loop
+  calls the routine at T0708:25FF. What each number is and where it comes
+  from is not read; screens.py does not draw it yet. The other callers of
+  draw_shop_window (T1479:0AA6 and T13CA:002E, the save and load
+  messages) are not run yet. MOON.hints did not get the name (not mapped).
 - The cursor and the map's clock (BATTLE.hints at copy_page): at the end
   of each pass of the map's loop (T0708:4385) each player's cursor is
   drawn, CURSOR.LIB's entry of the cursor record's +1Bh at its +10h,
