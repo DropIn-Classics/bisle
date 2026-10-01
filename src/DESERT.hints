@@ -584,6 +584,44 @@ name T2503:0006 put_pixel
 ; screen is not read. On ISLE's first map UNIT was 6, 6 and 12 though the
 ; .FIN has 5 units a player (not looked into).
 name T1479:0DC5 draw_status
+; the texts (tools/txtfiles.py has the formats). DATA:0092 is a far
+; pointer to DATA:00D6, a record the drawing routines take their
+; arguments from: +0 the colour, +2, +4 x and y, +12h..+18h a rectangle
+; (the clipping, presumably), +206h (DATA:02DC) a far pointer to the font
+; of CHAR6.DAT, which T0708 loads (255 characters of six words).
+; T2525:000A (x, y, text far): a text in that font, the pixels of the set
+; bits in the colour DATA:00D6, 6 pixels on a character; 7Ch or 0Dh go to
+; the next line (x as at first, y + 6), 0 ends. T2525:0082 draws a
+; character: a row's word rotated by the plane of x, three nibbles as map
+; masks through the table at T2525:0104 (the four bits reversed).
+; T164D:0140 (x, y, n, colour): text n of GAME.TXT (the far pointer
+; F27EE:4132, loaded by T0708): n texts skipped (each to a byte 2 and one
+; more), then its lines, each ended by 0, with draw_chars, y + 6 a line.
+; T164D:01DB (n, x, y): the number n in decimal with draw_chars.
+; A run to the status screen (-vram): the texts 0Ah, 0Bh, 0Dh, 0Fh, 10h
+; were in video memory pixel for pixel as txtfiles.py draws them, in
+; colour 49h (AMOK's +0Dh), on both pages.
+name T2525:000A draw_chars
+name T164D:0140 draw_text
+name T164D:01DB draw_number
+; T164D:000C (x, y, text far, far, ?): a text of CHAR24.LIB's characters
+; (the list at F27EE:0ADF): each byte less 3 an entry drawn by draw_entry
+; (base 0, the far argument passed on), 1 nothing, 24 pixels on a
+; character, 0 ends; x after the text comes back. T1090 (the menus) and
+; T1727 call it. T164D:00A2 (text far, first far): the text after the
+; next 0, or the first when that begins with 2. T164D:0100, which nothing
+; calls, does that a number of times (bytes, not decoded as code).
+; T1727:0004 (buffer far): the title: BB.IFF, TITEL.IFF, char24, then
+; TITEL.TXT's lines run up the screen, three at a time, each centred (160
+; less 12 a character), one row up a step from y 200 (234 and 268 for the
+; second and third at first), the next line when one reaches 98, drawn
+; inside y 132..199 (the record's +14h, +18h), until a key (space sets
+; the key set F27EE:0B1B). Read from the code; a shot at 25 s showed the
+; lines of TITEL.TXT there (KNOP half above the edge, SOUND below), not
+; compared pixel for pixel.
+name T164D:000C draw_text24
+name T164D:00A2 next_line
+name T1727:0004 title
 ; T0D36:1592 (n): puts back the interrupt handlers (T2354:056F, 005E),
 ; prints message n of F273B (1 not enough memory, 2 cannot load file,
 ; 3 internal) and exits with -1 (read from the code, not run)

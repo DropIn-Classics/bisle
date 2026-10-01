@@ -17,9 +17,11 @@ beyond the segments and a few routines; the port is the template's.
 - `game/` holds the installed GOG folder as it is (no CD image: GOG
   ships the three games as folders for DOSBox); it is not in the
   repository.
-- Not pushed yet when this was written: doskit 1676994 (push doskit
-  first, the project's commits name it) and the project's commits from
-  74fa292 on.
+- doskit is at 11c6135, which is pushed. Not pushed yet when this was
+  written: the project's commits after a5d390a.
+- On a machine without `game/` in the checkout, `DOSKIT_GAME` names the
+  installed game's folder (GOG's, with ISLE, DESERT and MOON in it); a
+  fresh clone needs `git submodule update --init doskit`.
 - Scratch scripts of the last session are in `build/scratch` (ignored,
   not part of the project; they may be gone): `rd.py A B` prints lines
   of build/BATTLE.ASM with the compiler's table indexing folded
@@ -51,7 +53,8 @@ games, each its own folder mounted as C: and started there:
 | `UNIT.DAT`, `GROUND.DAT` | the tables of unit types and ground, packed (`tools/datfiles.py`) |
 | `CODES.DAT` | the maps' codes and order, packed (`tools/datfiles.py`) |
 | `AMOK.DAT` | the buildings' ground values, colours (`tools/datfiles.py`); packed only in MOON |
-| other `*.DAT`, `*.TXT` | tables and texts (`CHAR6.DAT`, `BB.DAT`, `GAME.TXT`, `TITEL.TXT`; MOON's `MAPINFO.DAT`, `MAP02.DAT`, `MAP04.DAT`; DESERT's `UNITU.DAT`, `UNITP.DAT`, which begin INFO DEPO as a .PMP begins INFO ILBM); not looked at |
+| `CHAR6.DAT`, `GAME.TXT`, `TITEL.TXT` | the font of 6x6 pixels, the screens' texts, the title's running lines, packed (`tools/txtfiles.py`) |
+| other `*.DAT` | tables (`BB.DAT`; MOON's `MAPINFO.DAT`, `MAP02.DAT`, `MAP04.DAT`; DESERT's `UNITU.DAT`, `UNITP.DAT`, which begin INFO DEPO as a .PMP begins INFO ILBM); not looked at |
 | `*.pdf`, `goggame-*` | GOG's manuals and metadata |
 
 ## What was learned
@@ -478,6 +481,39 @@ games, each its own folder mounted as C: and started there:
   carried in this step (make_unit, find_path, fight_reckon) were looked
   at in MOON.ASM and read the tables as BATTLE.EXE's do. Earlier carried
   names were not looked at that way.
+- `tools/txtfiles.py`: CHAR6.DAT, GAME.TXT and TITEL.TXT of the three
+  games (the first two the same bytes in all three, TITEL.TXT another in
+  MOON), written back identical. CHAR6.DAT is the font: 255 characters
+  of six words, a row each, the leftmost pixel bit 7 of the first byte;
+  `draw_chars` (T2525:000A) sets the pixels of the set bits in the
+  colour of the drawing record (DATA:00D6, to which the far pointer
+  DATA:0092 points; the font's far pointer is its +206h), 6 pixels a
+  character, 7Ch or 0Dh a new line. GAME.TXT: 31 texts, each its lines
+  ended by 0, then 2 and a byte; `draw_text` (T164D:0140: x, y, number,
+  colour) draws one, 6 rows a line, `draw_number` (T164D:01DB) a number.
+  TITEL.TXT: the title's lines in CHAR24.LIB's characters (the entry's
+  number plus 3, 1 a gap), drawn by `draw_text24` (T164D:000C, 24 pixels
+  a character; the menus of T1090 use it too); `title` (T1727:0004) runs
+  three of them up the screen at a time, each centred, inside y 132 to
+  199. A run to the status screen (the keys above with down, -vram at
+  56 s; `txtfiles.py --match`): the texts 0Ah, 0Bh, 0Dh, 0Fh and 10h in
+  video memory pixel for pixel as the tool draws them, in colour 49h
+  (AMOK's +0Dh), on both pages (the second 4000h bytes into a plane).
+  The title's lines were seen in a shot at 25 s, not compared pixel for
+  pixel; the other texts were not seen in a run. MOON.EXE has draw_chars,
+  draw_text24, next_line and title (carried, looked at in MOON.ASM);
+  draw_text and draw_number were not mapped by xfer.py and are not looked
+  for there. T164D:0100 is a routine nothing calls (next_line a number
+  of times; left as bytes).
+- doskit on Windows: xfer.py wrote the hints with CR LF there (every
+  line of DESERT.hints and MOON.hints differed); it writes LF now. The
+  kit's selftest was written for cc and `sh` only; it runs with MSVC now
+  (selftest ok on Windows 11 with Visual Studio 2022 and on Ubuntu 24.04
+  in WSL with gcc 13; macOS not run, doskit's new workflow
+  `.github/workflows/selftest.yml` runs the three once pushed). What it
+  found on the way: `runtime/inno.c` and the template's `port/src/main.c`
+  gave warnings at MSVC's /W4 (this project's main.c too, fixed here),
+  update.c on Windows had no file:// for the test.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -502,10 +538,11 @@ games, each its own folder mounted as C: and started there:
    unit types and ground are done (`tpwmfiles.py --out build/unpacked`
    gives the unpacked files), and the maps are drawn as a run shows them
    (`mapfiles.py --png`), CODES.DAT and AMOK.DAT are read, the .PMP is
-   the map's overview; next the texts and what draws them (`CHAR6.DAT`,
-   `GAME.TXT`, `TITEL.TXT`; T164D:0140 and T164D:01DB draw a text and a
-   number, as far as seen), with them the status screen in full, then
-   the rest of the screen: the cursor, the overview's frame, the
+   the map's overview, the texts and the small font are read
+   (`txtfiles.py`); next the status screen in full (its boxes and
+   numbers: T1479:0130, draw_number's places), the menus' texts (T1090,
+   in the program's data by the looks, drawn by draw_text24), `BB.DAT`,
+   then the rest of the screen: the cursor, the overview's frame, the
    frame's texts, what the windows show of a map (scrolling, the units'
    directions, a unit hidden from the other player).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by

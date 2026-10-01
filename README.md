@@ -32,7 +32,8 @@ Python 3 with `capstone` (`pip install capstone`).
   packed files; `palfiles.py`: the palettes; `ifffiles.py`: the
   pictures; `libfiles.py`: the graphics libraries; `mapfiles.py`: the
   maps and their overviews; `datfiles.py`: the tables of unit types,
-  ground, maps' codes and AMOK.DAT).
+  ground, maps' codes and AMOK.DAT; `txtfiles.py`: the texts and the
+  small font).
 - `port/`: the implementation in C (its README says how far it is).
 - `docs/HANDOFF.md`: state, what was learned, what is next.
 - `AGENTS.md`: the rules for working on this; `PROVENANCE.md`: where the
