@@ -17,6 +17,14 @@ runner loaded the program at (its report's "load ... at"; default 0077).
 --unit draws the unit's screen (below) of each player whose cursor has
 the state 4 (the record's +17h) in the run's memory.
 
+--menu draws the texts of a menu (--id, default 3: START, OPTIONS, DISK,
+EXIT; draw_menu below) and says how many of the drawn pixels the video
+memory has: in a run of the title menu at 40 s all 8748 were on page 1 and
+8089 on page 0, the others within x 127..192, y 152..178 (the last item,
+EXIT; why not examined, a redraw under way at the dump, presumably).  The
+other menus' texts are decoded from the run's memory but were not seen on
+the screen.
+
 --building draws the building's screen (draw_building below) of each
 player whose cursor has the state 2 (+17h) in the run's memory.  Checked
 against a poked run only (HANDOFF.md, the headquarters): all 24160 pixels
@@ -138,6 +146,7 @@ class Files:
         self.texts = txtfiles.read_texts(unpacked(find(game, 'GAME.TXT')))
         self.shop = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'SHOP.LIB')))]
         self.cursor = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'CURSOR.LIB')))]
+        self.char24 = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'CHAR24.LIB')))]
         self.patt = [e for _, e in libfiles.read(unpacked(find(find(game, 'LIB'), 'PATT.LIB')))]
         self.bigunit = mapfiles.sorted_entries(game, 'BIGUNIT')
         self.unit = mapfiles.sorted_entries(game, 'UNIT')
@@ -482,6 +491,60 @@ def draw_building(files, v, clip=None):
     return s.pix
 
 
+MENU_SEG = 0x2740                       # the frame of the menus' data (T1090's DS)
+MENUS, ITEMS, ITEM_REC = 0x79, 0xA3, 0x2E
+
+
+def menu_text(codes):
+    """a text of the menus as draw_text24 (T164D:000C) reads it: each byte
+    less 3 an entry of CHAR24.LIB, 1 a gap, 0 ends"""
+    return list(codes.split(b'\0')[0])
+
+
+def text24(s, x, y, codes, base=0):
+    """draw_text24: 24 pixels on a character"""
+    for c in menu_text(codes):
+        if c != 1:
+            s.entry(x, y, s.f.char24[c - 3], base)
+        x += 0x18
+    return x
+
+
+def menu_values(ram, menu):
+    """the items of a menu (T1090:0EDE) from the run's memory: the menu's
+    record (6 bytes at F2740:0079: the item numbers, +5 their count), each
+    item 2Eh bytes from F2740:00A3: a word of flags (bit 20h: not drawn),
+    its texts of 10 bytes from +2, the one chosen by +2Bh"""
+    base = (ram.load + MENU_SEG) * 16
+    rec = ram.data[base + MENUS + 6 * menu:base + MENUS + 6 * menu + 6]
+    items = []
+    for k in rec[:rec[5]]:
+        at = base + ITEMS + ITEM_REC * k
+        flags = struct.unpack_from('<H', ram.data, at)[0]
+        items.append({'item': k, 'flags': flags, 'text': ram.data[at + 2 + 10 * ram.data[at + 0x2B]:at + 12 + 10 * ram.data[at + 0x2B]]})
+    return items
+
+
+def draw_menu(files, items):
+    """the texts of a menu (T1090:0EDE) as it draws them: the item's text
+    at x 100 (64h), y 50 (32h) and 34 (22h) more for each item, whether it
+    is drawn or not (an item with flag 20h leaves its row empty); not
+    drawn: the picture behind, the cursor (a sphere, T1090:0F82's draw_entry
+    after the text), what the menu loop does"""
+    s = Screen(files)
+    y = 0x32
+    for it in items:
+        if not it['flags'] & 0x20:
+            text24(s, 0x64, y, it['text'])
+        y += 0x22
+    return s.pix
+
+
+def menu_name(codes):
+    return ''.join(' ' if c == 1 else chr(ord('A') + c - 17) if 17 <= c <= 42 else str(c - 2) if 2 <= c <= 11 else '?'
+                   for c in menu_text(codes))
+
+
 def compare(pix, vram, page=0):
     """(pixels drawn, those the video memory has, the box of the others
     or None)"""
@@ -549,11 +612,26 @@ def building_main(a, files, ram, vram, game):
     return 0
 
 
+def menu_main(a, files, ram, vram, game):
+    items = menu_values(ram, a.menu_id)
+    print('menu %d: %s' % (a.menu_id, ', '.join('%s%s' % (menu_name(i['text']), ' (hidden)' if i['flags'] & 0x20 else '')
+                                                for i in items)))
+    pix = draw_menu(files, items)
+    if vram:
+        report(pix, vram)
+    if a.png:
+        os.makedirs(a.png, exist_ok=True)
+        to_png(os.path.join(a.png, 'menu%d.png' % a.menu_id), game, pix)
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     ap.add_argument('--status', metavar='RAM', help="draw the status screens from a run's memory")
     ap.add_argument('--unit', metavar='RAM', help="draw the unit's screens from a run's memory")
     ap.add_argument('--building', metavar='RAM', help="draw the building's screens from a run's memory")
+    ap.add_argument('--menu', metavar='RAM', help="draw the texts of a menu (--id) from a run's memory")
+    ap.add_argument('--id', dest='menu_id', type=int, default=3, help='the menu (default 3, the title menu)')
     ap.add_argument('--vram', help="compare with the run's video memory")
     ap.add_argument('--png', metavar='DIR', help='write the pictures here')
     ap.add_argument('--game', help="the game's folder (default ISLE)")
@@ -561,12 +639,14 @@ def main():
     a = ap.parse_args()
     game = a.game or os.path.join(game_dir(), 'ISLE')
     files = Files(game)
-    if [bool(a.status), bool(a.unit), bool(a.building)].count(True) != 1:
-        ap.error('one of --status, --unit and --building')
-    ram = Ram(open(a.status or a.unit or a.building, 'rb').read(), int(a.load, 16))
+    if [bool(a.status), bool(a.unit), bool(a.building), bool(a.menu)].count(True) != 1:
+        ap.error('one of --status, --unit, --building and --menu')
+    ram = Ram(open(a.status or a.unit or a.building or a.menu, 'rb').read(), int(a.load, 16))
     vram = open(a.vram, 'rb').read() if a.vram else None
     if a.unit:
         return unit_main(a, files, ram, vram, game)
+    if a.menu:
+        return menu_main(a, files, ram, vram, game)
     if a.building:
         return building_main(a, files, ram, vram, game)
     for player in (0, 1):

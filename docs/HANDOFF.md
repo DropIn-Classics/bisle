@@ -636,6 +636,21 @@ games, each its own folder mounted as C: and started there:
   did nothing. doskit's runner reads FFh now, as a PC without a joystick
   (doskit, with a test, GAMEPORT.EXE).
 
+- The menus' texts (`screens.py --menu RAM --id N`, T1090:0EDE): the
+  menu records are 6 bytes at F2740:0079 (item numbers, +5 the count),
+  the items 2Eh bytes from F2740:00A3 (a word of flags, bit 20h not
+  drawn; texts of 10 bytes from +2, the one chosen by +2Bh), a text is
+  CHAR24.LIB's entries by byte less 3 (1 a gap; A is 17, 0..9 are 2..11).
+  Menu 0 OPTIONS (FIRST, SETTING, PLAYER, OK), 1 DISK (LOAD, MOUSE,
+  RATING, OK), 2 PLAYER (HUMAN/COMPUTER twice, OK), 3 the title menu
+  (START, OPTIONS, DISK, EXIT), 4 SETTING (ALL SHOPS/HIDE SHOP, NO LIMIT/
+  7 TURNS .., PALETTE 4/5, OK), 5 EXIT/CANCEL, 6 SIDE ONE/TWO, SLOW/
+  MEDIUM, OK, each item's text at x 100, y 50 + 34 an item. In a run of
+  the title menu (-key 14 space, -ram -vram at 40 s) the four texts were
+  in the video memory pixel for pixel on page 1, and on page 0 but for
+  EXIT's rows (not examined); the picture behind and the sphere cursor
+  are not drawn, the other menus not seen on a screen.
+
 ## Next
 
 1. BATTLE.EXE's last 4.1 KB: menus, a map, saving, loading, battles
@@ -659,8 +674,7 @@ games, each its own folder mounted as C: and started there:
    (`screens.py`: the status screen and the unit's); next in screens.py
    the other screens of SHOP.LIB's window (the callers of
    draw_shop_window and draw_box in T1479: T1479:0AA6, the buildings'
-   screens, by the texts 03h..09h), the menus' texts (T1090,
-   in the program's data by the looks, drawn by draw_text24), who draws
+   screens, by the texts 03h..09h), the other menus on a screen and the title menu's sphere, who draws
    BB.DAT's sprites, then the rest of the screen: the cursor's entries, the overview's frame, the
    frame's texts, what the windows show of a map (scrolling, the units'
    directions, a unit hidden from the other player).
