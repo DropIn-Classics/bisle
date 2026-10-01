@@ -4,7 +4,10 @@ write them back, show them.
 
     libfiles.py [FILE ...] [--png DIR] [--pal FILE] [--base N]
 
-Without FILE every .LIB of the game's folder is taken.  One line per
+Without FILE every .LIB of the game's folder is taken, and BB.DAT, which
+is a library too (7 entries of kind U named 06 .. 00, 34x39 down to 19x1
+pixels; which routine draws them, and with which palette, is not looked
+into).  One line per
 file: the entries, their kinds, whether the entries and the directory
 written back give the (unpacked) file's bytes, how packed entries were
 packed, and whether the .DAT beside it names the library's entries.
@@ -194,7 +197,7 @@ def to_png(path, e, rgb, base):
 def dat_check(path, entries):
     """None without a .DAT, else (names in it, those the library lacks)"""
     dat = os.path.splitext(path)[0] + '.DAT'
-    if not os.path.exists(dat):
+    if dat.upper() == path.upper() or not os.path.exists(dat):
         return None
     data = open(dat, 'rb').read()
     if data[:4] == tpwmfiles.MAGIC:
@@ -208,7 +211,7 @@ def lib_files(root):
     for d, dirs, files in os.walk(root):
         dirs.sort()
         for f in sorted(files):
-            if f.upper().endswith('.LIB'):
+            if f.upper().endswith('.LIB') or f.upper() == 'BB.DAT':
                 yield os.path.join(d, f)
 
 

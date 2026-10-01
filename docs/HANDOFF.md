@@ -54,7 +54,8 @@ games, each its own folder mounted as C: and started there:
 | `CODES.DAT` | the maps' codes and order, packed (`tools/datfiles.py`) |
 | `AMOK.DAT` | the buildings' ground values, colours (`tools/datfiles.py`); packed only in MOON |
 | `CHAR6.DAT`, `GAME.TXT`, `TITEL.TXT` | the font of 6x6 pixels, the screens' texts, the title's running lines, packed (`tools/txtfiles.py`) |
-| other `*.DAT` | tables (`BB.DAT`; MOON's `MAPINFO.DAT`, `MAP02.DAT`, `MAP04.DAT`; DESERT's `UNITU.DAT`, `UNITP.DAT`, which begin INFO DEPO as a .PMP begins INFO ILBM); not looked at |
+| `BB.DAT` | a library of 7 small sprites (`tools/libfiles.py`), all three games |
+| other `*.DAT` | tables (MOON's `MAPINFO.DAT`, `MAP02.DAT`, `MAP04.DAT`; DESERT's `UNITU.DAT`, `UNITP.DAT`, which begin INFO DEPO as a .PMP begins INFO ILBM); not looked at |
 | `*.pdf`, `goggame-*` | GOG's manuals and metadata |
 
 ## What was learned
@@ -354,7 +355,12 @@ games, each its own folder mounted as C: and started there:
   own (MOON's packer), MOON.EXE unpacks them before drawing (T261E:0008).
   All 40 written back identical, the packed entries too. ISLE's UNITB,
   BIGUNITB, 00 and 01.LIB have entries of another kind (not decoded)
-  that no program names: left over, presumably.
+  that no program names: left over, presumably. BB.DAT (all three games,
+  packed) is a library as well: 7 entries of kind U named 06 .. 00, 34x39,
+  34x39, 29x36, 22x27, 1x19, 11x11 and 19x1 pixels; libfiles.py takes it
+  with the .LIB files and writes it back identical. Which routine draws
+  them (the title loads it with BB.IFF, presumably) and with what palette
+  is not looked into; drawn with ISLE's 00.PAL they show nothing clear.
 - `tools/mapfiles.py`: the 103 maps of the three games (ISLE 00..33,
   DESERT 00..33, MOON 00..33 and STATMAP), all files written back
   identical. T0708 loads them when a map starts (-dos: .FIN, .SHP, .COM,
@@ -581,8 +587,8 @@ games, each its own folder mounted as C: and started there:
    (`screens.py`); next in screens.py the other screens of SHOP.LIB's
    window (the callers of draw_shop_window and draw_box in T1479: the
    buildings' screens, by the texts 03h..09h), the menus' texts (T1090,
-   in the program's data by the looks, drawn by draw_text24), `BB.DAT`,
-   then the rest of the screen: the cursor's entries, the overview's frame, the
+   in the program's data by the looks, drawn by draw_text24), who draws
+   BB.DAT's sprites, then the rest of the screen: the cursor's entries, the overview's frame, the
    frame's texts, what the windows show of a map (scrolling, the units'
    directions, a unit hidden from the other player).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
