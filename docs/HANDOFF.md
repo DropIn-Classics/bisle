@@ -691,6 +691,13 @@ games, each its own folder mounted as C: and started there:
   load_scores, restore_sprites, flip_page, clear_page and wait_retrace to
   MOON.hints (their beginnings looked at in MOON.ASM: the same);
   T1090:110F went to another routine there and has no name for that.
+  The scores' screen in a run (`screens.py --scores RAM [--hi FILE]`;
+  the DISK run's keys, then enter on RATING at 39 s, -ram -vram at 44 s,
+  -dos): without a .HI file (00.HI in MAP was asked for when the menu
+  began, at 15.5 s, and is not there) the code FIRST and four times
+  00000 EMPTY over MENU.IFF, all 64000 pixels in the video memory on the
+  page shown. A file's scores and names, and the name typed after a
+  map, were not seen in a run.
 
 ## Next
 
@@ -716,7 +723,7 @@ games, each its own folder mounted as C: and started there:
    the other screens of SHOP.LIB's window (the callers of
    draw_shop_window and draw_box in T1479: T1479:0AA6, the buildings'
    screens, by the texts 03h..09h), the menus' other screens (a code
-   typed, the scores, LOAD's messages; the menus themselves are drawn
+   typed, the name for the scores, LOAD's messages; the menus themselves are drawn
    in full now), then the rest of the screen: the cursor's entries, the overview's frame, the
    frame's texts, what the windows show of a map (scrolling, the units'
    directions, a unit hidden from the other player).

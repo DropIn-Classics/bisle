@@ -6,6 +6,7 @@ as BATTLE.EXE draws them, and compared with the run's video memory.
     screens.py --unit RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
     screens.py --building RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
     screens.py --menu RAM [--id N] [--sel N] [--vram VRAM] [--png DIR] ...
+    screens.py --scores RAM [--hi FILE] [--vram VRAM] [--png DIR] ...
 
 RAM is a run's memory (run.py -ram), VRAM its video memory (run.py
 -vram), both of the same moment.  --status draws the status screen of
@@ -30,7 +31,14 @@ memory on the page shown (DATA:0352).  The page drawn to (DATA:0350) had
 them all in one run and a pass's redraw under way in the others (the
 sprites' background put back, the texts and the cursor drawn in part).
 Not seen on a screen: PLAYER (2), EXIT/CANCEL (5), the mouse's menu (6),
-a code typed, the scores, the messages of LOAD.
+a code typed, the messages of LOAD.
+
+--scores draws the scores' screen (show_scores, T1090:12B7; RATING in the
+DISK menu) from a .HI file (--hi), or as it is without one.  Checked
+against a run without a file (the DISK run's keys, enter on RATING at
+39 s, -ram -vram at 44 s): the code FIRST and four times 00000 EMPTY, all
+64000 pixels in the video memory on the page shown (the other page held
+neither it nor the menu: the picture alone, presumably; not compared).  Scores and names of a file were not seen in a run.
 
 --building draws the building's screen (draw_building below) of each
 player whose cursor has the state 2 (+17h) in the run's memory.  Checked
@@ -566,6 +574,39 @@ def draw_menu(files, items, sel=None):
     return s.pix
 
 
+def scores_values(ram, hi=None):
+    """what show_scores shows: the map's code (item 2's text, which
+    T1090:110F copies from the map's record of CODES.DAT) and the table of
+    load_scores: four longs, then from +10h four names of 6 bytes; from a
+    .HI file's bytes, or as load_scores has it without a file: the scores
+    0 and each name F2740:0010's 6 bytes"""
+    base = (ram.load + MENU_SEG) * 16
+    if hi is None:
+        hi = bytes(16) + ram.data[base + 0x10:base + 0x16] * 4
+    scores = [min(max(n, 0), 0x7EF4) for n in struct.unpack_from('<4l', hi)]
+    names = [hi[0x10 + 6 * i:0x16 + 6 * i] for i in range(4)]
+    code = ram.data[base + ITEMS + ITEM_REC * 2 + 2:base + ITEMS + ITEM_REC * 2 + 7]
+    return {'code': code, 'scores': scores, 'names': names}
+
+
+def draw_scores(files, v):
+    """show_scores (T1090:12B7): over the menu's picture the map's code at
+    (110, 22) and the four from the highest score down (equal ones in the
+    table's order), the score in 5 digits (a digit's byte is it plus 5) at
+    x 18 and the name at x 174, y 66 and 34 more each"""
+    s = Screen(files)
+    pic = files.menu_picture()
+    for y in range(HEIGHT):
+        s.pix[y * WIDTH:(y + 1) * WIDTH] = pic['pixels'][y * pic['width']:y * pic['width'] + WIDTH]
+    text24(s, 0x6E, 0x16, v['code'])
+    order = sorted(range(4), key=lambda i: -v['scores'][i])
+    for row, i in enumerate(order):
+        y = 0x42 + 0x22 * row
+        text24(s, 0xAE, y, v['names'][i])
+        text24(s, 0x12, y, bytes(int(c) + 5 for c in '%05d' % v['scores'][i]))
+    return s.pix
+
+
 def menu_name(codes):
     return ''.join(' ' if c == 1 else chr(ord('A') + c - 17) if 17 <= c <= 42 else str(c - 2) if 2 <= c <= 11 else '?'
                    for c in menu_text(codes))
@@ -652,12 +693,27 @@ def menu_main(a, files, ram, vram, game):
     return 0
 
 
+def scores_main(a, files, ram, vram, game):
+    v = scores_values(ram, open(a.hi, 'rb').read() if a.hi else None)
+    print('code %s: %s' % (menu_name(v['code']), ', '.join(
+        '%s %d' % (menu_name(n), n2) for n, n2 in zip(v['names'], v['scores']))))
+    pix = draw_scores(files, v)
+    if vram:
+        report(pix, vram, ram)
+    if a.png:
+        os.makedirs(a.png, exist_ok=True)
+        to_png(os.path.join(a.png, 'scores.png'), game, pix)
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     ap.add_argument('--status', metavar='RAM', help="draw the status screens from a run's memory")
     ap.add_argument('--unit', metavar='RAM', help="draw the unit's screens from a run's memory")
     ap.add_argument('--building', metavar='RAM', help="draw the building's screens from a run's memory")
     ap.add_argument('--menu', metavar='RAM', help="draw the texts of a menu (--id) from a run's memory")
+    ap.add_argument('--scores', metavar='RAM', help="draw the scores' screen (RATING) from a run's memory")
+    ap.add_argument('--hi', metavar='FILE', help='the .HI file for --scores (default: the table without a file)')
     ap.add_argument('--id', dest='menu_id', type=int, default=3, help='the menu (default 3, the title menu)')
     ap.add_argument('--sel', type=int, help='the chosen item: draw the picture behind and the cursor too')
     ap.add_argument('--vram', help="compare with the run's video memory")
@@ -667,10 +723,12 @@ def main():
     a = ap.parse_args()
     game = a.game or os.path.join(game_dir(), 'ISLE')
     files = Files(game)
-    if [bool(a.status), bool(a.unit), bool(a.building), bool(a.menu)].count(True) != 1:
-        ap.error('one of --status, --unit, --building and --menu')
-    ram = Ram(open(a.status or a.unit or a.building or a.menu, 'rb').read(), int(a.load, 16))
+    if [bool(a.status), bool(a.unit), bool(a.building), bool(a.menu), bool(a.scores)].count(True) != 1:
+        ap.error('one of --status, --unit, --building, --menu and --scores')
+    ram = Ram(open(a.status or a.unit or a.building or a.menu or a.scores, 'rb').read(), int(a.load, 16))
     vram = open(a.vram, 'rb').read() if a.vram else None
+    if a.scores:
+        return scores_main(a, files, ram, vram, game)
     if a.unit:
         return unit_main(a, files, ram, vram, game)
     if a.menu:
