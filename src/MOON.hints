@@ -760,6 +760,81 @@ name T1724:0283 draw_bar
 ; run.
 name T1151:0EDF draw_menu
 name T1151:0F86 edit_text
+; T1090:000E (buffer far): the menus, from the title's end to a map's start
+; (read from the code; of it runs showed four menus' screens only,
+; tools/screens.py --menu --sel). It loads MENU.IFF (load_picture; the
+; picture's upper left 320 by 200 is the screen), char24, CODES.DAT (its
+; length / 10 the number of maps) and MENU.FXX (CODE:169E; the sounds,
+; presumably), calls T1090:110F with the map F27EE:2523 and fades in.
+; With a score (the long F27EE:2597 above 0) it loads the .HI file numbered
+; F27EE:251B and, when the score is above the lowest of its four, shows
+; the texts F2740:005B, 0065, 006F ("TYPE NAME FOR TOP FOUR"), takes a name
+; of 5 letters by edit_text at (102, 164), puts name and score in the
+; lowest's place, saves the file (28h bytes) and shows the four
+; (T1090:12B7). Then the map's own .HI is loaded and the loop begins with
+; menu 3, item 0. A pass: the keys (the record at the far pointer
+; DATA:00A6: +2 up, +3 down, +4 fire, each also set by the key at
+; DATA:00BE when it is the key set's +8, +9, +6), restore_sprites,
+; draw_menu, the cursor (CHAR24.LIB's entry 40, a sphere, by draw_entry at
+; x 66, y 50 + 34 * the item), a sound when something happened (the
+; record at the far pointer F2D8A:000C: +12h 0 moved, 1 chosen, 2
+; refused, +14h 6Eh, +16h 1, then CODE:16F8), flip_page, T268A:0006 with
+; 32h, 0Ah or 3 by item 20's choice (SLOW, MEDIUM, ..: the mouse's speed,
+; presumably; not read). Up and down move within the menu's items. Fire
+; acts by the item's flags word: bit 10h goes to the menu in the item's
+; +2Dh; bit 2 takes the item's next text (+2Bh, of +2Ah; items 3 and 4,
+; the players, stay at 0 without F27EE:250C bit 400h); bit 8 makes the
+; item a field (flag 20h, edit_text at the item's place, 5 letters): at
+; enter the text is looked up among CODES.DAT's codes, a code found is
+; the new map (T1090:110F, F27EE:2523, its .HI loaded), else the old code
+; comes back; bit 1 acts by the item's +2Ch: 2 asks for a position
+; (T1090:11AC: the texts F2740:002B, 0034, 003D, a digit into
+; F27EE:2512, the key set's first key gives up), shows the texts
+; F2740:0046, 004D, 0054, waits for a key and, when the saved game's file
+; opens, sets F27EE:250C bit 200h and ends the loop; 4 sets bit 100h,
+; clears bits 1 and 2 and ends the loop (EXIT, presumably); 10h shows
+; the four scores (T1090:12B7); every other value ends the loop (START).
+; After the loop: item 3's choice above 0 sets F27EE:243E bit 2 and item
+; 4's F27EE:2455 bit 2 (that player is the computer), F27EE:250E gets
+; bit 1 when one of them is, bit 4 when both, bit 2 when neither; item
+; 12's choice (the limit) 1, 2, 3 gives 4, 8, 10h, else FFh, in
+; F27EE:2454 and 246B (the status screen's LIMIT, FFh none); item 13's
+; choice sets F27EE:250E bit 8 (HIDE SHOP); the highest of the four
+; scores goes to the long F27EE:2593 (the status screen's HIGH; 2597 is
+; its ACTUAL); item 19's choice (SIDE ONE, TWO) gives T2683:000A the word
+; DATA:00B6 or DATA:00A6 (not read); then fade_out and both pages cleared.
+; T1090:110F (map, CODES far): the map's code into item 2's text
+; (F2740:0101), the players' items by the record's +6 (HANDOFF.md).
+; T1090:15F3 (table far, buffer far, n): the table cleared (four scores 0,
+; four names from F2740:0010) and MAP\<n>.HI loaded over it (load_file):
+; four longs, the scores, then from +10h four names of 6 bytes.
+; T1090:12B7 (table far, map, CODES far): the scores held within 0 and
+; 7EF4h, the map's code at (110, 22) and the four from the highest down,
+; the score in 5 digits at x 18 and the name at x 174, y 66 + 34 each
+; (draw_text24), until a key.
+name T1151:0003 menu
+; T1090:110F has no name here: xfer.py carried it to another routine of
+; MOON.EXE (T0C0E:005C), as T1479:0C93 before.
+; (not mapped) name T1090:11AC ask_position
+name T1151:12C8 show_scores
+name T1151:160A load_scores
+; T2467:0006: puts back what the sprites drawn since covered: a list in
+; video memory behind the two pages (segment A7E8 in a run; DATA:031E its
+; end, DATA:0322 its begin, one list a page) of the saved bytes and a
+; record each (place, rows, bytes a row, where saved), which T2515:0008
+; writes (draw_entry's long argument 1 asks for it, presumably; not read),
+; copied back to the page DATA:0350 through the latches from the last to
+; the first. T259F:0004: the pages change: DATA:0350 (the page drawn to,
+; A000 or A400) and DATA:0352 swapped, the two lists as well (unless
+; DATA:00F2), the CRTC's start address set to the page drawn to until now,
+; after waiting for the vertical retrace's end and then its begin.
+; T2472:0008 fills the page drawn to with the colour DATA:00D6.
+; T253B:0002 waits for the next vertical retrace's begin; T0D36:000F (n)
+; does that n + 1 times.
+name T25AD:0006 restore_sprites
+name T26E5:0004 flip_page
+name T25B8:0008 clear_page
+name T2681:0002 wait_retrace
 name T25C8:0004 fill_rect
 name T2600:0008 draw_row
 name T267C:0004 draw_column

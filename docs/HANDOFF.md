@@ -657,6 +657,40 @@ games, each its own folder mounted as C: and started there:
   (the menu records there are at F2850:007D, not 0079: the comments are
   BATTLE's addresses); draw_building was not mapped, and what MOON does
   with its building screen is not looked at.
+- The menus' screen in full and their loop (`screens.py --menu RAM --id N
+  --sel ITEM`, BATTLE.hints at `menu`, T1090:000E): MENU.IFF's upper left
+  320 by 200 behind, the texts, and the cursor, CHAR24.LIB's entry 40 (a
+  sphere) at x 66 and the chosen item's y. Four runs (space at 14 s, from
+  33 s down and enter to the menu and down to an item, -ram -vram at 40
+  or 42 s): the title menu on START, OPTIONS on SETTING, DISK on RATING,
+  SETTING on its second item: all 64000 pixels in the video memory on
+  the page shown. That answers the EXIT rows above: the game draws to
+  one page (DATA:0350, A000 or A400) and shows the other (DATA:0352);
+  each pass `restore_sprites` (T2467:0006) puts back what the sprites
+  covered, from a list kept in video memory behind the two pages, the
+  pass draws anew and `flip_page` (T259F:0004) changes the pages at the
+  vertical retrace. A dump in the middle of a pass has the page drawn to
+  half done (three of the four dumps). Read from the code, not run: what
+  fire does by an item's flags (a submenu, the next text, a field for
+  the code, an action), the code typed and looked up in CODES.DAT, LOAD's
+  position (a digit, F27EE:2512) and messages, the sounds of MENU.FXX
+  (moved, chosen, refused), and what the menu leaves for the map:
+  F27EE:243E and 2455 bit 2 (that player is the computer), F27EE:250E bit
+  1 (one computer), 4 (two), 2 (none), 8 (HIDE SHOP), the limit of turns
+  (4, 8, 16 or FFh none) in F27EE:2454 and 246B, the highest score in
+  F27EE:2593.
+- The .HI file (`load_scores`, T1090:15F3; `show_scores`, T1090:12B7;
+  read, not run but for the poked end above): 28h bytes, four longs (the
+  scores, held within 0 and 7EF4h) and from +10h four names of 6 bytes
+  (5 letters typed), a file a map in MAP. After a map the menu loads
+  the file numbered F27EE:251B and, when the score (the long F27EE:2597,
+  the status screen's ACTUAL) is above the lowest of the four, asks for
+  the name ("TYPE NAME FOR TOP FOUR"), puts it in the lowest's place,
+  saves and shows the four from the highest down; RATING in the DISK
+  menu shows the current map's. xfer.py carried menu, show_scores,
+  load_scores, restore_sprites, flip_page, clear_page and wait_retrace to
+  MOON.hints (their beginnings looked at in MOON.ASM: the same);
+  T1090:110F went to another routine there and has no name for that.
 
 ## Next
 
@@ -681,8 +715,9 @@ games, each its own folder mounted as C: and started there:
    (`screens.py`: the status screen and the unit's); next in screens.py
    the other screens of SHOP.LIB's window (the callers of
    draw_shop_window and draw_box in T1479: T1479:0AA6, the buildings'
-   screens, by the texts 03h..09h), the other menus on a screen and the title menu's sphere, who draws
-   BB.DAT's sprites, then the rest of the screen: the cursor's entries, the overview's frame, the
+   screens, by the texts 03h..09h), the menus' other screens (a code
+   typed, the scores, LOAD's messages; the menus themselves are drawn
+   in full now), then the rest of the screen: the cursor's entries, the overview's frame, the
    frame's texts, what the windows show of a map (scrolling, the units'
    directions, a unit hidden from the other player).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
@@ -705,11 +740,12 @@ understanding the programs, the third hardly.
 
 For the port (behaviour):
 
-1. The game's state flags: F27EE:250C (bits 1, 2, 4, 8, 40h, 80h, 100h,
-   200h, 1000h beside the known 10h, 20h, 400h, 2000h, 4000h), F27EE:250E
-   (bit 1 set against the computer, presumably; bit 2) and F27EE:243E
-   bit 2 (which player the computer is, presumably). BATTLE.hints at
-   play_anim.
+1. The game's state flags: F27EE:250C (bits 1, 2, 4, 8, 40h, 80h,
+   1000h beside the known 10h, 20h, 100h, 200h, 400h, 2000h, 4000h;
+   100h and 200h as the menu sets them, BATTLE.hints at menu: who reads
+   100h is not looked into). F27EE:250E and the players' bit 2 are the
+   menu's (above); what the map does with them is not read.
+   BATTLE.hints at play_anim.
 2. A real end of a map: what a won map does besides what the pokes
    showed (after_map, T15AC:0007; the map record's +8 bit 0 for the last
    map; the STATS.IFF screen after a lost battle, which routine).
@@ -722,9 +758,11 @@ For the port (behaviour):
    (above; their callers are not read), where the animations' 6-bit
    palettes are set.
 5. Saving and the high scores: where save_game writes (save_file or its
-   own), where the name "00" comes from, the .HI file (28h bytes, named
-   by F27EE:251B, which after_map sets to the map's number and the map's
-   loop to its 4 ticks; a real end of a map not run).
+   own), where the name "00" comes from (the position asked for at LOAD
+   is F27EE:2512, and T26EA:000F makes the name from it: not read), the
+   .HI file in a run (its format is read, above; named by F27EE:251B,
+   which after_map sets to the map's number and the map's loop to its 4
+   ticks; a real end of a map not run).
 6. The animations: play_anim's names from ANIM\anim.fx (presumably),
    the .Axx/.FX/.PX formats, end_credits (T25A6:0655) and ab.fx.
 7. Sound: where sound_init's mode comes from, whether the music uses

@@ -5,6 +5,7 @@ as BATTLE.EXE draws them, and compared with the run's video memory.
     screens.py --status RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
     screens.py --unit RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
     screens.py --building RAM [--vram VRAM] [--png DIR] [--game DIR] [--load SEG]
+    screens.py --menu RAM [--id N] [--sel N] [--vram VRAM] [--png DIR] ...
 
 RAM is a run's memory (run.py -ram), VRAM its video memory (run.py
 -vram), both of the same moment.  --status draws the status screen of
@@ -17,13 +18,19 @@ runner loaded the program at (its report's "load ... at"; default 0077).
 --unit draws the unit's screen (below) of each player whose cursor has
 the state 4 (the record's +17h) in the run's memory.
 
---menu draws the texts of a menu (--id, default 3: START, OPTIONS, DISK,
-EXIT; draw_menu below) and says how many of the drawn pixels the video
-memory has: in a run of the title menu at 40 s all 8748 were on page 1 and
-8089 on page 0, the others within x 127..192, y 152..178 (the last item,
-EXIT; why not examined, a redraw under way at the dump, presumably).  The
-other menus' texts are decoded from the run's memory but were not seen on
-the screen.
+--menu draws a menu (--id, default 3: START, OPTIONS, DISK, EXIT; the
+items from the run's memory, draw_menu below): its texts alone, or with
+--sel (the chosen item, which the run's memory does not show) the whole
+screen: the picture MENU.IFF behind, the texts and the cursor.  Checked
+against four runs (keys: space at 14 s, then from 33 s down and enter to
+the menu and down to the item; -ram and -vram at 40 or 42 s): the title
+menu on START, OPTIONS (menu 0) on SETTING, DISK (menu 1) on RATING and
+SETTING (menu 4) on its second item: all 64000 pixels were in the video
+memory on the page shown (DATA:0352).  The page drawn to (DATA:0350) had
+them all in one run and a pass's redraw under way in the others (the
+sprites' background put back, the texts and the cursor drawn in part).
+Not seen on a screen: PLAYER (2), EXIT/CANCEL (5), the mouse's menu (6),
+a code typed, the scores, the messages of LOAD.
 
 --building draws the building's screen (draw_building below) of each
 player whose cursor has the state 2 (+17h) in the run's memory.  Checked
@@ -99,6 +106,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, '..', 'doskit', 'tools'))
 from kit import game_dir  # noqa: E402
+import ifffiles  # noqa: E402
 import libfiles  # noqa: E402
 import mapfiles  # noqa: E402
 import palfiles  # noqa: E402
@@ -151,6 +159,9 @@ class Files:
         self.bigunit = mapfiles.sorted_entries(game, 'BIGUNIT')
         self.unit = mapfiles.sorted_entries(game, 'UNIT')
         self.ground = mapfiles.ground_images(game)
+
+    def menu_picture(self):
+        return ifffiles.read(unpacked(find(self.game, 'MENU.IFF')))
 
 
 class Screen:
@@ -239,6 +250,11 @@ class Ram:
         """a byte at a segment of the run (as stored in the memory, the
         load segment in it) and an offset"""
         return self.data[seg * 16 + off]
+
+    def drawn_page(self):
+        """the page the program draws to, 0 or 1 (DATA:0350: A000 or A400);
+        the other is shown"""
+        return (struct.unpack_from('<H', self.data, (self.load + DATA) * 16 + 0x350)[0] - 0xA000) // 0x400
 
     def clip(self):
         """the drawing record's clipping, None when it is off"""
@@ -525,18 +541,28 @@ def menu_values(ram, menu):
     return items
 
 
-def draw_menu(files, items):
-    """the texts of a menu (T1090:0EDE) as it draws them: the item's text
-    at x 100 (64h), y 50 (32h) and 34 (22h) more for each item, whether it
-    is drawn or not (an item with flag 20h leaves its row empty); not
-    drawn: the picture behind, the cursor (a sphere, T1090:0F82's draw_entry
-    after the text), what the menu loop does"""
+def draw_menu(files, items, sel=None):
+    """a menu's screen as a pass of the menu's loop (T1090:000E) draws it:
+    the picture MENU.IFF behind (its upper left 320 by 200; the sprites'
+    background is put back from it before each pass, T2467:0006), the
+    items' texts (draw_menu, T1090:0EDE) at x 100 (64h), y 50 (32h) and 34
+    (22h) more for each item, whether it is drawn or not (an item with
+    flag 20h leaves its row empty), then the cursor, CHAR24.LIB's entry
+    40 (a sphere), at x 66 (42h) and the chosen item's y.  sel is the
+    chosen item (a local of the loop, not in the run's memory to find);
+    None draws the texts alone."""
     s = Screen(files)
+    if sel is not None:
+        pic = files.menu_picture()
+        for y in range(HEIGHT):
+            s.pix[y * WIDTH:(y + 1) * WIDTH] = pic['pixels'][y * pic['width']:y * pic['width'] + WIDTH]
     y = 0x32
     for it in items:
         if not it['flags'] & 0x20:
             text24(s, 0x64, y, it['text'])
         y += 0x22
+    if sel is not None:
+        s.entry(0x42, 0x32 + 0x22 * sel, files.char24[40], 0)
     return s.pix
 
 
@@ -564,11 +590,12 @@ def to_png(path, game, pix):
     png.write_indexed(path, WIDTH, HEIGHT, bytes((clear or 0) if p < 0 else p for p in pix), rgb, clear)
 
 
-def report(pix, vram):
+def report(pix, vram, ram=None):
     for page in (0, 1):
         n, same, box = compare(pix, vram, page)
-        print('  page %d: %d pixels drawn, %d as in the video memory%s' % (
-            page, n, same, '' if box is None else ', the others within x %d..%d, y %d..%d' % (
+        which = '' if ram is None else ' (drawn to)' if ram.drawn_page() == page else ' (shown)'
+        print('  page %d%s: %d pixels drawn, %d as in the video memory%s' % (
+            page, which, n, same, '' if box is None else ', the others within x %d..%d, y %d..%d' % (
                 box[0], box[2], box[1], box[3])))
 
 
@@ -616,9 +643,9 @@ def menu_main(a, files, ram, vram, game):
     items = menu_values(ram, a.menu_id)
     print('menu %d: %s' % (a.menu_id, ', '.join('%s%s' % (menu_name(i['text']), ' (hidden)' if i['flags'] & 0x20 else '')
                                                 for i in items)))
-    pix = draw_menu(files, items)
+    pix = draw_menu(files, items, a.sel)
     if vram:
-        report(pix, vram)
+        report(pix, vram, ram)
     if a.png:
         os.makedirs(a.png, exist_ok=True)
         to_png(os.path.join(a.png, 'menu%d.png' % a.menu_id), game, pix)
@@ -632,6 +659,7 @@ def main():
     ap.add_argument('--building', metavar='RAM', help="draw the building's screens from a run's memory")
     ap.add_argument('--menu', metavar='RAM', help="draw the texts of a menu (--id) from a run's memory")
     ap.add_argument('--id', dest='menu_id', type=int, default=3, help='the menu (default 3, the title menu)')
+    ap.add_argument('--sel', type=int, help='the chosen item: draw the picture behind and the cursor too')
     ap.add_argument('--vram', help="compare with the run's video memory")
     ap.add_argument('--png', metavar='DIR', help='write the pictures here')
     ap.add_argument('--game', help="the game's folder (default ISLE)")
