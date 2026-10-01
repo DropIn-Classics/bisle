@@ -358,9 +358,21 @@ games, each its own folder mounted as C: and started there:
   that no program names: left over, presumably. BB.DAT (all three games,
   packed) is a library as well: 7 entries of kind U named 06 .. 00, 34x39,
   34x39, 29x36, 22x27, 1x19, 11x11 and 19x1 pixels; libfiles.py takes it
-  with the .LIB files and writes it back identical. Which routine draws
-  them (the title loads it with BB.IFF, presumably) and with what palette
-  is not looked into; drawn with ISLE's 00.PAL they show nothing clear.
+  with the .LIB files and writes it back identical. They are the Blue
+  Byte logo that runs before the title: `title` (T1727:0004) calls
+  T2433:0006 with BB.IFF and BB.DAT; that unpacks BB.DAT (load_file),
+  draws BB.IFF (load_picture), sets its palette (set_palette at level
+  FFh) and draws 67 steps from a table at T2433:01A7 (read through CS:
+  records of 6 bytes, x, y and the entry's offset in the unpacked
+  file; draw_entry at x+3, y-1 with the sprites' own offsets), in the
+  table's order: 19 of the 19x1 entry (named 00) along y 170 from x 109
+  in steps of 5, one of the 11x11 entry (01) at (203, 160), 28 of the
+  1x19 entry (02) at x 213 from y 152 up to 14, then the star at
+  (202, -3): entries 03, 04, 05, 06, 05, 04, three steps each, and 03
+  once more (19 steps).
+  All steps drawn over BB.IFF with its palette
+  (a scratch script) give the logo card with the star at the top right;
+  not compared with a run's video memory, the timing not read.
 - `tools/mapfiles.py`: the 103 maps of the three games (ISLE 00..33,
   DESERT 00..33, MOON 00..33 and STATMAP), all files written back
   identical. T0708 loads them when a map starts (-dos: .FIN, .SHP, .COM,
