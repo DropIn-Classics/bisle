@@ -1,6 +1,6 @@
 # Handoff
 
-State of 2026-09-30: stage 1 for the launcher, the main program, the
+State of 2026-10-01: stage 1 for the launcher, the main program, the
 two data disks' games and the two intros; BATTLE.EXE's and BI.EXE's
 code reached to 97% and 96%, DESERT.EX2's as BATTLE.EXE's, MOON.EXE's
 to 98%, the intros' to 92%.
@@ -39,7 +39,8 @@ games, each its own folder mounted as C: and started there:
 | `LIB/*.LIB`, `LIB/*.DAT` | graphics libraries: sprites of units, terrain, cursor, frame, fonts, fight scenes (`tools/libfiles.py`); a `.DAT` gives the order of a library's entries |
 | `*.IFF`, `*.LBM`, `*.PAL`, `NN.PAL` | pictures and palettes by their names; not looked at |
 | `*.SND`, `*.PND`, `*.FXX`, `*.PXX` | sound or animation data by their names; not looked at |
-| `*.DAT`, `*.TXT` | tables and texts (`UNIT.DAT`, `CODES.DAT`, `GAME.TXT`, ...); not looked at |
+| `UNIT.DAT`, `GROUND.DAT` | the tables of unit types and ground, packed (`tools/datfiles.py`) |
+| other `*.DAT`, `*.TXT` | tables and texts (`CODES.DAT`, `AMOK.DAT`, `CHAR6.DAT`, `BB.DAT`, `GAME.TXT`, `TITEL.TXT`; MOON's `MAPINFO.DAT`, `MAP02.DAT`, `MAP04.DAT`; DESERT's `UNITU.DAT`, `UNITP.DAT`, which begin INFO DEPO as a .PMP begins INFO ILBM); not looked at |
 | `*.pdf`, `goggame-*` | GOG's manuals and metadata |
 
 ## What was learned
@@ -359,6 +360,46 @@ games, each its own folder mounted as C: and started there:
   buffer that nothing but the unpacking read in a run to the first map
   and 25 s on it (-rwatch); its bytes are no picture of the .FIN's
   ground square by square.
+- `tools/datfiles.py`: UNIT.DAT (27 unit types of 44h bytes) and
+  GROUND.DAT (ground records of 6 bytes; 110 in ISLE and DESERT, 150 in
+  MOON) of the three games, written back identical. T0708 loads them to
+  F27EE:001F and F27EE:0751 when a map starts, over the same bytes in
+  the program's own data: BATTLE.EXE holds ISLE's two files there, and
+  DESERT's UNIT.DAT is ISLE's (compared). The fields as BATTLE.EXE's
+  code uses them (the tool's docstring has them all): a type's move,
+  armour, counts (6 in a unit; the ships 1 and a second count of 6),
+  the ground it can be on (a mask ANDed with the ground's), the classes
+  it can fire at with two ranges (at air units, at the others) and three
+  hit values (air, land, sea), its class word (land 4, sea 8, air 10h,
+  20h; two squares; holds others), what can hold it and what it holds,
+  two weights for the path search, the big picture, two names, a cost,
+  the room it has and the size it takes; a ground record's flags, the
+  mask, two costs (the second for air units) and the fight scene's
+  kind. Named from this: `make_unit` (T169E:000E, a unit's record of
+  1Ah bytes at F27EE:2898 from its type), `find_path` (T0BA0:0E2E),
+  `square_distance` (T0E9B:1E90), `fight_reckon` (T2190:000D, the
+  fight's outcome; its formula is not read yet), `list_makeable`
+  (T1479:11B4). A battle of 600 s against the computer with `-rwatch
+  F27EE:001F 9C6` (both tables; keys: the CONRA script above, then 66
+  left, 67 left, and every 20 s from 70 space+, +0.6 left+, +1.5
+  space-, +2 left-, +4 f1; the computer won at about 520 s) showed 97
+  reading instructions after the unpacking: those in the routines named
+  here read the fields as described (the tool says "seen"); the others,
+  most of them in the computer player's modules (T17C0, T1ABC, T1B01,
+  T1C04) and the fight scene's (T1F5A, T2112), are not read yet. +17h of
+  a type and the names' last bytes were read by nothing, a ground's
+  second cost not in this run (no air unit moved, presumably). Not
+  checked against what the game shows on its screens.
+- doskit's `-rwatch` kept 64 readers (an instruction and the byte it
+  read), which the unpacker's own reads of the tables filled; it keeps
+  up to 65536 now (doskit 1676994, with a test, RWATCH.EXE).
+- xfer.py can carry a name to the wrong routine where the two programs
+  differ around it: a name at BATTLE.EXE's T1479:0C93 (the type's big
+  picture and name) went to MOON.EXE's T1724:000E, a routine that draws
+  a text. The name is left out of BATTLE.hints for that; the other names
+  carried in this step (make_unit, find_path, fight_reckon) were looked
+  at in MOON.ASM and read the tables as BATTLE.EXE's do. Earlier carried
+  names were not looked at that way.
 - The runner read port 201h as F0h, axis bits that fall at once: a
   joystick held up and left. BATTLE.EXE took it for an attached one
   (DATA:0374/0376 = FFFFh) and its menu saw "up" all the time, so down
@@ -379,11 +420,13 @@ games, each its own folder mounted as C: and started there:
    asked for at 20 s was not written; not looked into.) Then names for the main loop, the file loading, the
    graphics output.
 3. A tool for each data format (`tools/NAMEfiles.py`): TPWM, the
-   palettes, the pictures, the libraries and the maps are done
-   (`tpwmfiles.py --out build/unpacked` gives the unpacked files); next
-   the tables (`UNIT.DAT`, `GROUND.DAT`, the maps' records of them),
-   then the maps drawn with PART.LIB and UNIT.LIB against a run's
-   screen.
+   palettes, the pictures, the libraries, the maps and the tables of
+   unit types and ground are done (`tpwmfiles.py --out build/unpacked`
+   gives the unpacked files); next the maps drawn with PART.LIB and
+   UNIT.LIB against a run's screen (which PART.LIB entry a ground value
+   is: not looked into yet), then the other tables and texts
+   (`CODES.DAT`: the maps' records of 10 bytes, by its size, presumably;
+   `AMOK.DAT`, `CHAR6.DAT`, `GAME.TXT`).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.
 5. Later: the AdLib sound refined (`-oplwav` against the game in GOG's
@@ -438,22 +481,34 @@ For the port (behaviour):
    the arrow keys; what reads the .PMP and what its bytes are; MOON.EXE's
    loader (MOON's 16.FIN has a two-square unit without its second half).
 
+10. The tables (datfiles.py): the fight's formula (fight_reckon,
+    T2190:000D: how the counts, armour, hit values, the units' +1, the
+    two percentages and the ground's kind give the losses); what a type's
+    move counts (squares or the path's cost) and how find_path's result
+    limits a move; the targets word's bits 40h, 80h and above; flag 1 of
+    a type's +0Eh; the low bits and 1000h, 2000h, 8000h of its +10h; its
+    +16h (a sound, presumably) and +41h..+43h (the fight scene); the
+    ground's flags besides the buildings' and 4000h; the tables as the
+    game shows them on its screens (not compared); MOON.EXE's reading of
+    its UNIT.DAT and GROUND.DAT (MOON's masks differ, and one type has a
+    flag 8 in +0Eh); AMOK.DAT (loaded to F27EE:24E8).
+
 For understanding the programs:
 
-10. make_path's first argument; the OR of DATA:0368 in file_open;
+11. make_path's first argument; the OR of DATA:0368 in file_open;
     T2695:02BB's message (DATA:0C88, "insert the disk", presumably);
     load_picture for pictures larger than 360x240 (T2550:02E5).
-11. The record T0708 fills with far pointers to routines (+56 is
+12. The record T0708 fills with far pointers to routines (+56 is
     draw_entry); CODE:2296's formatter (presumably).
-12. The far data segments' classes (which are BSS); the zeros after the
+13. The far data segments' classes (which are BSS); the zeros after the
     stack in BATTLE.EXE and the intros (ZEROS).
-13. What BATTLE.EXE, DESERT.EX2 and MOON.EXE do with the string
+14. What BATTLE.EXE, DESERT.EX2 and MOON.EXE do with the string
     BIDISK.VGA besides check_vga_disk; what DESERT.EXE (the starter)
     does.
 
 Hardly:
 
-14. Why the runner did not write the shot asked for at 20 s (Next,
+15. Why the runner did not write the shot asked for at 20 s (Next,
     item 2).
-15. In which order the TPWM packer saw the files (the byte past the end
+16. In which order the TPWM packer saw the files (the byte past the end
     in six files; the bytes past the end in 31 of MOON's).

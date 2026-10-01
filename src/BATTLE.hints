@@ -329,6 +329,52 @@ name T164D:0363 make_path
 ; has the formats.
 name T0E9B:02B6 load_fin
 name T0E9B:007B load_shp
+; the tables of unit types and ground: T0708 loads UNIT.DAT to F27EE:001F
+; (27 records of 44h bytes) and GROUND.DAT to F27EE:0751 (records of 6
+; bytes) with load_file when a map starts, over the same bytes in the
+; program's own data (ISLE's files, checked); AMOK.DAT goes to F27EE:24E8
+; the same way (not looked into). tools/datfiles.py has the fields, as
+; read from the routines below and seen with -rwatch over both tables in
+; a battle against the computer (HANDOFF.md).
+; T169E:000E (number, type, player, square): fills a unit's record
+; (F27EE:2898, 1Ah bytes each): +0, +2, +3 the type's, +1 0, +4 the
+; type's class (+0Ch) OR the player, +6 the type's +10h, +8 the type, +9
+; the type's serial for the player (then 2 more), +0Ah a cargo record of
+; F27EE:0B64 (1Ch bytes; T169E:04A0 fills it) for a type of class 1000h,
+; 2 for a type with 4000h in +10h, else FFh, +0Bh and +0Dh the square.
+name T169E:000E make_unit
+; T0BA0:098F fills a map of 1104h bytes for a unit: per square the
+; ground's cost negated (+4 for a unit with 10h in its +4; else +3 where
+; the type's +4 AND the ground's +2 is not 0, B0h where it is 0; FEh in
+; place of the cost for a unit with 10h in its +6). Not named.
+; T0BA0:0E2E: a path for a unit: a list of squares (10 bytes each) kept
+; in the order of a key, the distance to the aim (T0E9B:1E90) times the
+; type's +14h plus the ground's cost (+3, or +4 for a unit with 10h in
+; its +4) times the type's +15h; the six neighbours of a square from
+; F27EE:41A2 (as read; not followed to the end).
+name T0BA0:0E2E find_path
+; T0E9B:1E90 (x1, y1, x2, y2): a distance of two squares, the columns
+; halved into the rows as on a map of hexagons (the first half read, the
+; rest presumably).
+name T0E9B:1E90 square_distance
+; T2190:000D: the fight's reckoning from the record at the far pointer
+; F2D37:000A (+0 and +4 the two units, +0Ah and +0Eh their types, +12h a
+; ground record, +24h and +25h two percentages, +5Eh a routine): each
+; side's count (the unit's +2, or +3 with the type's flag 4; 1..6), its
+; type's +1 and the hit value against the other's class (+9 for 10h, +0Bh
+; for 8, else +0Ah), the unit's +1 plus 1, the ground's +5 through a
+; table at F2D65:000E. The formula itself is not read yet.
+name T2190:000D fight_reckon
+; T1479:11B4 (energy): the types that can be made, into F27EE:4136 and
+; their count into F27EE:1338: cost (+3Eh) no more than the argument,
+; flag 2 of +0Eh clear (a map's .SHP sets it), and for a type that holds
+; others a free cargo record.
+name T1479:11B4 list_makeable
+; T1479:0C93 (x, y, type, ?, player): the type's big picture (number +19h
+; of the list at F27EE:0A8F, +18h added to y, base 20h or 30h by the
+; player) and its name (+1Ah) centred under it. Not named: xfer.py
+; carries a name here to MOON.EXE's T1724:000E, which is another routine
+; (it draws a text; MOON.EXE's routine for this is not found yet).
 ; T164D:04C7 loads BIDISK.VGA (F27E6:0000) with load_file, the far
 ; values at F27EE:2447 and F27EE:245E the other arguments; when nothing
 ; comes back: fatal_error(2), "ERROR: cannot load file." (F273B's table,
