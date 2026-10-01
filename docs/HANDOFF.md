@@ -1206,14 +1206,32 @@ games, each its own folder mounted as C: and started there:
   needs `--line1 1E`, p1msg2 and p1msg3 `--line1 clear` (a message's
   text is not in the memory). Not seen: marks of player 1, what the
   marks 40h and 10h stand for (T0708:3297 sets 40h or 80h), a unit with
-  2 in its +6 (hidden from the other side), the overview over the
-  window (state 3), a unit under way in a move, the squares' explosions
+  2 in its +6 (hidden from the other side), a unit under way in a move, the squares' explosions
   after a fight, scrolling as such (the windows at other first squares
   are seen), why the page drawn to lacked the aim's mark in its dump.
   xfer.py carried the four names to MOON.hints (T0F3E:0E2A, 0F9D, 1208,
   141C: routine starts with the same stack frames, looked at in
   MOON.ASM). Scratch: `fieldall.py` (--field on every dump), `fat.py`
   (the two new runs), `fdiff.py NAME` (the pixels that differ).
+- The overview over a window (the cursor's state 3; BATTLE.hints at
+  draw_overview, `screens.py --field`): the map's loop puts the picture
+  in the window's middle (the record's +4, +6), draws draw_shop_window
+  and draw_overview and makes the cursor a frame (CURSOR.LIB's entry 6)
+  over the part the window shows; the record's +0Ch, +0Eh are the
+  window's first column and row meanwhile (the cursor's own kept in +8,
+  +0Ah), a direction moves them by two within the map, fire ends it and
+  the window is drawn from there. Runs of map 03 (scratch `ov.py`: fire
+  with right at 52 s for player 0; then down twice and right three
+  times; fire with v for player 1, then d and x, which are his right,
+  up and left; down, right and fire): all 64000 pixels of both pages in
+  the four dumps, and the 44 before as they were. The picture is taken
+  from the game's .PMP that the memory holds (its pointer is in the
+  loop's frame). The frame came up 4 steps right of the window's place:
+  the direction is still held when fire is let go. Not seen: a dot in
+  AMOK's +20h colour (a unit with 200h in its +4), MOON.EXE's overview.
+  Not read: T24D3:0000, which the loop calls after a move of the frame
+  (a stored block to the page drawn to; what was under the cursor,
+  presumably).
 - MOON.hints: T2084 has `start=8`: MOON's fight_step (T2066) ends in the
   frame's first 8 bytes (read; the build is identical either way).
   xfer.py carried the scene's names to MOON.hints (their beginnings
@@ -1317,9 +1335,8 @@ games, each its own folder mounted as C: and started there:
    statistics after a map, the menus, a code typed, LOAD's messages,
    the scores with a file and their name are drawn in full, and the
    fight scene pass by pass, `scene.py`; the map's whole screen with
-   both windows, marks, lines and cursors, `screens.py --field`), then
-   what is left of the screen: the overview's frame and its window in
-   --field, a unit under way in a move, a unit hidden from the other
+   both windows, marks, lines, cursors and the overview, `screens.py
+   --field`), then what is left of the screen: a unit under way in a move, a unit hidden from the other
    player, the squares' explosions after a fight, what chooses the
    cursor's entry, and the sounds: FIGHT.FXX, GAME.FXX, the .SND files and the
    records the fight scene hands to CODE:16F8 (not read).
@@ -1385,8 +1402,7 @@ For the port (behaviour):
    their bytes 2 and 3; whether owner/player 0 is the player of the
    arrow keys (the status screen's ONE is red, as player 0's dots);
    MOON.EXE's loader (MOON's 16.FIN has a two-square unit without its
-   second half) and its overview without a .PMP; the overview's frame
-   and cursor; the unit flag 200h (+4) that gives a dot AMOK's +20h
+   second half) and its overview without a .PMP; the unit flag 200h (+4) that gives a dot AMOK's +20h
    colour; why the status screen counts 6 units where the .FIN has 5.
 
 10. The tables (datfiles.py): the fight's formula, what a type's move

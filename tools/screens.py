@@ -99,9 +99,14 @@ pixels of row 179 were another ground's: a screen over the window does
 not draw that row (the clipping), which keeps the window's pixels of
 before, drawn here from the map as it is.  The page drawn to had them
 all in 41 (a pass under way in one; in one the aim's mark was not on
-it).  Not seen: marks of player 1, a unit with 2 in its +6 (drawn only
-for its own side), the overview (state 3) and the cursor's other states
-over the map, a unit under way in a move, the squares' explosions.
+it).  The overview over a window (state 3; the picture is the .PMP of
+the game's that the memory holds) in four more dumps of map 03: player
+0's as it comes up, its frame moved two down and three right, both
+players' at once with player 1's frame moved, and the window after fire
+ended it; all 64000 pixels on both pages in each.  Not seen: marks of
+player 1, a unit with 2 in its +6 (drawn only for its own side), a dot
+of +20h's colour, the cursor's other states over the map, a unit under
+way in a move, the squares' explosions.
 
 --building draws the building's screen (draw_building below) of each
 player whose cursor has the state 2 (+17h) in the run's memory.  Checked
@@ -1039,6 +1044,49 @@ def field_window(s, ram, player):
             s.unit24(x, y, f.patt[0], 0x30 if player else 0x20)
 
 
+def loaded_pmp(files, ram):
+    """the entry of the map's .PMP: the one of the game's whose bytes the
+    run's memory holds (the map's loop keeps the pointer in its frame)"""
+    d = find(files.game, 'MAP')
+    for f in sorted(os.listdir(d)):
+        if f.upper().endswith('.PMP'):
+            data = unpacked(os.path.join(d, f))
+            if data[4:] in ram.data:
+                return mapfiles.read_pmp(data)[1]
+    raise ValueError("none of the game's .PMP files is in the memory")
+
+
+def draw_overview(files, ram, player):
+    """the overview over a player's window (T0708:2202, state 3):
+    draw_shop_window, then draw_overview (T0E9B:0931) at the cursor
+    record's +4, +6: the .PMP's entry at base 70h and a dot for each of
+    the unit records 0..F0h without 8000h, 4000h or 2 in its +4 and
+    without 2 in its +6, at the square its +0Bh (player 1's window:
+    +0Dh) names in the player's map, 2 pixels a square and 2 around
+    (overview_dot: the colour, +1 right and below, +2 at the fourth; the
+    colour AMOK's +22h by the unit's owner, +20h by the owner for a unit
+    of the window's player's side with 200h in its +4)"""
+    s = Screen(files, ram.clip())
+    a = files.amok
+    rec = PLAYERS + PLAYER_REC * player
+    x, y = ram.word(rec + 4), ram.word(rec + 6)
+    window(s, files, WINDOW * player)
+    s.entry(x, y, loaded_pmp(files, ram), mapfiles.OVERVIEW_BASE)
+    width = ram.word(MAP_WIDTH)
+    for n in range(0xF1):
+        u = ram.bytes(UNITS + UNIT_REC * n, UNIT_REC)
+        word4, word6 = struct.unpack_from('<HH', u, 4)
+        if word4 & 0xC002 or word6 & 2:
+            continue
+        square = (struct.unpack_from('<h', u, 0x0B + 2 * player)[0] - 1) >> 1
+        owner = word4 & 1
+        c = a[(0x20 if word4 & 0x200 and same_side(owner, player) else 0x22) + owner]
+        px, py = x + 2 * (square % width) + 2, y + 2 * (square // width) + 2
+        for dx, dy, d in ((0, 0, 0), (1, 0, 1), (1, 1, 2), (0, 1, 1)):
+            s.put(px + dx, py + dy, c + d)
+    return s.pix
+
+
 def cursor_unit(ram, player):
     """T0708:1607..17FA: the unit whose line the map's loop shows for a
     player, or None"""
@@ -1063,7 +1111,14 @@ def draw_field(files, ram, lines=(None, None)):
       message lines below them);
       for each player by the cursor record's state (+17h): 2 the
       building's screen, 4 the status screen (+18h 7) or the unit's (+18h
-      6), each as above; else the player's window: 9 columns of 7 squares
+      6), each as above; 3 (+18h 5) the overview (draw_overview above:
+      its picture at the record's +4, +6, which the loop sets to x0 + 77 -
+      (the map's width + 2), 96 - (its height + 2) when the state comes
+      up; the record's +0Ch, +0Eh are then the square the window is to
+      begin at, moved by two with a direction, held from 0 to the width -
+      10 and the height - 8, and the cursor, CURSOR.LIB's entry 6, a
+      frame, is at the picture's place + twice that; fire ends it with
+      the window there); else the player's window: 9 columns of 7 squares
       from the square the record's +2 names (an offset into the player's
       own map, the far pointer F27EE:4152 + 4 * player, two bytes a
       square), a column 16 pixels right of the one before and the odd
@@ -1114,6 +1169,9 @@ def draw_field(files, ram, lines=(None, None)):
         elif state == 4 and mode == 6:
             shows.append('a unit')
             over = draw_unit_info(files, unit_values(ram, player), ram.clip())
+        elif state == 3 and mode == 5:
+            shows.append('the overview, its window at square %d, %d' % (ram.word(rec + 0x0C), ram.word(rec + 0x0E)))
+            over = draw_overview(files, ram, player)
         else:
             shows.append('the map from square %d, %d' % ((ram.word(rec + 2) >> 1) % ram.word(MAP_WIDTH),
                                                         (ram.word(rec + 2) >> 1) // ram.word(MAP_WIDTH)))
@@ -1139,7 +1197,7 @@ def draw_field(files, ram, lines=(None, None)):
             unit_line(s, a, player, u, ram.bytes(TYPES + TYPE_REC * u[8], TYPE_REC), ram.bytes(SUFFIXES, 12))
         elif line is not None:
             message_line(s, a, player, line or None)
-        if not over:
+        if not over or state == 3:
             s.entry(ram.word(rec + 0x10), ram.word(rec + 0x12), files.cursor[ram.byte(rec + 0x1B)], 0)
     return s.pix, shows
 

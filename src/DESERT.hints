@@ -1229,8 +1229,33 @@ name T24DF:0002 draw_hexagon
 ; +22h by the player (bit 0 of the unit's +4), or +20h for a unit with
 ; 200h in its +4 when T0D36:00F5 says it is the window's player's. A run
 ; (right with fire on an empty square) had the picture and nine dots in
-; video memory at x 59, y 78 as tools/mapfiles.py --overview draws them;
-; a frame around a part of it is drawn by other code (not read).
+; video memory at x 59, y 78 as tools/mapfiles.py --overview draws them.
+; The map's loop around it (T0708:21E8..250B, the cursor's state 3). With
+; 4 in the record's +18h (T0708:2202): the record's +4 = x0 + 77 - (the
+; map's width + 2), +6 = 96 - (its height + 2), the picture's place; the
+; cursor's column and row in the window (+0Ch, +0Eh) kept in +8, +0Ah, and
+; +0Ch, +0Eh = twice the +14h, +15h, the window's first column and row;
+; the cursor (+10h, +12h) at the picture's place + twice these;
+; draw_shop_window, draw_overview, bit 4 of the player's F27EE:243E,
+; F27EE:2510 bit 100h, 2 into F27EE:2512, +18h = 5. With 5: a direction
+; (the keys' bits 1 up, 2 down, 4 left, 8 right) moves +0Ch or +0Eh by 2
+; and the cursor by 4, +0Ch within 0 and the width - 10, +0Eh within 0
+; and the height - 8, then T24D3:0000 with the player's far pointer
+; F27EE:2443 (a stored block copied to the page drawn to, write mode 1:
+; what was under the cursor, presumably; not read). Fire (10h,
+; T0708:233D): state 0, +18h 19h, +1Bh 5, +14h, +15h = half of +0Ch,
+; +0Eh, the window's first square +2 = 2 * +0Ch + 2 * width * +0Eh,
+; draw_window, draw_marks, +0Ch, +0Eh back from +8, +0Ah and T0D36:0044
+; (cursor record far, player: the cursor's +10h, +12h from its column and
+; row by the tables F27EE:4112 and 130C, for an odd column 4192, and its
+; square +0).
+; The frame seen around a part of the picture is the cursor, CURSOR.LIB's
+; entry 6 (24 by 20). Runs (map 03; fire with right for either player,
+; then directions, then fire): tools/screens.py --field had every pixel
+; of both pages with the overview up, its frame moved, both players' up
+; and after it was ended. The direction still held when fire is let go
+; moves the frame at once (it came up 4 steps to the right in the runs).
+; Not seen: a dot of +20h's colour.
 ; T2503:0006: the pixel DATA:00D8, 00DA (x, y) in the colour DATA:00D6
 ; (the callers set them through the far pointer DATA:0092); T23DC:000A
 ; gives the address and the plane's mask in CH (not read).
