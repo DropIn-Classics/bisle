@@ -696,7 +696,23 @@ name T0F3E:1ABC four_squares
 ; that is no one's (2) and has not moved (200h): 10h in the move phase
 ; (the cursor's +16h 1; not while a move runs), 1 in the attack phase; on
 ; a unit that holds others and on a building's square 400h (with HIDE
-; SHOP, F27EE:250E bit 8, only one's own). Fire with up then (T0D36:0F51,
+; SHOP, F27EE:250E bit 8, only one's own). The cursor's entry (+1Bh,
+; CURSOR.LIB's) says what is chosen. While fire is held (state 1, +18h 2;
+; T0D36:147A, the keys' bits 1 up, 2 down, 4 left, 8 right against +1Ch):
+; up 4 with 10h, else 0 with 1, else as it was, and when the player's
+; counts' +15h has reached its +16h (TURN and LIMIT of the status screen)
+; and F27EE:243E's bit 2 is clear, 5 and message 21h; down 2 with 4; left
+; 0Ah with 400h, else 9 with 200h, else as it was; right 3 with 8;
+; otherwise 1. When fire is let go (T0D36:0F44): 4 and 0 as below; 2 gives
+; state 4; 0Ah state 6; 9 state 5; 3 state 3 with +18h 4 and the entry 6
+; (the overview's frame); any other state 0 and the entry 5, the cursor
+; at rest. Runs (map 03, dumps with fire held; tools/screens.py --field
+; had all pixels): 1 with fire alone, 2, 3 and 9 with down, right and
+; left on an empty square, 1 kept with up there, 0 with up on a unit of
+; one's own in the attack phase, 4 in the move phase (a unit poked in:
+; all pixels but that unit's in the other player's window, not drawn
+; again since the poke). Not seen: 0Ah, the message 21h. Fire with up
+; then (T0D36:0F51,
 ; the cursor's +1Bh 4): reach with the unit's +0 as points and the ground
 ; flags FFFFh for a unit with 1 in its +6, else 6 for player 1's and 3
 ; for player 0's; more than one square in reach: unit_flag 100h, +18h

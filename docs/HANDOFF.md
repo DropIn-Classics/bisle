@@ -1232,6 +1232,19 @@ games, each its own folder mounted as C: and started there:
   Not read: T24D3:0000, which the loop calls after a move of the frame
   (a stored block to the page drawn to; what was under the cursor,
   presumably).
+- What chooses the cursor's entry (the record's +1Bh; BATTLE.hints at
+  "What fire on a square offers"): at rest 5; while fire is held 1, or
+  by the direction and what the square offers (+1Ch) 4 or 0 (up: a move
+  or an attack of the unit there), 2 (down: the status or the unit's
+  screen), 9 or 0Ah (left: the change of phase, or a building), 3
+  (right: the overview); letting fire go sets the state the entry
+  stands for, and the overview's frame is entry 6. Runs of map 03 with
+  fire held (scratch `ce.py`): the entries 1, 2, 3, 9, 0 and 4 were in
+  the memory as read and on the screen as `screens.py --field` draws
+  them (all pixels; in the run for 4 its unit is poked in and the other
+  player's window, not drawn since, lacks it: 144 pixels). Not seen:
+  0Ah over the map, message 21h (the turn's limit reached, presumably:
+  the counts' +15h against +16h).
 - MOON.hints: T2084 has `start=8`: MOON's fight_step (T2066) ends in the
   frame's first 8 bytes (read; the build is identical either way).
   xfer.py carried the scene's names to MOON.hints (their beginnings
@@ -1337,8 +1350,7 @@ games, each its own folder mounted as C: and started there:
    fight scene pass by pass, `scene.py`; the map's whole screen with
    both windows, marks, lines, cursors and the overview, `screens.py
    --field`), then what is left of the screen: a unit under way in a move, a unit hidden from the other
-   player, the squares' explosions after a fight, what chooses the
-   cursor's entry, and the sounds: FIGHT.FXX, GAME.FXX, the .SND files and the
+   player, the squares' explosions after a fight, and the sounds: FIGHT.FXX, GAME.FXX, the .SND files and the
    records the fight scene hands to CODE:16F8 (not read).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.

@@ -103,7 +103,9 @@ it).  The overview over a window (state 3; the picture is the .PMP of
 the game's that the memory holds) in four more dumps of map 03: player
 0's as it comes up, its frame moved two down and three right, both
 players' at once with player 1's frame moved, and the window after fire
-ended it; all 64000 pixels on both pages in each.  Not seen: marks of
+ended it; all 64000 pixels on both pages in each.  Six more with fire
+held (state 1: the cursor's entries 1, 2, 3, 9, 0 and 4) had them all
+but for a unit poked into the run for entry 4.  Not seen: marks of
 player 1, a unit with 2 in its +6 (drawn only for its own side), a dot
 of +20h's colour, the cursor's other states over the map, a unit under
 way in a move, the squares' explosions.
