@@ -1257,6 +1257,49 @@ name T25FB:000E store_part
 ; pixel but under the cursor (a run, -vram; MOON.EXE's the same with
 ; MOON's files).
 name T0F3E:0C65 draw_window
+; The marks and single squares of a window, all with the window's place
+; and bases as draw_window. The marks are F27EE:1339 (64 bytes a row of
+; the map; the bits 55h player 0's, AAh player 1's). T0E9B:0C65 (the
+; window's first square, window): for each of the window's 9 by 7 squares
+; with a mark of the player's, by draw_unit24: the entry +4 of the list at
+; F27EE:0A67 (PATT.LIB's entry 1) for a bit of C0h, else its +8 (entry 2)
+; for one of 30h, both with base 0; then its +0 (entry 0) with base 20h
+; (window 1: 30h) for a bit of 0Fh. T0E9B:0DD8 (cursor record far,
+; window): the cursor's square (the record's +0) at the record's +10h,
+; +12h: the ground's hexagon, the unit (as draw_window, a unit with 2 in
+; its +6 only for its side) and the square's marks. T0E9B:1047 (the
+; window's first square, window, bits): the window's squares with one of
+; these marks drawn again without them (hexagon and unit), then
+; clear_marks (bits). T0E9B:125C (player, square): when the player's
+; cursor has state 0, 1, 7 or 8 and the square is in his window: the
+; square drawn again (hexagon, unit, marks).
+; tools/screens.py --field draws the map's whole screen so (GAME.IFF, the
+; windows with their marks, the screens over them, the lines, the
+; cursors): 44 dumps of runs had all 64000 pixels on the page shown but
+; one (15 pixels of row 179 below a building's screen, which that screen
+; leaves as they were). Seen there: the marks 01h (a unit's reach), 04h
+; (its targets), 40h and 10h, all player 0's; not seen: player 1's, a
+; unit with 2 in its +6.
+name T0F3E:0E2A draw_marks
+name T0F3E:0F9D redraw_cursor_square
+name T0F3E:1208 undraw_marks
+name T0F3E:141C redraw_square
+; The line below a window in the map's loop (T0708:1607..1829), in a pass
+; in which the player's keys (T0D36:04D8) give no direction and no fire
+; and the cursor has state 0: when the cursor's square (its +0) in the
+; player's map holds a unit, and that unit has not 4 in its +6, is not
+; one with 2 there of the other player, and no message is up (the
+; player's bit 4 or 8 of F27EE:250C): unit_line for it (for a unit with
+; 40h and not 80h in its +4, the second square of two, the unit before
+; it). In the attack phase (the cursor's +16h bit 2), for a unit of the
+; player's side with an aim (+11h not 0): timer_set (5, 1, the aim) and
+; redraw_square for the aim with the player's mark 4 or 8 set for the
+; call only (PATT.LIB's entry 0 over the target). Then timer_set (1 or 2
+; by the player, 5, 0): the line's timer. Runs: the line of the unit under
+; each player's cursor (a unit of the other player's too) and the aim's
+; mark were on the page shown as screens.py --field draws them; the page
+; drawn to did not have the aim's mark in that dump (not looked into, as
+; what timer 5 does when it has run).
 ; T24DF:0002 (x, y, entry far): a stored 24x24 entry (store_part's copy in
 ; video memory) to the screen in the shape of a hexagon: write mode 1,
 ; rows of 2, 4 and 6 bytes through the latches, then 32 bytes at the

@@ -10,6 +10,7 @@ as BATTLE.EXE draws them, and compared with the run's video memory.
     screens.py --menu RAM --message name [--typed TEXT] [--vram VRAM] ...
     screens.py --scores RAM [--hi FILE] [--map N] [--vram VRAM] [--png DIR] ...
     screens.py --stats RAM [--vram VRAM] [--png DIR] ...
+    screens.py --field RAM [--line0 WHAT] [--line1 WHAT] [--vram VRAM] ...
 
 RAM is a run's memory (run.py -ram), VRAM its video memory (run.py
 -vram), both of the same moment.  --status draws the status screen of
@@ -77,6 +78,30 @@ level curves of 3 points; and against the battle with the computer lost
 curves of 22 points that fall and rise.  All 64000 pixels in the video
 memory on the page shown in both.  Not seen: 32 points and more (SCALE
 1 - 4), 64 and more (the rows turned round), the last map's text.
+
+--field draws the map's whole screen (draw_field below): the picture
+GAME.IFF, each player's window of his own map with its units and marks,
+over it the screen the player's cursor state names (a building's, the
+status, a unit's: as the options above draw them), the lines below the
+windows and the cursors.  The line of a window showing the map is the
+unit's under the cursor; --line0 and --line1 say otherwise (unit:N, in
+hex, another unit's line; a number, in hex, show_message's text, which
+is not in the memory; clear).  Checked against 44 dumps of runs (ISLE's
+maps 00, 03 and 14; HANDOFF.md has their keys): the map alone in both
+windows in 22 (the windows moved over the map, a unit's reach marked,
+its targets marked, the marks 40h and 10h, which PATT.LIB's entries 1
+and 2 show and whose meaning is not read, a unit's line for the unit
+under the cursor, of the other player's too, an order's aim marked), a
+building's screen in one half in 19, the status in one or both, the
+unit's.  All 64000 pixels were in the video memory on the page shown in
+43; in one, a depot's screen that came up when a unit moved in, 15
+pixels of row 179 were another ground's: a screen over the window does
+not draw that row (the clipping), which keeps the window's pixels of
+before, drawn here from the map as it is.  The page drawn to had them
+all in 41 (a pass under way in one; in one the aim's mark was not on
+it).  Not seen: marks of player 1, a unit with 2 in its +6 (drawn only
+for its own side), the overview (state 3) and the cursor's other states
+over the map, a unit under way in a move, the squares' explosions.
 
 --building draws the building's screen (draw_building below) of each
 player whose cursor has the state 2 (+17h) in the run's memory.  Checked
@@ -274,6 +299,12 @@ class Screen:
                 px, py = x + e['dx'] + i, y + e['dy'] + j
                 if vals[j * w + i] >= 0 and x1 <= px < x2 and y1 <= py < y2:
                     self.put(px, py, vals[j * w + i] + base)
+
+    def unit24(self, x, y, e, base):
+        """draw_unit24 (T2506:000A): an entry of 24x24, not clipped"""
+        clip, self.clip = self.clip, None
+        self.entry(x, y, e, base)
+        self.clip = clip
 
     def hexagon(self, x, y, img):
         """draw_hexagon (T24DF:0002): a ground's picture as
@@ -965,6 +996,179 @@ def stats_main(a, files, ram, vram, game):
     return 0
 
 
+MAPS = 0x4152                           # F27EE: far pointers to the two players' maps
+MAP_WIDTH = 0x246E                      # F27EE: the map's width in squares
+MARKS = 0x1339                          # F27EE: the squares' marks, 64 a row
+COLUMNS, ROWS = 9, 7                    # a window's squares
+
+
+def same_side(a, b):
+    """T0D36:00F5 (a, b; two units' +4, or a player for a)"""
+    return bool(b & 1) if a & 1 else bool(b & 2) if a & 2 else not b & 1
+
+
+def field_window(s, ram, player):
+    """draw_window (T0E9B:0A9B: the window's first square, the player) and
+    the marks over it (T0E9B:0C65)"""
+    f = s.f
+    rec = PLAYERS + PLAYER_REC * player
+    first = ram.word(rec + 2)
+    width = ram.word(MAP_WIDTH)
+    off, seg = struct.unpack_from('<HH', ram.bytes(MAPS + 4 * player, 4))
+    squares = [(col, row, WINDOW * player + 16 * col, (12 if col & 1 else 0) + 24 * row)
+               for col in range(COLUMNS) for row in range(ROWS)]
+    for col, row, x, y in squares:
+        at = off + first + 2 * col + 2 * width * row
+        s.hexagon(x, y, f.ground[ram.far(seg, at)])
+        n = ram.far(seg, at + 1)
+        if n > 0xF0:
+            continue
+        u = ram.bytes(UNITS + UNIT_REC * n, UNIT_REC)
+        word4, word6 = struct.unpack_from('<HH', u, 4)
+        if word6 & 2 and not same_side(word4, player):
+            continue
+        s.unit24(x, y, f.unit[u[8] * 6 + u[0x0F + player]], 0x30 if word4 & 1 else 0x20)
+    at = (first >> 1) % width + ((first >> 1) // width << 6)
+    for col, row, x, y in squares:
+        m = ram.byte(MARKS + at + col + 0x40 * row) & (0xAA if player else 0x55)
+        if m & 0xC0:
+            s.unit24(x, y, f.patt[1], 0)
+        elif m & 0x30:
+            s.unit24(x, y, f.patt[2], 0)
+        if m & 0x0F:
+            s.unit24(x, y, f.patt[0], 0x30 if player else 0x20)
+
+
+def cursor_unit(ram, player):
+    """T0708:1607..17FA: the unit whose line the map's loop shows for a
+    player, or None"""
+    rec = PLAYERS + PLAYER_REC * player
+    if ram.byte(rec + 0x17) or ram.word(STATE) & (8 if player else 4):
+        return None
+    off, seg = struct.unpack_from('<HH', ram.bytes(MAPS + 4 * player, 4))
+    n = ram.far(seg, off + ram.word(rec) + 1)
+    if n > 0xF0:
+        return None
+    word4, word6 = struct.unpack_from('<HH', ram.bytes(UNITS + UNIT_REC * n, UNIT_REC), 4)
+    if word6 & 4 or word6 & 2 and bool(word4 & 1) != bool(player):
+        return None
+    return n - 1 if word4 & 0x40 and not word4 & 0x80 else n
+
+
+def draw_field(files, ram, lines=(None, None)):
+    """the map's whole screen as the map's loop (T0708) leaves it, read
+    from the code:
+
+      the picture GAME.IFF (the frame around the two windows and the two
+      message lines below them);
+      for each player by the cursor record's state (+17h): 2 the
+      building's screen, 4 the status screen (+18h 7) or the unit's (+18h
+      6), each as above; else the player's window: 9 columns of 7 squares
+      from the square the record's +2 names (an offset into the player's
+      own map, the far pointer F27EE:4152 + 4 * player, two bytes a
+      square), a column 16 pixels right of the one before and the odd
+      ones 12 lower, a square 24 lower than the one above; the ground's
+      hexagon (PART.LIB), then the unit (UNIT.LIB's entry type * 6 + the
+      record's +0Fh + player, by draw_unit24, which does not clip: the
+      odd columns' last row is 179; base 30h with bit 1 in its +4, else
+      20h) unless it has 2 in its +6 and is not of the window's player's
+      side (same_side);
+      over the window the marks (T0E9B:0C65; F27EE:1339, 64 bytes a row of
+      the map, the bits 55h player 0's, AAh player 1's): PATT.LIB's entry
+      1 for a bit of C0h, else entry 2 for one of 30h, both at base 0, and
+      entry 0 at base 20h (player 1: 30h) for one of 0Fh;
+      the message line below a window (T0708:1607..1829): in a pass
+      without a direction or fire, the cursor in state 0 on a unit of
+      the player's map (the square the record's +0 names) and no message
+      up (the player's bit 4 or 8 of F27EE:250C): that unit's line
+      (unit_line; the unit before it for one with 40h and not 80h in its
+      +4, the second square of two), unless the unit has 4 in its +6, or
+      2 there and is the other player's; in the attack phase (the
+      record's +16h bit 2) for a unit of the player's side with an aim
+      (+11h) that square is drawn again with the mark 4 or 8 set for the
+      call (T0E9B:125C: PATT.LIB's entry 0 over it), and a timer of 5
+      passes started.  lines[player] says otherwise: b'' cleared,
+      ('unit', n) unit n's line, else a text (show_message); a screen
+      over the window draws its own line;
+      the cursor, CURSOR.LIB's entry of the record's +1Bh at its +10h,
+      +12h, base 0 (the map loop's end, T0708:4385).
+
+    -> the pixels and what each half shows"""
+    s = Screen(files, ram.clip())
+    a = files.amok
+    pic = ifffiles.read(unpacked(find(files.game, 'GAME.IFF')))
+    for y in range(HEIGHT):
+        s.pix[y * WIDTH:(y + 1) * WIDTH] = pic['pixels'][y * pic['width']:y * pic['width'] + WIDTH]
+    shows = []
+    for player in (0, 1):
+        rec = PLAYERS + PLAYER_REC * player
+        state, mode = ram.byte(rec + 0x17), ram.byte(rec + 0x18)
+        over = None
+        field_window(s, ram, player)
+        if state == 2:
+            shows.append('a building')
+            over = draw_building(files, building_values(ram, player), ram.clip())
+        elif state == 4 and mode == 7:
+            shows.append('the status')
+            over = draw_status(files, player, status_values(ram, player), ram.clip())
+        elif state == 4 and mode == 6:
+            shows.append('a unit')
+            over = draw_unit_info(files, unit_values(ram, player), ram.clip())
+        else:
+            shows.append('the map from square %d, %d' % ((ram.word(rec + 2) >> 1) % ram.word(MAP_WIDTH),
+                                                        (ram.word(rec + 2) >> 1) // ram.word(MAP_WIDTH)))
+        if over:
+            s.pix = [o if o >= 0 else p for o, p in zip(over, s.pix)]
+        line = lines[player]
+        if line is None and not over:
+            n = cursor_unit(ram, player)
+            if n is not None:
+                line = ('unit', n)
+                u = ram.bytes(UNITS + UNIT_REC * n, UNIT_REC)
+                aim = struct.unpack_from('<H', u, 0x11)[0]
+                if ram.byte(rec + 0x16) & 2 and aim and same_side(player, u[4]):
+                    # T0E9B:125C with the mark 4 or 8 set for the call
+                    width, first = ram.word(MAP_WIDTH), ram.word(rec + 2) >> 1
+                    col, row = (aim >> 1) % width - first % width, (aim >> 1) // width - first // width
+                    if 0 <= col < COLUMNS and 0 <= row < ROWS:
+                        shows[-1] += ', the aim of unit %02X marked' % n
+                        s.unit24(WINDOW * player + 16 * col, (12 if col & 1 else 0) + 24 * row, files.patt[0],
+                                 0x30 if player else 0x20)
+        if isinstance(line, tuple):
+            u = ram.bytes(UNITS + UNIT_REC * line[1], UNIT_REC)
+            unit_line(s, a, player, u, ram.bytes(TYPES + TYPE_REC * u[8], TYPE_REC), ram.bytes(SUFFIXES, 12))
+        elif line is not None:
+            message_line(s, a, player, line or None)
+        if not over:
+            s.entry(ram.word(rec + 0x10), ram.word(rec + 0x12), files.cursor[ram.byte(rec + 0x1B)], 0)
+    return s.pix, shows
+
+
+def field_main(a, files, ram, vram, game):
+    lines = []
+    for player, arg in enumerate((a.line0, a.line1)):
+        if arg is None or arg == 'clear':
+            lines.append(None if arg is None else b'')
+        elif arg == 'unit':
+            lines.append(('unit', ram.byte(PLAYERS + PLAYER_REC * player + 0x1E)))
+        elif arg.startswith('unit:'):
+            lines.append(('unit', int(arg[5:], 16)))
+        else:
+            lines.append(ram.message(int(arg, 16)))
+    pix, shows = draw_field(files, ram, lines)
+    for player in (0, 1):
+        rec = ram.bytes(PLAYERS + PLAYER_REC * player, PLAYER_REC)
+        print('player %d: %s; state %d, +18h %02X, cursor %d at %d, %d, +1Ch %04X, unit %02X' % (
+            player, shows[player], rec[0x17], rec[0x18], rec[0x1B], *struct.unpack_from('<hh', rec, 0x10),
+            struct.unpack_from('<H', rec, 0x1C)[0], rec[0x1E]))
+    if vram:
+        report(pix, vram, ram)
+    if a.png:
+        os.makedirs(a.png, exist_ok=True)
+        to_png(os.path.join(a.png, 'field.png'), game, pix)
+    return 0
+
+
 def menu_name(codes):
     return ''.join(' ' if c == 1 else chr(ord('A') + c - 17) if 17 <= c <= 42 else str(c - 5) if 5 <= c <= 14 else '?'
                    for c in menu_text(codes))
@@ -1084,6 +1288,10 @@ def main():
     ap.add_argument('--menu', metavar='RAM', help="draw the texts of a menu (--id) from a run's memory")
     ap.add_argument('--scores', metavar='RAM', help="draw the scores' screen (RATING) from a run's memory")
     ap.add_argument('--stats', metavar='RAM', help="draw the statistics after a map from a run's memory")
+    ap.add_argument('--field', metavar='RAM', help="draw the map's whole screen from a run's memory")
+    ap.add_argument('--line0', metavar='WHAT', help="with --field: player 0's message line: unit (the unit of the "
+                    "cursor record's +1Eh), unit:N, a text's number (hex) or clear (default: as the picture has it)")
+    ap.add_argument('--line1', metavar='WHAT', help="the same for player 1")
     ap.add_argument('--hi', metavar='FILE', help='the .HI file for --scores (default: the table without a file)')
     ap.add_argument('--id', dest='menu_id', type=int, default=3, help='the menu (default 3, the title menu)')
     ap.add_argument('--sel', type=int, help='the chosen item: draw the picture behind and the cursor too')
@@ -1100,10 +1308,14 @@ def main():
     a = ap.parse_args()
     game = a.game or os.path.join(game_dir(), 'ISLE')
     files = Files(game)
-    if [bool(a.status), bool(a.unit), bool(a.building), bool(a.menu), bool(a.scores), bool(a.stats)].count(True) != 1:
-        ap.error('one of --status, --unit, --building, --menu, --scores and --stats')
-    ram = Ram(open(a.status or a.unit or a.building or a.menu or a.scores or a.stats, 'rb').read(), int(a.load, 16))
+    if [bool(a.status), bool(a.unit), bool(a.building), bool(a.menu), bool(a.scores), bool(a.stats),
+            bool(a.field)].count(True) != 1:
+        ap.error('one of --status, --unit, --building, --menu, --scores, --stats and --field')
+    ram = Ram(open(a.status or a.unit or a.building or a.menu or a.scores or a.stats or a.field, 'rb').read(),
+              int(a.load, 16))
     vram = open(a.vram, 'rb').read() if a.vram else None
+    if a.field:
+        return field_main(a, files, ram, vram, game)
     if a.stats:
         return stats_main(a, files, ram, vram, game)
     if a.scores:

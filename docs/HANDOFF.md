@@ -9,7 +9,7 @@ to 98%, the intros' to 92%.
 their programs byte for byte
 (`doskit/tools/check.py`: all ok). BI.EXE is read in full (which
 intro, then BATTLE.EXE); of BATTLE.EXE the data formats, the screens,
-the menus, the fight's reckoning and its scene, a unit's reach, path and
+the menus, the map's screen, the fight's reckoning and its scene, a unit's reach, path and
 targets, the carrying out of a move, the change of phase and a map's
 end with its statistics, and the computer player's assessment, plan and
 commands, and how it steers its cursor to carry the commands out, are
@@ -1178,6 +1178,42 @@ games, each its own folder mounted as C: and started there:
   bytes behind the far pointer F2D8A:000C and calls CODE:16F8; the
   type's +41h..+43h: BATTLE.hints), the squares' explosions on the map
   after the fight (change_phase, F27EE:2472).
+- The map's whole screen (`tools/screens.py --field RAM`, BATTLE.hints
+  at draw_marks): GAME.IFF, each player's window of his own map (the
+  cursor record's +2 its first square; draw_window), the marks over it
+  (`draw_marks`, T0E9B:0C65: PATT.LIB's entry 1 for a mark of C0h, 2 for
+  one of 30h, entry 0 in the player's colours for one of 0Fh, a unit's
+  reach and targets), the screen the cursor's state names over the
+  window (a building's, the status, a unit's), the line below and the
+  cursor. The line of a window showing the map is read too
+  (T0708:1607..1829): with no key held and the cursor at rest on a unit,
+  that unit's line (unit_line; of the other player's units too, unless
+  hidden), kept up by a timer of 5 passes; in the attack phase the aim
+  of a unit that has an order is marked for that time (`redraw_square`
+  with the mark set for the call). Single squares are drawn again by
+  `redraw_cursor_square`, `redraw_square` and `undraw_marks` (the marks
+  taken off the screen and out of the memory). Checked against 44 dumps
+  (the 42 map dumps of the earlier steps still in build/, ISLE's maps
+  00, 03 and 14, and two new ones: the attack order's keys above with
+  the pokes of that run, -ram -vram at 93 s, the targets marked, and
+  with 97.5 up after the order, at 100 s, the cursor back on the unit
+  and the aim marked): all 64000 pixels on the page shown in 43. The
+  one: a depot's screen that came up when a unit moved in had 15 pixels
+  of row 179 of another ground: a screen over the window does not draw
+  that row (the clipping at 179, which draw_unit24 and draw_hexagon do
+  not have: the odd columns' squares end in it), so it keeps what the
+  window had before, and the tool draws the map as it is now. p1msg
+  needs `--line1 1E`, p1msg2 and p1msg3 `--line1 clear` (a message's
+  text is not in the memory). Not seen: marks of player 1, what the
+  marks 40h and 10h stand for (T0708:3297 sets 40h or 80h), a unit with
+  2 in its +6 (hidden from the other side), the overview over the
+  window (state 3), a unit under way in a move, the squares' explosions
+  after a fight, scrolling as such (the windows at other first squares
+  are seen), why the page drawn to lacked the aim's mark in its dump.
+  xfer.py carried the four names to MOON.hints (T0F3E:0E2A, 0F9D, 1208,
+  141C: routine starts with the same stack frames, looked at in
+  MOON.ASM). Scratch: `fieldall.py` (--field on every dump), `fat.py`
+  (the two new runs), `fdiff.py NAME` (the pixels that differ).
 - MOON.hints: T2084 has `start=8`: MOON's fight_step (T2066) ends in the
   frame's first 8 bytes (read; the build is identical either way).
   xfer.py carried the scene's names to MOON.hints (their beginnings
@@ -1280,11 +1316,12 @@ games, each its own folder mounted as C: and started there:
    there a repair that repairs and a unit that holds others; the
    statistics after a map, the menus, a code typed, LOAD's messages,
    the scores with a file and their name are drawn in full, and the
-   fight scene pass by pass, `scene.py`), then the rest of the screen:
-   the cursor's entries, the overview's frame, the frame's texts, what
-   the windows show of a map (scrolling, the units' directions, a unit
-   hidden from the other player, the squares' explosions after a
-   fight), and the sounds: FIGHT.FXX, GAME.FXX, the .SND files and the
+   fight scene pass by pass, `scene.py`; the map's whole screen with
+   both windows, marks, lines and cursors, `screens.py --field`), then
+   what is left of the screen: the overview's frame and its window in
+   --field, a unit under way in a move, a unit hidden from the other
+   player, the squares' explosions after a fight, what chooses the
+   cursor's entry, and the sounds: FIGHT.FXX, GAME.FXX, the .SND files and the
    records the fight scene hands to CODE:16F8 (not read).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.
