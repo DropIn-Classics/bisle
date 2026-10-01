@@ -3,6 +3,7 @@
 them back, show them.
 
     mapfiles.py [MAPDIR ...] [--grid NN] [--png DIR] [--match VRAM NN]
+                [--overview VRAM NN]
 
 Without MAPDIR the MAP folder of each game in the game's folder (ISLE,
 DESERT, MOON) is taken.  One line per map: its size, the units on it by
@@ -15,9 +16,11 @@ numbered 0, 1 as the loader counts them, 2 neither (that 0 is the
 player of the arrow keys is not checked); "buildings 400h 1/1/2" gives
 the squares of that flag by owner 0/1/2.  --png DIR writes each map as
 a picture, GAME_NN.png, as the game draws it at its start (below);
+and its overview, GAME_NN_overview.png, where it has a .PMP;
 --match VRAM NN looks for map NN of each folder in a run's video memory
 (run.py -vram) and says where each player's window shows it and how
-many of the window's pixels are the picture's.
+many of the window's pixels are the picture's; --overview VRAM NN does
+the same for the map's overview.
 
 All four files are packed (see tpwmfiles.py).  BATTLE.EXE's T0708 loads
 them when a map starts (seen with -dos: .FIN, .SHP, .COM, .PMP, in that
@@ -73,18 +76,35 @@ presumably):
     the loader swaps the bytes at +2 and +3 of each (T0708:0E2A).  What
     they mean is not looked into.
 
-.PMP (loaded by T0708 into a buffer; in a run to the first map and 25 s
-on it nothing but the unpacking read that buffer; what uses it is not
-known):
+.PMP, the map's overview (loaded by T0708 into a buffer of its own):
 
-    a long n; "INFO"; "ILBM"; a byte (02 ISLE, 03, 1Fh or 73h DESERT, 35h
-    in one of ISLE's); 55h; 4 zero bytes; words W and H (2w + 4 and
-    2h + 4 but in ISLE's 02.PMP, whose H is 2h + 5); W * H bytes (n is
-    22 + W * H); a name of 8 bytes (zero-padded: M00..M15 and 16..33 in
-    ISLE, words in DESERT: CLOCK, LOSAG, ...); a long, 4 in all files.
-    The W * H bytes (values below 20h) do not follow the .FIN's ground
-    square by square; shown as a picture they are blocks of 8x8 with
-    lines between (not decoded).  MOON has no .PMP files.
+    a graphics library of one entry (libfiles.py): a long, the
+    directory's offset; the entry: the label "INFOILBM", the transparent
+    value (02 in ISLE's but one, 03, 1Fh, 73h in DESERT's; pixels have
+    it in four files only, ISLE's 02 and 08, DESERT's 01 and 09: not
+    drawn), the kind 'U', offsets 0, the width 2w + 4 and the height
+    2h + 4 (ISLE's 02.PMP: 2h + 5), a byte a pixel, plane by plane
+    (values 0..1Fh, and ISLE's 08's transparent value above them); the
+    directory's one record: a name (M00..M15
+    and 16..33 in ISLE, words in DESERT: CLOCK, LOSAG, ...) and the
+    entry's offset, 4.  MOON has no .PMP files.
+    T0E9B:0931 (draw_overview) draws the entry with colour base 70h in
+    the middle of a player's window, at x = 50h - (w + 2) - 3 (A0h more
+    in the right window) and y = 64h - (h + 2) - 4, then a dot for each
+    unit at x + 2 * column + 2, y + 2 * row + 2: four pixels, the colour
+    c, c + 1 right of it and below it, c + 2 at the fourth, c from
+    AMOK.DAT by the unit's player (datfiles.py: 02h and 12h); no dot for
+    a unit of neither player or one with flag 2 in its +6 (the types
+    drawn in their own player's window only).  A player gets it with
+    fire held on an empty square and right, fire let go first
+    (T0D36:1567: the cursor's function 3).
+    Checked against a run (ISLE's first map, keys 14 space, 33 enter, 48
+    left, 49 left, 50 space+, 50.6 right+, 51.5 space-, 52 right-, -vram
+    at 58 s; --overview): the picture with its nine dots was in video
+    memory at x 59, y 78, all pixels but 160, a frame of two pixels
+    around 24 by 20 of them (what the window shows of the map,
+    presumably; who draws it is not read).  --png draws the dots of all
+    units as at the map's start.
 
 The map as the game draws it (T0E9B:0A9B, a window, read from the code;
 --png): a square is 24x24 pixels, column c at x = 16 * c, row r at
@@ -137,6 +157,8 @@ BUILDING_FLAGS = (0x40, 0x400, 0x100)   # the SHP kinds 0, 1, 2
 SQUARE = 24                             # a square's picture, 24x24
 COLUMN = 16                             # from one column to the next
 WINDOW_COLOUR = 64                      # GAME.IFF's pixels the maps are drawn in
+OVERVIEW_BASE = 0x70                    # the colour base draw_overview gives the .PMP's entry
+OVERVIEW_DOTS = 0x22                    # AMOK.DAT: a unit's colour there, by player
 # the hexagon T24DF:0002 copies of a ground's picture: the first pixel of
 # each of its 24 rows (the row is as much shorter on the right)
 HEXAGON = (8, 7, 7, 6, 5, 4, 4, 3, 2, 1, 1, 0, 0, 1, 1, 2, 3, 4, 4, 5, 6, 7, 7, 8)
@@ -193,20 +215,15 @@ def read_com(data):
 
 
 def read_pmp(data):
-    if len(data) < 34 or data[4:12] != b'INFOILBM':
-        raise ValueError('.PMP without INFO ILBM')
-    n = struct.unpack_from('<I', data, 0)[0]
-    W, H = struct.unpack_from('<HH', data, 18)
-    if n != 22 + W * H or len(data) != n + 12:
-        raise ValueError('.PMP of %d bytes, n %d, W %d, H %d' % (len(data), n, W, H))
-    return {'b12': data[12], 'b13': data[13], 'zero': data[14:18], 'W': W, 'H': H,
-            'body': data[22:n], 'name': data[n:n + 8], 'tail': struct.unpack_from('<I', data, n + 8)[0]}
+    """(name, entry) of a .PMP: a library of one 'U' entry"""
+    entries = libfiles.read(data)
+    if len(entries) != 1 or entries[0][1]['kind'] != 'U' or entries[0][1]['tail']:
+        raise ValueError('.PMP not one entry of kind U')
+    return entries[0]
 
 
 def write_pmp(p):
-    n = 22 + len(p['body'])
-    return (struct.pack('<I', n) + b'INFOILBM' + bytes([p['b12'], p['b13']]) + p['zero']
-            + struct.pack('<HH', p['W'], p['H']) + p['body'] + p['name'] + struct.pack('<I', p['tail']))
+    return libfiles.write([p])
 
 
 def tables(game):
@@ -336,6 +353,44 @@ def draw(m, parts, units):
     return width, height, out
 
 
+def overview(m, entry, game):
+    """(width, height, colour numbers with -1 where nothing is drawn) of
+    a map's overview as draw_overview draws it: the .PMP's entry and the
+    units' dots"""
+    width, height, px = libfiles.image(entry)
+    out = [v if v < 0 else v + OVERVIEW_BASE for v in px]
+    u = unpacked(find(game, 'UNIT.DAT'))
+    amok = unpacked(find(game, 'AMOK.DAT'))
+    for i, (_, unit) in enumerate(m['squares']):
+        t = unit >> 1
+        if unit >= NO_UNIT or (t + 1) * UNIT_REC > len(u):
+            continue
+        cls, inside = struct.unpack_from('<H2xH', u, t * UNIT_REC + 0x0C)
+        if cls & 2 or inside & 2:
+            continue
+        x, y = 2 * (i % m['w']) + 2, 2 * (i // m['w']) + 2
+        c = amok[OVERVIEW_DOTS + (unit & 1)]
+        for dx, dy, d in ((0, 0, 0), (1, 0, 1), (1, 1, 2), (0, 1, 1)):
+            if x + dx < width and y + dy < height:
+                out[(y + dy) * width + x + dx] = c + d
+    return width, height, out
+
+
+def match_overview(pic, vram):
+    """(pixels drawn, those equal, x, y, the box of the others or None)
+    where the overview is in video memory"""
+    width, height, out = pic
+    screen = [vram[4 * (y * 80 + x // 4) + (x & 3)] for y in range(200) for x in range(320)]
+    some = [(x, y) for y in range(0, height, 3) for x in range(0, width, 3)]
+    _, ox, oy = max((sum(out[y * width + x] == screen[(oy + y) * 320 + ox + x] for x, y in some), ox, oy)
+                    for oy in range(200 - height + 1) for ox in range(320 - width + 1))
+    drawn = [(x, y) for y in range(height) for x in range(width) if out[y * width + x] >= 0]
+    bad = [(x, y) for x, y in drawn if out[y * width + x] != screen[(oy + y) * 320 + ox + x]]
+    box = (min(x for x, _ in bad), min(y for _, y in bad),
+           max(x for x, _ in bad), max(y for _, y in bad)) if bad else None
+    return len(drawn), len(drawn) - len(bad), ox, oy, box
+
+
 def to_png(path, game, pic):
     width, height, out = pic
     pal = palfiles.read(open(find(game, '00.PAL'), 'rb').read())[0]
@@ -393,6 +448,8 @@ def main():
     ap.add_argument('--png', metavar='DIR', help='write each map as a picture here')
     ap.add_argument('--match', nargs=2, metavar=('VRAM', 'NN'),
                     help="where map NN is in a run's video memory, and how much of it")
+    ap.add_argument('--overview', nargs=2, metavar=('VRAM', 'NN'),
+                    help="where map NN's overview is in a run's video memory, and how much of it")
     a = ap.parse_args()
     root = game_dir()
     dirs = a.dirs or list(map_dirs(root))
@@ -412,6 +469,19 @@ def main():
                           os.path.basename(game), a.match[1], side, c, '%g' % (k / 2), same, n,
                           '' if box is None else ', the others within x %d..%d, y %d..%d' % (
                               box[0], box[2], box[1], box[3])))
+            continue
+        if a.overview:
+            path = find(d, a.overview[1] + '.PMP')
+            if path is None:
+                print('%s\\%s no .PMP' % (os.path.basename(game), a.overview[1]))
+                continue
+            m = read_fin(unpacked(find(d, a.overview[1] + '.FIN')))
+            pic = overview(m, read_pmp(unpacked(path))[1], game)
+            n, same, x, y, box = match_overview(pic, open(a.overview[0], 'rb').read())
+            print('%s\\%s overview at x %d, y %d: %d of %d pixels equal%s' % (
+                os.path.basename(game), a.overview[1], x, y, same, n,
+                '' if box is None else ', the others within x %d..%d, y %d..%d of it' % (
+                    box[0], box[2], box[1], box[3])))
             continue
         files = {f.upper(): os.path.join(d, f) for f in os.listdir(d)}
         maps = sorted({os.path.splitext(f)[0] for f in files if f.endswith('.FIN')})
@@ -453,7 +523,12 @@ def main():
                     data = unpacked(files[nn + '.PMP'])
                     p = read_pmp(data)
                     same.append(write_pmp(p) == data)
-                    parts.append('.PMP %s' % p['name'].rstrip(b'\0').decode('latin-1'))
+                    parts.append('.PMP %s' % p[0].rstrip(b'\0').decode('latin-1'))
+                    if (p[1]['w'], p[1]['h']) != (2 * m['w'] + 4, 2 * m['h'] + 4):
+                        problems.append('.PMP of %dx%d' % (p[1]['w'], p[1]['h']))
+                    if a.png:
+                        to_png(os.path.join(a.png, '%s_%s_overview.png' % (os.path.basename(game), nn)),
+                               game, overview(m, p[1], game))
             except (ValueError, KeyError) as e:
                 print('%s\\%-8s %s' % (rel, nn, e))
                 bad += 1
@@ -464,7 +539,7 @@ def main():
                 rel, nn, ', '.join(parts),
                 'written back identical' if ok else 'WRITTEN BACK OTHERWISE',
                 ''.join('; ' + q for q in sorted(set(problems)))))
-    if not a.match:
+    if not a.match and not a.overview:
         print('%d maps, %d not read or not written back' % (total, bad))
     return 1 if bad else 0
 

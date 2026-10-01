@@ -404,6 +404,12 @@ name T249A:008A timer_keys
 ; when the function chosen at +1Bh is 9: fire held over an empty square,
 ; left held while fire is let go (the change of phase; seen with -watch
 ; on F27EE:26CF, the function goes back to 1 when left is let go first).
+; The other directions there (T0D36:147A, the direction's bits 1, 2, 4, 8
+; against the cursor's +1Ch): 8, right, is function 3 and gives state 3
+; with 4 at +18h, on which T0708:21F5 calls draw_overview; 2, down, is
+; function 2, which showed the status screen (runs of the first map: the
+; save run's keys with right or down for left; shots at 55 s); 1, up,
+; showed nothing on an empty square (function 4 or 0 by +1Ch, not read).
 ; T11FD:0004 (player, number) shows a message of the table at F2789:0008
 ; (records of 18h bytes: 0Ch QUIT THE GAME, 28h SAVE ABORTED, 29h GAME
 ; SAVED, 2Ah GAME NOT SAVED, 2Bh GAME NOT LOADED; -1 clears, presumably).
@@ -427,7 +433,8 @@ name T0F3E:007C load_shp
 ; (27 records of 44h bytes) and GROUND.DAT to F27EE:0751 (records of 6
 ; bytes) with load_file when a map starts, over the same bytes in the
 ; program's own data (ISLE's files, checked); AMOK.DAT goes to F27EE:24E8
-; the same way (not looked into). tools/datfiles.py has the fields, as
+; the same way (24h bytes: the buildings' ground values by owner, colours,
+; the overview's dots). tools/datfiles.py has the fields, as
 ; read from the routines below and seen with -rwatch over both tables in
 ; a battle against the computer (HANDOFF.md).
 ; T169E:000E (number, type, player, square): fills a unit's record
@@ -635,6 +642,34 @@ name T0F3E:0C65 draw_window
 ; rows of 2, 4 and 6 bytes through the latches, then 32 bytes at the
 ; edges with the planes chosen by the map mask (384 pixels in all).
 name T2625:0002 draw_hexagon
+; the map's overview, T0E9B:0931 (player, x, y, entry far): the entry is
+; the map's .PMP from its fifth byte on, a library's 'U' entry of 2 pixels
+; a square and 2 around, drawn by draw_entry with base 70h; then for each
+; unit record without 8000h, 4000h or 2 in its +4 and without 2 in its +6
+; T0E9B:087A (x, y, colour) at x + 2 * column + 2, y + 2 * row + 2 (the
+; unit's square by the window, +0Bh or +0Dh): four pixels by put_pixel,
+; the colour, +1 right and below, +2 at the fourth. The colour is AMOK's
+; +22h by the player (bit 0 of the unit's +4), or +20h for a unit with
+; 200h in its +4 when T0D36:00F5 says it is the window's player's. A run
+; (right with fire on an empty square) had the picture and nine dots in
+; video memory at x 59, y 78 as tools/mapfiles.py --overview draws them;
+; a frame around a part of it is drawn by other code (not read).
+; T2503:0006: the pixel DATA:00D8, 00DA (x, y) in the colour DATA:00D6
+; (the callers set them through the far pointer DATA:0092); T23DC:000A
+; gives the address and the plane's mask in CH (not read).
+; (not mapped) name T0E9B:0931 draw_overview
+name T0F3E:0892 overview_dot
+name T2649:0006 put_pixel
+; T1479:0DC5 (player): the status screen (ROUND, LEVEL, MODE, HIGH,
+; ACTUAL; UNIT, FACTORY, DEPOT for ONE, TWO and MAP; TURN, LIMIT: a run,
+; down with fire on an empty square). The three counts of a player are
+; F27EE:243E +2, +3, +4 (17h bytes a player), drawn at y 5Ah, 66h, 72h in
+; AMOK's colours +9 and +0Ah; +3 counts the buildings of ground flag 400h
+; and +4 those of 100h (load_fin, and T0408:16B3 when one changes its
+; owner): factories and depots by the screen's rows. The rest of the
+; screen is not read. On ISLE's first map UNIT was 6, 6 and 12 though the
+; .FIN has 5 units a player (not looked into).
+name T154F:0DBB draw_status
 ; T0D36:1592 (n): puts back the interrupt handlers (T2354:056F, 005E),
 ; prints message n of F273B (1 not enough memory, 2 cannot load file,
 ; 3 internal) and exits with -1 (read from the code, not run)

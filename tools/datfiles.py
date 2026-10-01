@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """Battle Isle's tables of unit types, ground and maps (UNIT.DAT,
-GROUND.DAT, CODES.DAT): read them, write them back, show them.
+GROUND.DAT, CODES.DAT, AMOK.DAT): read them, write them back, show them.
 
     datfiles.py [GAMEDIR ...] [--ground] [--codes] [--raw]
 
 Without GAMEDIR the folder of each game in the game's folder (ISLE,
 DESERT, MOON) is taken.  Per folder: UNIT.DAT's types, one line each,
-then one line for GROUND.DAT (its records by building flag and owner)
-and one for CODES.DAT, and whether each file, parsed and written back,
-gives the (unpacked) file's bytes.  --ground prints GROUND.DAT's
+then one line for GROUND.DAT (its records by building flag and owner),
+one for CODES.DAT and one for AMOK.DAT, and whether each file, parsed
+and written back, gives the (unpacked) file's bytes.  --ground prints GROUND.DAT's
 records, one line each, --codes CODES.DAT's; --raw adds a unit type's
 bytes that have no column, in hex.
 
-All three files are packed (see tpwmfiles.py).  BATTLE.EXE's T0708 loads them
+The files are packed (see tpwmfiles.py; AMOK.DAT only in MOON).  BATTLE.EXE's T0708 loads them
 with load_file when a map starts (seen with -dos), UNIT.DAT to
 F27EE:001F and GROUND.DAT to F27EE:0751, over the same tables in the
 program's own data: BATTLE.EXE holds ISLE's two files byte for byte
@@ -108,7 +108,9 @@ at F27EE:0751 has room for up to the next variable; 150 in MOON), the
 ground values of a map's squares:
 
     +0 flags      a word: 40h, 100h, 400h a building of one of three
-                  kinds and 1, 2 its owner (mapfiles.py); 4000h: an air
+                  kinds (the headquarters, a depot, a factory by the
+                  status screen's words: AMOK.DAT below) and 1, 2 its
+                  owner (mapfiles.py); 4000h: an air
                   unit (class 10h) cannot be set there (T122D:14DD);
                   8000h, 80h, 200h, 2000h, 1000h, 800h, 20h, 10h, 8, 4
                   are tested or stored here and there (not read further)
@@ -141,6 +143,60 @@ game; after_map loads it again):
     +8 last       bit 0: after_map sets bit 20h of F27EE:250C, which
                   plays the ending (HANDOFF.md)
     +9            0 in all records; no reader found in the code
+
+AMOK.DAT: 24h bytes, loaded to F27EE:24E8 when a map starts: ground
+values and colours the program has no constants for:
+
+    +00 factory   three GROUND.DAT indexes, by owner 0, 1, 2: the ground
+                  a building's square gets when the building changes its
+                  owner (T0408:16B3; of a building record with flag 8 in
+                  its +19h).  In all three games they are the records
+                  with flag 400h and that owner.  The player's count of
+                  them (F27EE:243E +3, 17h bytes a player) is the status
+                  screen's FACTORY, its second row (T1479:0DC5
+                  draw_status, as read; the screen seen in a run of
+                  ISLE's first map, which has none: all 0)
+    +03 depot     the same for flag 10h of the building record: the
+                  ground records with flag 100h; the count (+4) is the
+                  status screen's DEPOT
+    +06 hq        the same for flag 4, owners 0 and 1: the records with
+                  flag 40h (no count: the headquarters, of which every
+                  map has one a player, mapfiles.py)
+    +08 steps     the count a square's record (F27EE:2472, 7 bytes, four
+                  of them) starts from when T0408:2415 puts a square
+                  down for a change; T0408:0C86 counts it down, draws a
+                  step (T0408:25C8) while it is below this value and
+                  stores the square's new bytes after 0: the steps of
+                  an animation on the square (the explosion, presumably)
+    +09 colours   15 bytes, colours of texts and boxes: +09, +0A the
+                  status screen's counts of player 0 and 1 (seen: red
+                  and yellow, as the units); +0B, +0D texts (the last
+                  argument of T164D:0140; +0D most of them); +0E, +0F,
+                  +10 set before T2482:0004 (a filled box, presumably:
+                  T1479:0004's, show_message's, the building screens');
+                  +11, +12 T1479:01AF's two colours for T24BA:0008 and
+                  T2536:0004 (a box's edges, presumably); +13, +14
+                  arguments of T164D:028D in T0708:2DC0.  +0C and
+                  +15..+17 have no reader in the code as far as read.
+                  Not looked at on the screen but +09, +0A
+    +18 site      four ground values T0408:18E8 (a unit's order 0Bh)
+                  gives a square and three beside it (F27EE:41A2, set by
+                  T0E9B:17D1) when all four have ground of flag 8000h
+                  and no unit; the unit's +0Ah is one less then (the
+                  pioneers' 2, above): a building site, presumably
+    +1C built     four ground values for the same squares at order 0Dh
+                  (T0408:19BF; T0B70:00E9 gives that order on a square
+                  with the site's first value while there are fewer
+                  than 10 depot records): a depot record is made
+                  (T169E:0324), the player's depots are one more, and
+                  the first square gets +03 or +04 by the player, so
+                  +1C itself is never shown
+    +20 dots_on   two bytes by player, and
+    +22 dots      two bytes by player: the colour of a unit's dot in the
+                  map's overview (T0E9B:0931 draw_overview, mapfiles.py;
+                  seen: +22).  +20 is taken for a unit with flag 200h in
+                  its +4 when T0D36:00F5 says the unit is the window's
+                  player's (what the flag is: not read)
 
 MOON's files are read here as BATTLE.EXE reads ISLE's; MOON.EXE is not
 compared.
@@ -177,6 +233,12 @@ CODE_FIELDS = (('code', 0, '5s'), ('b5', 5, 'B'), ('players', 6, 'B'), ('step', 
                ('last', 8, 'B'), ('b9', 9, 'B'))
 CODE_LETTER = 0x30                      # a code's bytes are its letters less this
 BUILDING_FLAGS = (0x40, 0x400, 0x100)
+AMOK_REC = 0x24
+AMOK_FIELDS = (('factory', 0x00, '3s'), ('depot', 0x03, '3s'), ('hq', 0x06, '2s'), ('steps', 0x08, 'B'),
+               ('colours', 0x09, '15s'), ('site', 0x18, '4s'), ('built', 0x1C, '4s'),
+               ('dots_on', 0x20, '2s'), ('dots', 0x22, '2s'))
+# the ground flag each of AMOK.DAT's building values should have
+AMOK_BUILDINGS = (('factory', 0x400), ('depot', 0x100), ('hq', 0x40))
 
 
 def unpacked(path):
@@ -221,6 +283,33 @@ def read_codes(data):
 
 def write_codes(recs):
     return write_records(recs, CODE_REC, CODE_FIELDS)
+
+
+def read_amok(data):
+    if len(data) != AMOK_REC:
+        raise ValueError('%d bytes, not %d' % (len(data), AMOK_REC))
+    return read_records(data, AMOK_REC, AMOK_FIELDS)
+
+
+def write_amok(recs):
+    return write_records(recs, AMOK_REC, AMOK_FIELDS)
+
+
+def amok_summary(a, ground):
+    """the line for AMOK.DAT: its ground values against GROUND.DAT"""
+    parts = []
+    for name, flag in AMOK_BUILDINGS:
+        ok = all(g < len(ground) and ground[g]['flags'] & flag and owner(ground[g]['flags']) == o
+                 for o, g in enumerate(a[name]))
+        parts.append('%s %s%s' % (name, '/'.join('%02X' % g for g in a[name]),
+                                  '' if ok else ' (NOT ground of flag %Xh by owner)' % flag))
+    parts.append('steps %d' % a['steps'])
+    parts.append('colours %s' % ' '.join('%02X' % c for c in a['colours']))
+    parts.append('site %s' % ' '.join('%02X' % g for g in a['site']))
+    parts.append('built %s' % ' '.join('%02X' % g for g in a['built']))
+    parts.append('dots %s, %s' % ('/'.join('%02X' % c for c in a['dots_on']),
+                                  '/'.join('%02X' % c for c in a['dots'])))
+    return ', '.join(parts)
 
 
 def code_text(code):
@@ -302,9 +391,11 @@ def main():
     total = bad = 0
     for d in a.dirs or list(game_dirs(root)):
         rel = d if a.dirs else os.path.relpath(d, root)
+        ground = []
         for name, read, write in (('UNIT.DAT', read_units, write_units),
                                   ('GROUND.DAT', read_ground, write_ground),
-                                  ('CODES.DAT', read_codes, write_codes)):
+                                  ('CODES.DAT', read_codes, write_codes),
+                                  ('AMOK.DAT', read_amok, write_amok)):
             total += 1
             try:
                 data = unpacked(find(d, name))
@@ -325,7 +416,10 @@ def main():
                         print('%2d %s +5 %d players %d step %d last %d +9 %d' % (
                             n, code_text(r['code']), r['b5'], r['players'], r['step'], r['last'], r['b9']))
                 line = codes_summary(recs)
+            elif name == 'AMOK.DAT':
+                line = amok_summary(recs[0], ground)
             else:
+                ground = recs
                 if a.ground:
                     for n, r in enumerate(recs):
                         print('%02X flags %04X units %02X cost %3d %3d scene %d' % (

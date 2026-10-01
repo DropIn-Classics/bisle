@@ -44,13 +44,14 @@ games, each its own folder mounted as C: and started there:
 | `DESERT/DESERT.EXE` | data disk 1's starter (2 KB, not Borland): names `DESERT.EX2`, `C:\BLUEBYTE\BI1D1\...`, `MAP\NN.HI`, `NN.DAT` (strings only; what it does is not checked) |
 | `DESERT/DESERT.EX2` | data disk 1's game: BATTLE.EXE's code byte for byte, the same relocations; 3 bytes of far data differ (F2789, F27EE), the file ends before the stack |
 | `MOON/MOON.EXE` | data disk 2's game (Borland C++ with other encodings than BATTLE.EXE's, linked by TLINK 5.0, 4585 relocations, 96 code segments as BATTLE.EXE but sized and laid out otherwise; names `MAPINFO.DAT`, `MAP02.DAT`, `MAP04.DAT`, `HQ.PAL`, `TOT.PAL`, `END.PAL`/`.SND` besides BATTLE.EXE's files) |
-| `MAP/NN.FIN`, `.SHP`, `.COM`, `.PMP` | per map, all packed: the map, what its buildings hold, data for the computer player, a picture-like file not decoded (`tools/mapfiles.py`); MOON has no `.PMP` |
+| `MAP/NN.FIN`, `.SHP`, `.COM`, `.PMP` | per map, all packed: the map, what its buildings hold, data for the computer player, the picture of the map's overview (`tools/mapfiles.py`); MOON has no `.PMP` |
 | `LIB/*.LIB`, `LIB/*.DAT` | graphics libraries: sprites of units, terrain, cursor, frame, fonts, fight scenes (`tools/libfiles.py`); a `.DAT` gives the order of a library's entries |
 | `*.IFF`, `*.LBM`, `*.PAL`, `NN.PAL` | pictures and palettes by their names; not looked at |
 | `*.SND`, `*.PND`, `*.FXX`, `*.PXX` | sound or animation data by their names; not looked at |
 | `UNIT.DAT`, `GROUND.DAT` | the tables of unit types and ground, packed (`tools/datfiles.py`) |
 | `CODES.DAT` | the maps' codes and order, packed (`tools/datfiles.py`) |
-| other `*.DAT`, `*.TXT` | tables and texts (`AMOK.DAT`, `CHAR6.DAT`, `BB.DAT`, `GAME.TXT`, `TITEL.TXT`; MOON's `MAPINFO.DAT`, `MAP02.DAT`, `MAP04.DAT`; DESERT's `UNITU.DAT`, `UNITP.DAT`, which begin INFO DEPO as a .PMP begins INFO ILBM); not looked at |
+| `AMOK.DAT` | the buildings' ground values, colours (`tools/datfiles.py`); packed only in MOON |
+| other `*.DAT`, `*.TXT` | tables and texts (`CHAR6.DAT`, `BB.DAT`, `GAME.TXT`, `TITEL.TXT`; MOON's `MAPINFO.DAT`, `MAP02.DAT`, `MAP04.DAT`; DESERT's `UNITU.DAT`, `UNITP.DAT`, which begin INFO DEPO as a .PMP begins INFO ILBM); not looked at |
 | `*.pdf`, `goggame-*` | GOG's manuals and metadata |
 
 ## What was learned
@@ -365,11 +366,8 @@ games, each its own folder mounted as C: and started there:
   index, two bytes, seven unit types). ISLE's 11.SHP ends 4 bytes into
   its last record. The .COM (27 records of 6 bytes; ISLE's 16..31) is
   loaded only with F27EE:250C bit 400h: in the run against the computer
-  (map 16) it was. The .PMP ("INFO", "ILBM", W = 2w+4 by H = 2h+4
-  bytes, a name: M00.. in ISLE, CLOCK, LOSAG, .. in DESERT) goes into a
-  buffer that nothing but the unpacking read in a run to the first map
-  and 25 s on it (-rwatch); its bytes are no picture of the .FIN's
-  ground square by square.
+  (map 16) it was. The .PMP (W = 2w+4 by H = 2h+4 pixels, a name: M00..
+  in ISLE, CLOCK, LOSAG, .. in DESERT) is the map's overview (below).
 - `tools/datfiles.py`: UNIT.DAT (27 unit types of 44h bytes) and
   GROUND.DAT (ground records of 6 bytes; 110 in ISLE and DESERT, 150 in
   MOON) of the three games, written back identical. T0708 loads them to
@@ -410,19 +408,48 @@ games, each its own folder mounted as C: and started there:
   number is the map (F27EE:2523). +5 (2) and +9 (0) have no reader in
   the code as far as read. All read from the code; no run made for it
   (the CONRA run of earlier steps went this way).
-- AMOK.DAT (36 bytes, packed only in MOON; loaded to F27EE:24E8), its
-  first 8 bytes read, not in a tool yet: ground values. When a building
-  changes its owner (T0408, around T0408:16B3, as read) the square gets
-  +0 or +1 (player 0, 1) for a building record with flag 8 in its +19h,
-  +3 or +4 with flag 10h, +6 or +7 with flag 4. In all three games
-  those bytes are GROUND.DAT records with the flags 0E0Ch, 0E09h, 0E0Ah
-  (+0..+2: the 400h building of owner 0, 1, 2), 098Ch, 0989h, 098Ah
-  (+3..+5: the 100h building) and 006Ch, 0069h (+6, +7: the 40h
-  building, the headquarters): so ground flag 4 is owner 0, and a
-  building record's flag 8 goes with the 400h kind, 10h with 100h, 4
-  with the headquarters. +8 is 6 (compared in T0408:0CA5); +9..+17h
-  are set before texts are drawn (colours, presumably); +18h..+23h are
-  indexed tables (T0408:197C, T0408:1A27, T0E9B:09D6), not read.
+- AMOK.DAT (`tools/datfiles.py`; 36 bytes, packed only in MOON; loaded
+  to F27EE:24E8), all read from the code: values the program has no
+  constants for. +0..+7 the ground a building's square gets when the
+  building changes its owner (T0408:16B3): by owner 0, 1, 2 for a
+  building record with flag 8 in its +19h (in all three games the
+  GROUND.DAT records of flag 400h and that owner), the same for flag 10h
+  (ground flag 100h), and by owner 0, 1 for flag 4 (ground flag 40h);
+  the tool checks that. +8 (6) the steps of an animation on a square
+  (T0408:0C86 counts a square's record down from it; the explosion,
+  presumably). +9..+17h colours of texts and boxes (+9, +0Ah the status
+  screen's counts of the two players: seen; the others as read, +0Ch and
+  +15h..+17h without a reader). +18h..+1Bh four ground values a unit's
+  order 0Bh gives four squares of ground flag 8000h (a building site,
+  presumably), +1Ch..+1Fh those of order 0Dh, with which a depot record
+  is made and the first square gets +3 or +4: the pioneers build a
+  depot so, presumably (read, not run). +20h..+23h the colours of the
+  units' dots in the overview (next item).
+- The .PMP is the map's overview, and what the cursor's directions do
+  with fire on an empty square (the save run's keys with another
+  direction for left: 50 space+, 50.6 DIR+, 51.5 space-, 52 DIR-; shots
+  at 55 s): right shows the overview in the player's window, down a
+  status screen, up nothing (left asks for the change of phase, above).
+  The .PMP is a library of one entry ("INFOILBM" its label), a byte a
+  pixel, 2 pixels a square and 2 around; `draw_overview` (T0E9B:0931)
+  draws it with colour base 70h in the middle of the window and a dot
+  of four pixels for each unit (AMOK's +22h by player; no dot for the
+  types shown to their own player only). `mapfiles.py --png` writes the
+  68 overviews, `--overview VRAM NN` compares: in the run the picture
+  with its nine dots was in video memory at x 59, y 78 but for 160
+  pixels, a frame around a part of it (the part the window shows,
+  presumably; not read). All 68 .PMP files are written back identical
+  as libraries. MOON.EXE has overview_dot and put_pixel too (carried),
+  but its own routine around them: MOON has no .PMP (not read).
+- The status screen (`draw_status`, T1479:0DC5; the run with down):
+  ROUND, LEVEL, MODE, HIGH, ACTUAL; UNIT, FACTORY, DEPOT for ONE, TWO and
+  MAP; TURN, LIMIT. Its three counts a player are F27EE:243E +2, +3, +4
+  (17h bytes a player); +3 counts the buildings of ground flag 400h and
+  +4 those of 100h (load_fin, T0408:16B3), so by the screen's rows 400h
+  is a factory and 100h a depot (40h, of which each player has one, the
+  headquarters). On ISLE's first map the screen showed 6, 6 and 12
+  units; its .FIN has 5 a player (the one in each headquarters'
+  record, presumably; not looked into) and no factory or depot.
 - The maps drawn (`tools/mapfiles.py --png DIR`, all 103): `draw_window`
   (T0E9B:0A9B) draws a player's window column by column, a square 24x24
   at x = 16 * column and y = 24 * row, 12 further down in the odd
@@ -474,12 +501,13 @@ games, each its own folder mounted as C: and started there:
    palettes, the pictures, the libraries, the maps and the tables of
    unit types and ground are done (`tpwmfiles.py --out build/unpacked`
    gives the unpacked files), and the maps are drawn as a run shows them
-   (`mapfiles.py --png`), CODES.DAT is read; next the other tables and
-   texts (`AMOK.DAT` into datfiles.py: its first 8 bytes are read, see
-   above, the rest not; `CHAR6.DAT`, `GAME.TXT`), then the rest of the
-   screen: the cursor,
-   the frame's texts, what the windows show of a map (scrolling, the
-   units' directions, a unit hidden from the other player).
+   (`mapfiles.py --png`), CODES.DAT and AMOK.DAT are read, the .PMP is
+   the map's overview; next the texts and what draws them (`CHAR6.DAT`,
+   `GAME.TXT`, `TITEL.TXT`; T164D:0140 and T164D:01DB draw a text and a
+   number, as far as seen), with them the status screen in full, then
+   the rest of the screen: the cursor, the overview's frame, the
+   frame's texts, what the windows show of a map (scrolling, the units'
+   directions, a unit hidden from the other player).
 4. The port: `symmap.py`, then the program over `rmem.h` routine by
    routine, compared with the runner.
 5. Later: the AdLib sound refined (`-oplwav` against the game in GOG's
@@ -527,12 +555,14 @@ For the port (behaviour):
    without a .DAT (its PART and UNIT are taken in the library's order:
    seen).
 
-9. The maps (mapfiles.py): which building kind (ground flag 400h,
-   100h, 40h; the tables F27EE:2780, 259C, 24B0, and the .SHP's kind 3,
-   F27EE:0B64) is which; the .SHP's bytes +3, +4 and its 27 bits; the
-   .COM's records and why the loader swaps their bytes 2 and 3; whether owner/player 0 is the player of
-   the arrow keys; what reads the .PMP and what its bytes are; MOON.EXE's
-   loader (MOON's 16.FIN has a two-square unit without its second half).
+9. The maps (mapfiles.py): the .SHP's kind 3 (F27EE:0B64), its bytes
+   +3, +4 and its 27 bits; the .COM's records and why the loader swaps
+   their bytes 2 and 3; whether owner/player 0 is the player of the
+   arrow keys (the status screen's ONE is red, as player 0's dots);
+   MOON.EXE's loader (MOON's 16.FIN has a two-square unit without its
+   second half) and its overview without a .PMP; the overview's frame
+   and cursor; the unit flag 200h (+4) that gives a dot AMOK's +20h
+   colour; why the status screen counts 6 units where the .FIN has 5.
 
 10. The tables (datfiles.py): the fight's formula (fight_reckon,
     T2190:000D: how the counts, armour, hit values, the units' +1, the
@@ -544,7 +574,8 @@ For the port (behaviour):
     ground's flags besides the buildings' and 4000h; the tables as the
     game shows them on its screens (not compared); MOON.EXE's reading of
     its UNIT.DAT and GROUND.DAT (MOON's masks differ, and one type has a
-    flag 8 in +0Eh); AMOK.DAT (loaded to F27EE:24E8).
+    flag 8 in +0Eh); AMOK.DAT's colours on the screen, and its building
+    site and depot (orders 0Bh and 0Dh) in a run.
 
 For understanding the programs:
 
