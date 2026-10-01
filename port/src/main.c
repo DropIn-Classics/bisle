@@ -17,6 +17,10 @@
  * headless build shows it only in a run scripted with keys (DK_KEYS,
  * plat_null.c) and copies without asking otherwise.
  *
+ * Then the setup screen (the kit's launcher.h; this file gives it one page
+ * of items and draws nothing): start, full screen, the original's /m, and
+ * in a release build whether to look for newer releases (update.h).
+ *
  * Then the game's main program, ISLE/BATTLE.EXE, is loaded from the
  * player's file into a megabyte of memory as DOS loaded it, and the C of
  * this port runs over that memory (bi.h, battle.c); /s and /m are the
@@ -36,10 +40,14 @@
 #include "launcher.h"
 #include "platform.h"
 #include "sys.h"
+#include "update.h"
 #include "bi.h"
 
 #ifndef PORT_VERSION
 #define PORT_VERSION ""
+#endif
+#ifndef PORT_UPDATE_URL
+#define PORT_UPDATE_URL ""
 #endif
 
 static const GogRelease release = {
@@ -59,6 +67,81 @@ static const GogRelease release = {
 static const char *const old_files[] = { "game", NULL };
 
 static const LauncherApp app = { "Battle Isle", "battle-isle", PORT_VERSION };
+
+/* ---- the setup screen (launcher.h; doskit/docs/LAUNCHER.md) ---- */
+
+enum { ACT_START = 1, ACT_PAGE };
+
+static const char *const no_yes[] = { "no", "yes", NULL };
+static const char *const off_on[] = { "off", "on", NULL };
+
+static int set_fullscreen, set_m, set_updates;
+static UpdateInfo newer;
+static char newer_label[64];
+
+static LauncherItem game_items[] = {
+    { LI_ACTION, "Start the game", NULL, NULL, NULL, ACT_START, NULL },
+    { LI_HEAD, "Picture", NULL, NULL, NULL, 0, NULL },
+    { LI_CHOICE, "Full screen", "fullscreen", no_yes, &set_fullscreen, 0,
+      "Alt+Enter changes it while the game runs." },
+    { LI_HEAD, "The game", NULL, NULL, NULL, 0, NULL },
+    { LI_CHOICE, "Switch /m", "m", off_on, &set_m, 0,
+      "The original's /m: the map in its other palette." },
+    { LI_HEAD, "This port", NULL, NULL, NULL, 0, NULL },
+    { LI_CHOICE, "Look for new versions", NULL, no_yes, &set_updates, 0,
+      "One small file from GitHub, at most once a day; nothing is sent." },
+    /* the line of a newer release: counted only when there is one */
+    { LI_ACTION, newer_label, NULL, NULL, NULL, ACT_PAGE, "Opens the release's page in the browser." },
+};
+
+#define GAME_ITEMS ((int)(sizeof game_items / sizeof game_items[0]) - 1)
+
+static LauncherPage pages[] = {
+    { "Game", game_items, GAME_ITEMS },
+};
+
+static void setting_changed(const LauncherItem *item)
+{
+    if (item->value == &set_fullscreen)
+        plat_set_fullscreen(set_fullscreen);
+    else if (item->value == &set_updates)
+        update_set_consent(set_updates);
+}
+
+/* The setup screen until the game is started: 1, or 0 to quit.  The
+ * settings are kept in the data folder's battle-isle.cfg; the answer
+ * about new versions is update.h's (not asked: no until the player says
+ * yes).  A newer release known at the start (update.h: fetched in the
+ * background, so one found by this start's fetch shows at the next) gets
+ * a line that opens its page. */
+static int setup(int *m)
+{
+    char data[SYS_PATH], cfg[SYS_PATH];
+    int r;
+
+    sys_data_dir(data, sizeof data);
+    sys_join(cfg, sizeof cfg, data, "battle-isle.cfg");
+    set_fullscreen = plat_fullscreen();
+    launcher_load(cfg, pages, 1);
+    plat_set_fullscreen(set_fullscreen);
+    set_updates = update_consent() > 0;
+    for (;;) {
+        update_start(PORT_VERSION, PORT_UPDATE_URL);
+        pages[0].count = GAME_ITEMS;
+        if (update_poll(&newer)) {
+            snprintf(newer_label, sizeof newer_label, "%.20s is out: its page", newer.version);
+            pages[0].count = GAME_ITEMS + 1;
+        }
+        r = launcher_run(&app, NULL, pages, 1, setting_changed);
+        if (r != ACT_PAGE)
+            break;
+        update_open(newer.page);
+    }
+    set_fullscreen = plat_fullscreen();
+    launcher_save(cfg, "battle-isle: the setup screen's settings", pages, 1);
+    *m = set_m;
+    return r == ACT_START;
+}
 
 /* the game's files: found, or from the GOG release (its CD image
  * unpacked, its installed folder copied, or its Windows installer
@@ -159,6 +242,18 @@ int main(int argc, char **argv)
     if (!get_game(given, gog, game, sizeof game) || !load_program(game)) {
         plat_shutdown();
         return 1;
+    }
+    /* the setup screen: in a window; headless only in a run scripted with
+     * keys that is not a comparison */
+    if (plat_has_window() || (getenv("DK_KEYS") && !getenv("BI_BREAK"))) {
+        int m = 0;
+
+        if (!setup(&m)) {
+            plat_shutdown();
+            return 0;
+        }
+        if (m && nargs < 8)
+            args[nargs++] = "/m";
     }
     battle_main(nargs, args);
     plat_shutdown();

@@ -65,11 +65,11 @@ game.
 New versions
 ------------
 
-On the first start the setup screen asks whether battle-isle may look for
-new versions; the answer can be changed there later (F2). With a yes it
-fetches one small file from GitHub that names this port's newest
-release, at most once a day, and sends nothing. When a newer version is
-out, the setup screen says so, and a key opens its page in the browser.
+The setup screen has the line "Look for new versions"; it is off until
+you switch it on. With a yes battle-isle fetches one small file from
+GitHub that names this port's newest release, at most once a day, and
+sends nothing. When a newer version is out, the setup screen gets a
+line that says so, and Enter on it opens its page in the browser.
 Download the package there and put its folder in place of this one:
 the settings, saves and the game's files stay in the data folder.
 

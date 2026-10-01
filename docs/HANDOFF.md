@@ -1641,9 +1641,15 @@ compared):
 
 0. The port: all of BATTLE.EXE the game calls is translated and
    compared with the runner as port/README.md says, the computer player
-   last (T178C..T1ED2). Next for the port: the setup screen before the
-   game (doskit/docs/LAUNCHER.md: pages and items through launcher.h,
-   nothing drawn by the port), the builds on macOS and Linux, the
+   last (T178C..T1ED2), and the kit's setup screen is shown before the
+   game (one page; the players' keys are not on it yet: they would go
+   through frame_set_keymap, with the keys the two tables at
+   keys0_table and keys1_table name as what the game gets; and
+   doskit/docs/RELEASE.md's point 7 wants the question about newer
+   releases asked once at the first start, which launcher.h has no
+   dialog for: before a release that goes into the kit, with a test,
+   not into a drawing of the port's own). Next for
+   the port: the builds on macOS and Linux, the
    window build looked at and listened to by a person, then the other
    programs: BI.EXE (what it does before BATTLE.EXE), the intros,
    DESERT.EXE and MOON.EXE (their hints are carried over from

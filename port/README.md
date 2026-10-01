@@ -34,7 +34,7 @@ and mouse (the port answers as a PC without them).
 
 | File | The original's | What |
 |---|---|---|
-| `main.c` | - | finds the game's files, loads BATTLE.EXE, starts it |
+| `main.c` | - | finds the game's files, the setup screen's page, loads BATTLE.EXE, starts it |
 | `bi.h` | - | the names, far pointers, what the modules share |
 | `dos.c` | DOS, BIOS, PIT | files, the keyboard, the clock (timer interrupt, retrace) |
 | `timer.c` | T2354 | the timers, the keys, the players' input |
@@ -89,8 +89,15 @@ What the port does otherwise than a PC:
   translated as far as it is reached without them.
 - The original's routines keep scratch values in their code segments;
   the port keeps them in C variables.
-- The template's question about looking for newer releases (update.h) is
-  not asked: it comes back with the setup screen (doskit/docs/LAUNCHER.md).
+- Before the game the kit's setup screen is shown (doskit/docs/LAUNCHER.md:
+  `main.c` gives `launcher_run` one page of items and draws nothing):
+  start, full screen, the original's `/m`, and whether to look for newer
+  releases (update.h). The settings are kept in the data folder's
+  `battle-isle.cfg`. Looking for newer releases is not asked about at the
+  first start: it is off until the player switches it on there (a
+  question of its own would be a dialog the kit does not have). A newer
+  release known when the screen opens gets a line that opens its page.
+  The players' keys cannot be chosen yet.
 
 ## Build and run
 
@@ -265,8 +272,20 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   to 7 and most of the plan's steps. Translated and not reached, so not
   compared: the commands 5 and 7 (units made in a factory), the plan's
   steps 2 and 6, 7.4, 9.2 and 9.3 (a unit that fires from afar), B.7 to
-  B.9, the helper (T1ED2) as a whole and the tasks 9 to 0Eh. The other
-  maps for one player were not compared.
+  B.9, the helper (T1ED2) as a whole and the tasks 9 to 0Eh. The same
+  game of two computers on the maps 17 to 20 (their codes read from the player's CODES.DAT), each compared
+  once, where the map ends by itself (the passes 4196, 3423, 11910 and 14236): the same there
+  too. Those games ran the helper's steps 0 to 7, the plan's steps 9.2,
+  9.3 and B.7 to B.9 and the tasks 0Dh and 0Eh as well. Not reached in
+  any of them: the commands 5 and 7, the plan's steps 2 and 6, the
+  tasks 9 to 0Ch. The maps 21 to 31 were not compared.
+- The setup screen, in the headless build with scripted keys (`DK_KEYS`,
+  the picture through `DK_DUMP`, looked at): the page as the kit draws
+  it; down twice, right, up twice and Enter start the game with `/m`
+  and write `battle-isle.cfg`; started again the screen shows the kept
+  value, and Esc ends the program. Not checked: full screen (no window
+  in that build), a release build's line for a newer release, a
+  controller.
 - The window build was started for 8 s and ran (nothing looked at or
   heard: nobody was there).
 
