@@ -751,6 +751,34 @@ games, each its own folder mounted as C: and started there:
   so the poked end showed EAGLE (record 4) for map 16. Not run: a name
   of fewer than 5 letters over a longer one, a score not above the
   lowest (no question, as read), backspace, a real end of a map.
+- The buildings' screens by keys (`screens.py --building`; this corrects
+  the headquarters item above, which found no route by keys and gave
+  259C for a factory or depot): fire on a building's square with left
+  held opens its screen (BATTLE.hints at draw_building: the first pass
+  with fire sets bit 400h of the cursor's +1Ch on ground of flag 80h,
+  200h or 40h, left is then function 0Ah, state 6 and after it state 2
+  with +18h 0Ah). On ISLE's map 03 (code MARSS: the CONRA keys with m, a,
+  r, s, s; two players, the map up at about 50 s; `mapfiles.py --grid
+  03`) the cursors start at (5, 6) and (17, 6), a square below each
+  headquarters (5, 5) and (17, 5); player 0's depot is at (6, 14), a
+  factory of nobody's at (5, 19). A tapped key (0.15 s) moves the cursor
+  two squares, a key held 0.06 s one (0.03 s: up one, right none); from
+  the third down on the window scrolls and each down is two rows. The
+  keys, each `KEY+` and 0.06 s later `KEY-`, then `space+`, +0.6 `left+`,
+  +1.5 `space-`, +2 `left-`, -ram -vram 5 s later: the headquarters 52
+  up, fire at 54; player 1's with it 52 d, 54 lctrl+, 54.6 x+, 55.5
+  lctrl-, 56 x-; the depot 52..56 down, 57 right, fire at 59; the factory
+  52..59 down, 60 up, fire at 62. All 24160 pixels drawn were in the
+  video memory on both pages in each: the headquarters with seven empty
+  slots (title HQ, the number 20, FREE PART in the numbers' place: text
+  2, added to the tool), the depot (record F27EE:259C, flags 10h, DEPOT
+  15, an R-1 DEMON in slot 0) and the factory (record F27EE:2780, flags
+  0Ah, FACTORY 35, a T-3 SCORPION), the cursor record's +22h 1 in all.
+  The message line below the window (a number and the unit's second
+  name) is not drawn by the tool. Not run: moving among the slots, what
+  fire does there (the loop from T0708:2A4C: not read), a unit with bit
+  400h or 800h (texts 8, 9), +22h 2, HIDE SHOP, how a unit is built or
+  taken out.
 
 ## Next
 
@@ -774,8 +802,10 @@ games, each its own folder mounted as C: and started there:
    (`txtfiles.py`), the status screen is drawn in full
    (`screens.py`: the status screen and the unit's); next in screens.py
    the other screens of SHOP.LIB's window (the callers of
-   draw_shop_window and draw_box in T1479: T1479:0AA6, the buildings'
-   screens, by the texts 03h..09h; the menus, a code typed, LOAD's
+   draw_shop_window and draw_box in T1479: the buildings' screens are
+   drawn as they open, by keys; left there the loop from T0708:2A4C, the
+   choice among the slots, building and taking out a unit, the message
+   line; the menus, a code typed, LOAD's
    messages, the scores with a file and their name are drawn in full
    now), then the rest of the screen: the cursor's entries, the overview's frame, the
    frame's texts, what the windows show of a map (scrolling, the units'

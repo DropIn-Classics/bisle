@@ -67,8 +67,13 @@ as MAP\\00.HI (-put; FIRST, the same table).
 
 --building draws the building's screen (draw_building below) of each
 player whose cursor has the state 2 (+17h) in the run's memory.  Checked
-against a poked run only (HANDOFF.md, the headquarters): all 24160 pixels
-drawn were in the video memory, on both pages.
+against a poked run (HANDOFF.md, the headquarters with a unit) and four
+runs by keys on ISLE's map 03 (the code MARSS; the cursor onto the
+building by keys held 0.06 s, a square each, then fire with left held;
+HANDOFF.md has the keys): player 0's headquarters with empty slots (FREE
+PART), both players' headquarters at once, player 0's depot (an R-1 DEMON
+in slot 0) and a factory of nobody's (a T-3 SCORPION): all 24160 pixels
+drawn for each were in the video memory, on both pages.
 
 The status screen (draw_status, T1479:0DC5, one argument: the player),
 read from the code; x0 is 0 for player 0 and 160 for player 1:
@@ -493,10 +498,13 @@ def draw_building(files, v, clip=None):
       presumably) a bar (LT164D:028D) right of the title, the value
       (record +16h + player) / 7 + 1 of 35 half-pixels wide, and the value
       itself as a number in a cleared box; last the cursor, CURSOR.LIB's
-      entry of +1Bh at the record's +10h, +12h.  Not drawn: units of the
-      other player or that hold others (the texts 2, 8, 9), the other
-      records (+22h 2: a factory or depot, with list_makeable), the loop's
-      later states."""
+      entry of +1Bh at the record's +10h, +12h.  In the numbers' place,
+      filled again (T1479:028E: 70 by 40 in AMOK's +10h): GAME.TXT's text
+      2 (FREE PART) for an empty slot, text 8 or 9 for a unit whose word
+      +4 has bit 400h or 800h (read, not seen in a run).  Not drawn: the
+      records with +22h 2 (with list_makeable; not seen: the
+      headquarters, a depot and a factory all had 1), the loop's later
+      states."""
     s = Screen(files, clip)
     a = files.amok
     x0 = WINDOW * v['player']
@@ -526,10 +534,16 @@ def draw_building(files, v, clip=None):
     if sel <= 0xF0:
         u, t = v['units'][sel], v['type']
         word4 = u[4] | u[5] << 8
-        if v['shown']:
+        if word4 & 0xC00:
+            s.fill(x0 + 0x38, 0x7D, x0 + 0x38 + 0x45, 0x7D + 0x27, a[C_BOX])
+            s.text(x0 + 0x38, 0x7D, 8 if word4 & 0x400 else 9, a[C_TEXT])
+        elif v['shown']:
             unit_numbers(s, a, x0 + 0x38, 0x7D, u, t)
         flag = 1 if word4 & 1 else v['player'] if word4 & 2 else 0
         unit_picture(s, a, x0 + 0x2C, 0x16, t, 0x30 if flag else 0x20)
+    else:
+        s.fill(x0 + 0x38, 0x7D, x0 + 0x38 + 0x45, 0x7D + 0x27, a[C_BOX])
+        s.text(x0 + 0x38, 0x7D, 2, a[C_TEXT])
     if v['kind'] == 1:
         x = x0 + 0x2C
         bar(s, x + 0x7A - 0x2C, 0x0D, a[0x13], a[0x14], 5, v['value'] // 7 + 1, 0x23)

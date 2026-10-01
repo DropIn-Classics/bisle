@@ -637,10 +637,23 @@ name T1479:0130 draw_box
 ; (T1479:030A) and the big picture (T1479:0C93) of the unit in the slot,
 ; for the record's +22h 1 two bars (T164D:028D) and the value (+16h +
 ; player) beside the title, and at the loop's end the cursor on the slot.
+; In the numbers' place T1479:028E (x, y) fills 70 by 40 again and text 2
+; (FREE PART) is drawn for an empty slot, text 8 or 9 for a unit whose
+; word +4 has bit 400h or 800h (these two read, not run).
 ; Drawn by tools/screens.py --building: all 24160 pixels of a poked run
-; (HANDOFF.md, the headquarters) were in the video memory. Not run: units
-; of the other player or that hold others (texts 2, 8, 9), +22h 2 (a
-; factory or depot, list_makeable), the later states.
+; (HANDOFF.md, the headquarters) and of runs by keys on ISLE's map 03
+; (each player's headquarters with empty slots, player 0's depot with a
+; unit, a factory of nobody's with a unit) were in the video memory.
+; By keys (T0D36:0E07..0F3A, 1536, 1403): the first pass with fire held
+; sets bit 400h in the cursor's +1Ch on a square whose ground has flag
+; 80h, 200h or 40h (with F27EE:250E bit 8, HIDE SHOP, only on the
+; player's own: ground flag 4 for player 0, 1 for player 1); left
+; (direction 4) with that bit is function 0Ah and gives state 6 when fire
+; is let go, after which the runs had state 2 with +18h 0Ah (where 6
+; becomes 2 is not read). The record was F27EE:24B0 for the
+; headquarters, 259C + 1Ch * n for the depot (flags +19h 10h, title text
+; 4) and 2780 + 1Ch * n for the factory (flags 0Ah, title text 5), +22h 1
+; in all three. Not run: +22h 2 (list_makeable), the later states.
 ; T1479:0931 (x, y, player, far pointer to the record): the seven slots,
 ; 24 pixels apart in y: SHOP.LIB's entry 4 (base 40h), the unit named by
 ; the record's byte (+7 * player + slot, F0h or less) as UNIT.LIB's entry
