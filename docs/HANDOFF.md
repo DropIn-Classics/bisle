@@ -17,9 +17,10 @@ beyond the segments and a few routines; the port is the template's.
 - `game/` holds the installed GOG folder as it is (no CD image: GOG
   ships the three games as folders for DOSBox); it is not in the
   repository.
-- Not pushed yet when this was written: doskit 1676994 (push doskit
-  first, the project's commits name it) and the project's commits from
-  74fa292 on.
+- Everything is pushed, the kit and the project. The kit is at its
+  merge 2fca87a (the plugin together with what came from the remote:
+  -keyat/-keysat in the runner, the selftest on Windows); check.py says
+  all ok with it, the port's comparisons were not run again.
 - The subagents come from the kit's plugin now (`doskit/agents/`,
   switched on in `.claude/settings.json`, which names `./doskit` as the
   marketplace): `doskit:collector`, `doskit:cmd-digest` (new: runs a
@@ -29,9 +30,7 @@ beyond the segments and a few routines; the port is the template's.
   agents are there from the second on. Not checked: an interactive
   session's question about trusting the marketplace, and two projects
   on one machine each naming their own `doskit/` as the marketplace
-  `doskit` (Claude Code keeps one path for a name). The kit's commit
-  with the plugin and the project's commit that uses it were not
-  pushed when this was written (push doskit first).
+  `doskit` (Claude Code keeps one path for a name).
 - Scratch scripts of the last session are in `build/scratch` (ignored,
   not part of the project; they may be gone): `rd.py A B` prints lines
   of build/BATTLE.ASM with the compiler's table indexing folded
