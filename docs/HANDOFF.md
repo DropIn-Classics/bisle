@@ -650,6 +650,13 @@ games, each its own folder mounted as C: and started there:
   in the video memory pixel for pixel on page 1, and on page 0 but for
   EXIT's rows (not examined); the picture behind and the sphere cursor
   are not drawn, the other menus not seen on a screen.
+  The routines are named in BATTLE.hints (draw_building, draw_slots,
+  draw_bar, draw_menu, edit_text) and carried to DESERT.hints and
+  MOON.hints by xfer.py: in MOON.hints draw_slots, draw_bar, draw_menu
+  and edit_text were looked at in MOON.ASM and are the same routines
+  (the menu records there are at F2850:007D, not 0079: the comments are
+  BATTLE's addresses); draw_building was not mapped, and what MOON does
+  with its building screen is not looked at.
 
 ## Next
 

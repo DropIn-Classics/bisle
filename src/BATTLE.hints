@@ -627,6 +627,45 @@ name T1479:05AF draw_unit_info
 name T1479:0DC5 draw_status
 name T1479:0004 draw_shop_window
 name T1479:0130 draw_box
+; T1479:0AA6 (player, far pointer to the building's record; T0708:29D1,
+; state +17h 2, +18h 9 of the cursor record): the building's screen:
+; draw_shop_window, boxes at 44, 22, 96, 96 and 56, 125, 72, 40 (AMOK's
+; +10h), the seven slots (T1479:0931), the title at 44, 13 (text 3, 5, 4
+; or 6 by the record's +19h bit 4, 8, 10h, else; colour AMOK's +0Bh).
+; T0708:2AF0..2F77 then draws, when the chosen slot (the cursor record's
+; +0Eh) changes: the slots again, the big box cleared, the numbers
+; (T1479:030A) and the big picture (T1479:0C93) of the unit in the slot,
+; for the record's +22h 1 two bars (T164D:028D) and the value (+16h +
+; player) beside the title, and at the loop's end the cursor on the slot.
+; Drawn by tools/screens.py --building: all 24160 pixels of a poked run
+; (HANDOFF.md, the headquarters) were in the video memory. Not run: units
+; of the other player or that hold others (texts 2, 8, 9), +22h 2 (a
+; factory or depot, list_makeable), the later states.
+; T1479:0931 (x, y, player, far pointer to the record): the seven slots,
+; 24 pixels apart in y: SHOP.LIB's entry 4 (base 40h), the unit named by
+; the record's byte (+7 * player + slot, F0h or less) as UNIT.LIB's entry
+; type * 6 + 1, and PATT.LIB's entry 2 (F27EE:0A67) over it when the unit's
+; word +4 has bit 2 or bit 200h and T0D36:00F5 (player, word) is not 0.
+; T164D:028D (x, y, colour, background, height, value, size): a bar of
+; size / 2 pixels in the background colour (not when 0) and value / 2 over
+; it in the colour, height + 1 rows (fill_rect).
+name T1479:0AA6 draw_building
+name T1479:0931 draw_slots
+name T164D:028D draw_bar
+; The menus (T1090, tools/screens.py --menu): F2740:0079 holds the menus'
+; records (6 bytes: item numbers, +5 their count), F2740:00A3 the items
+; (2Eh bytes: a flags word, bit 20h not drawn; texts of 10 bytes from +2,
+; the one chosen by +2Bh). A text is CHAR24.LIB's entries by byte less 3
+; (1 a gap, A is 17, 0..9 are 2..11). T1090:0EDE (menu): draws a menu's
+; texts by draw_text24 at x 100, y 50 + 34 an item. T1090:0F82 (x, y, size,
+; far pointer to a record): the text typed in a field: the record's text from
+; +2 (+2Ah its length, +2Ch the key), a key from DATA:00BE adds a letter (a
+; to z made capitals) up to size, the key set's backspace takes one off, 0Dh
+; ends (returns 2); the text drawn by draw_text24 and CHAR24.LIB's entry 40
+; (F27EE:0ADF + 0A0h) after it. The high score's name, presumably; read, not
+; run.
+name T1090:0EDE draw_menu
+name T1090:0F82 edit_text
 name T2482:0004 fill_rect
 name T24BA:0008 draw_row
 name T2536:0004 draw_column
