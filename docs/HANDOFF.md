@@ -45,8 +45,19 @@ menu's entry (port/README.md; "The port" below).
   and size and its step (2 squares) are `<< scale`. Checked: opened,
   moved down and right, closed by fire, at passes 700 and 730 of the
   first map (scale 2): all memory and video memory the same as the
-  original's. Not checked: scale 1 (a bigger map), player 1's overview,
-  a dot in the other colour (a unit with 200h in +4), a colour index
+  original's. Scale 1 (only map 13 of MOON is that big: 48 by 64; it is
+  started by poking map_number, F2902:416C, to 0Dh at the menu's 29th
+  pass: `POKE="menu_pass@LT1151_058E#29 2D8EC 0D"` for pcmp.py), keys by
+  pass 30..93 (open, frame down and right, close by fire), break at 110:
+  both pages the same, after one change: the frame is the cursor's entry
+  0Bh there, not 6 (T0DA1:146F, now in cursor.c). Map 13 differs from the
+  original in other ways, not looked into: its computer player has begun
+  in the original at pass 60 (F2D2D:11DF.., computer_command and
+  computer_queues; the port's has not), the first parts stored behind the
+  pages (video memory A000:8002..8145, about 2 parts' bytes, the table of
+  pointers the same) and, by pass 200, the unit the original's computer
+  had made (units_made 87h against 88h) and timers one pass apart.
+  Not checked: player 1's overview, a dot in the other colour (a unit with 200h in +4), a colour index
   other than 0 and 1 in MAPINFO.DAT (the original reads its stack for
   index 2), the entry index above 23 (same). The keys of a comparison
   are given by pass (`map_pass@LT070B_13DD=620:space+,...`): by seconds

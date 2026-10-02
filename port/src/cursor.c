@@ -496,7 +496,8 @@ chosen:
     case 3:
         spb(cur, 0x17, 3);
         spb(cur, 0x18, 4);
-        spb(cur, 0x1B, 6);
+        /* the overview's frame: MOON has a smaller one (entry 0Bh) for its scale 1 */
+        spb(cur, 0x1B, bi_prog == BI_MOON && (int16_t)GW(overview_scale) != 2 ? 0x0B : 6);
         break;
     default:
         spb(cur, 0x17, 0);

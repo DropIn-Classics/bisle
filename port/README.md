@@ -79,9 +79,10 @@ and MAP02/04.DAT, scale 2 or 1 by the map's size, a frame, the dots; the
 frame's start and steps follow the scale in `loop_overview`): opened,
 the frame moved down and right, and closed by fire, the port is the
 original's in video memory and all of memory at passes 700 and 730 of the
-first map (scale 2 only: no map of scale 1, a width above 20h or a height
-above 28h, tried; keys given by pass, `map_pass@LT070B_13DD=N:KEY+,..`: by
-seconds they were a pass off). Not in the port for MOON: the
+first map (scale 2) and, for scale 1 (a width above 20h or a height above
+28h: map 13 only, started by a poke of map_number), both pages at pass 110
+of map 13 (the rest of that map differs: handoff); keys given by pass,
+`map_pass@LT070B_13DD=N:KEY+,..`: by seconds they were a pass off. Not in the port for MOON: the
 fights, the statistics, the end of a map; MOON.hints' carried names are
 unchecked beyond what the setup uses (see the handoff). The names MOON.hints lacked for
 the port are its own lines now (`name` lines above the carried block:
