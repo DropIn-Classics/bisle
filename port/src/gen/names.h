@@ -377,7 +377,7 @@
     X(T0D36, same_side, 0x00F5, 0xFFFF, 0xFFFF) \
     X(T0D36, timer_set, 0x0165, 0xFFFF, 0xFFFF) \
     X(T0D36, timer_due, 0x0241, 0xFFFF, 0xFFFF) \
-    X(T0D36, random, 0x05FF, 0xFFFF, 0xFFFF) \
+    X(T0D36, random, 0x05FF, 0xFFFF, 0x05F2) \
     X(T0D36, fatal_error, 0x1592, 0xFFFF, 0x15E4) \
     X(T0E9B, load_shp, 0x007B, 0xFFFF, 0x007C) \
     X(T0E9B, load_fin, 0x02B6, 0xFFFF, 0x02C6) \
@@ -496,7 +496,7 @@
     X(T2482, fill_rect, 0x0004, 0x0004, 0x0004) \
     X(T24B5, store_part, 0x000E, 0xFFFF, 0x000E) \
     X(T24BA, draw_row, 0x0008, 0x0006, 0x0008) \
-    X(T24D8, draw_packed, 0x0008, 0xFFFF, 0xFFFF) \
+    X(T24D8, draw_packed, 0x0008, 0xFFFF, 0x0008) \
     X(T24DF, draw_hexagon, 0x0002, 0xFFFF, 0x0002) \
     X(T2503, put_pixel, 0x0006, 0xFFFF, 0x0006) \
     X(T2506, draw_unit24, 0x000A, 0xFFFF, 0x000A) \
@@ -513,7 +513,6 @@
     X(T258F, plane_widths, 0x0002, 0x000E, 0x0002) \
     X(T259F, flip_page, 0x0004, 0xFFFF, 0x0004) \
     X(T25A6, end_credits, 0x0655, 0xFFFF, 0xFFFF) \
-    X(T261E, draw_entry_unpacked, 0xFFFF, 0xFFFF, 0x0008) \
     X(T2628, file_close, 0x0004, 0x0002, 0x000E) \
     X(T2653, file_size, 0x0000, 0xFFFF, 0x000A) \
     X(T2690, file_open, 0x0004, 0x0002, 0x000E) \
@@ -585,13 +584,13 @@
     X(F27EE, map_width, 0x246E, 0xFFFF, 0x4151) \
     X(F27EE, map_height, 0x2470, 0xFFFF, 0x4153) \
     X(F27EE, explosions, 0x2472, 0xFFFF, 0x410F) \
-    X(F27EE, state_248e, 0x248E, 0xFFFF, 0xFFFF) \
+    X(F27EE, state_248e, 0x248E, 0xFFFF, 0x0D43) \
     X(F27EE, buffer_248f, 0x248F, 0xFFFF, 0x0D44) \
     X(F27EE, buffer_2493, 0x2493, 0xFFFF, 0x0D48) \
     X(F27EE, state_2497, 0x2497, 0xFFFF, 0x0D4C) \
     X(F27EE, key_set, 0x2498, 0xFFFF, 0x0C57) \
     X(F27EE, save_name, 0x249C, 0xFFFF, 0x0C5B) \
-    X(F27EE, hqs, 0x24B0, 0xFFFF, 0x0C6F) \
+    X(F27EE, hqs, 0x24B0, 0xFFFF, 0x2D6F) \
     X(F27EE, amok, 0x24E8, 0xFFFF, 0x412B) \
     X(F27EE, game_flags, 0x250C, 0xFFFF, 0x4155) \
     X(F27EE, menu_flags, 0x250E, 0xFFFF, 0x4157) \
@@ -614,17 +613,17 @@
     X(F27EE, state_2592, 0x2592, 0xFFFF, 0x41DB) \
     X(F27EE, score_best, 0x2593, 0xFFFF, 0x41DC) \
     X(F27EE, score_now, 0x2597, 0xFFFF, 0x41E0) \
-    X(F27EE, depots, 0x259C, 0xFFFF, 0x41E5) \
+    X(F27EE, depots, 0x259C, 0xFFFF, 0x2DA7) \
     X(F27EE, cursors, 0x26B4, 0xFFFF, 0x4243) \
     X(F27EE, fight_record, 0x2716, 0xFFFF, 0x0CD9) \
-    X(F27EE, factories, 0x2780, 0xFFFF, 0xFFFF) \
+    X(F27EE, factories, 0x2780, 0xFFFF, 0x2EBF) \
     X(F27EE, units, 0x2898, 0xFFFF, 0x0D4D) \
     X(F27EE, window_x, 0x4112, 0xFFFF, 0x2FF7) \
     X(F27EE, key_set_copy, 0x4126, 0xFFFF, 0x0C4B) \
     X(F27EE, game_txt, 0x4132, 0xFFFF, 0x0C8F) \
     X(F27EE, types_list, 0x4136, 0xFFFF, 0x0C94) \
     X(F27EE, remove_depth, 0x4151, 0xFFFF, 0x0CAF) \
-    X(F27EE, map0, 0x4152, 0xFFFF, 0xFFFF) \
+    X(F27EE, map0, 0x4152, 0xFFFF, 0x0C8B) \
     X(F27EE, map1, 0x4156, 0xFFFF, 0x0C87) \
     X(F27EE, cursor_kept, 0x415A, 0xFFFF, 0xFFFF) \
     X(F27EE, strength_values, 0x418C, 0xFFFF, 0x0CB2) \
@@ -867,6 +866,15 @@
     X(F0728, intro_vowels, 0xFFFF, 0x0705, 0xFFFF) \
     X(F07D4, intro_effects, 0xFFFF, 0x0000, 0xFFFF) \
     X(T27D5, unpack_mem, 0xFFFF, 0xFFFF, 0x0008) \
+    X(F280C, parts_stored, 0xFFFF, 0xFFFF, 0x0099) \
+    X(F280C, overview_scale, 0xFFFF, 0xFFFF, 0x009B) \
+    X(F280C, overview_data, 0xFFFF, 0xFFFF, 0x009D) \
+    X(F280C, mapinfo_data, 0xFFFF, 0xFFFF, 0x00A1) \
+    X(F280C, name_mapinfo, 0xFFFF, 0xFFFF, 0x00CC) \
+    X(F280C, name_map02, 0xFFFF, 0xFFFF, 0x00D8) \
+    X(F280C, name_map04, 0xFFFF, 0xFFFF, 0x00E2) \
+    X(F2825, name_statmap, 0xFFFF, 0xFFFF, 0x0048) \
+    X(F2825, parts_table, 0xFFFF, 0xFFFF, 0x0050) \
 
 /* X(SEG, name, BATTLE, INTEGA, MOON): the frame of the name segment in each program */
 #define BI_FRAMES(X) \
@@ -947,7 +955,7 @@
     X(T0D36, same_side, BATTLE_T0D36, 0xFFFF, 0xFFFF) \
     X(T0D36, timer_set, BATTLE_T0D36, 0xFFFF, 0xFFFF) \
     X(T0D36, timer_due, BATTLE_T0D36, 0xFFFF, 0xFFFF) \
-    X(T0D36, random, BATTLE_T0D36, 0xFFFF, 0xFFFF) \
+    X(T0D36, random, BATTLE_T0D36, 0xFFFF, MOON_T0DA1) \
     X(T0D36, fatal_error, BATTLE_T0D36, 0xFFFF, MOON_T0DA1) \
     X(T0E9B, load_shp, BATTLE_T0E9B, 0xFFFF, MOON_T0F3E) \
     X(T0E9B, load_fin, BATTLE_T0E9B, 0xFFFF, MOON_T0F3E) \
@@ -1066,7 +1074,7 @@
     X(T2482, fill_rect, BATTLE_T2482, INTEGA_T06E3, MOON_T25C8) \
     X(T24B5, store_part, BATTLE_T24B5, 0xFFFF, MOON_T25FB) \
     X(T24BA, draw_row, BATTLE_T24BA, INTEGA_T06F3, MOON_T2600) \
-    X(T24D8, draw_packed, BATTLE_T24D8, 0xFFFF, 0xFFFF) \
+    X(T24D8, draw_packed, BATTLE_T24D8, 0xFFFF, MOON_T261E) \
     X(T24DF, draw_hexagon, BATTLE_T24DF, 0xFFFF, MOON_T2625) \
     X(T2503, put_pixel, BATTLE_T2503, 0xFFFF, MOON_T2649) \
     X(T2506, draw_unit24, BATTLE_T2506, 0xFFFF, MOON_T264C) \
@@ -1083,7 +1091,6 @@
     X(T258F, plane_widths, BATTLE_T258F, INTEGA_T06CA, MOON_T26D5) \
     X(T259F, flip_page, BATTLE_T259F, 0xFFFF, MOON_T26E5) \
     X(T25A6, end_credits, BATTLE_T25A6, 0xFFFF, 0xFFFF) \
-    X(T261E, draw_entry_unpacked, 0xFFFF, 0xFFFF, MOON_T261E) \
     X(T2628, file_close, BATTLE_T2628, INTEGA_T05CB, MOON_T26FB) \
     X(T2653, file_size, BATTLE_T2653, 0xFFFF, MOON_T2726) \
     X(T2690, file_open, BATTLE_T2690, INTEGA_T0608, MOON_T2763) \
@@ -1155,7 +1162,7 @@
     X(F27EE, map_width, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, map_height, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, explosions, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
-    X(F27EE, state_248e, BATTLE_F27EE, 0xFFFF, 0xFFFF) \
+    X(F27EE, state_248e, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, buffer_248f, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, buffer_2493, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, state_2497, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
@@ -1187,14 +1194,14 @@
     X(F27EE, depots, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, cursors, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, fight_record, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
-    X(F27EE, factories, BATTLE_F27EE, 0xFFFF, 0xFFFF) \
+    X(F27EE, factories, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, units, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, window_x, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, key_set_copy, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, game_txt, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, types_list, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, remove_depth, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
-    X(F27EE, map0, BATTLE_F27EE, 0xFFFF, 0xFFFF) \
+    X(F27EE, map0, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, map1, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, cursor_kept, BATTLE_F27EE, 0xFFFF, 0xFFFF) \
     X(F27EE, strength_values, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
@@ -1437,5 +1444,14 @@
     X(F0728, intro_vowels, 0xFFFF, INTEGA_F0728, 0xFFFF) \
     X(F07D4, intro_effects, 0xFFFF, INTEGA_F07D4, 0xFFFF) \
     X(T27D5, unpack_mem, 0xFFFF, 0xFFFF, MOON_T27D5) \
+    X(F280C, parts_stored, 0xFFFF, 0xFFFF, MOON_F280C) \
+    X(F280C, overview_scale, 0xFFFF, 0xFFFF, MOON_F280C) \
+    X(F280C, overview_data, 0xFFFF, 0xFFFF, MOON_F280C) \
+    X(F280C, mapinfo_data, 0xFFFF, 0xFFFF, MOON_F280C) \
+    X(F280C, name_mapinfo, 0xFFFF, 0xFFFF, MOON_F280C) \
+    X(F280C, name_map02, 0xFFFF, 0xFFFF, MOON_F280C) \
+    X(F280C, name_map04, 0xFFFF, 0xFFFF, MOON_F280C) \
+    X(F2825, name_statmap, 0xFFFF, 0xFFFF, MOON_F2825) \
+    X(F2825, parts_table, 0xFFFF, 0xFFFF, MOON_F2825) \
 
 #endif

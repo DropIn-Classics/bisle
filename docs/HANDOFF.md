@@ -23,6 +23,45 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- MOON's first map (2026-10-02, later): `map_setup` follows MOON.EXE's setup
+  (T070B:0000.., read in MOON.ASM) where it differs, and the first map is
+  the original's at its 200th pass (`pcmp.py mm LT070B_13DD#200
+  map_pass#200 title_pass@LT1800_0331=200:space
+  menu_pass@LT1151_058E=30:enter` with `TITLE=moon OEXE=MOON/MOON.EXE
+  HINTS=src/MOON.hints`; the scratch vcol.py draws a dump's pages with its
+  palette): the data segment the same but for the right cursor's record
+  (F2902:427B..4281, an animation state, presumably; not looked into),
+  video memory the same but for 980 bytes (rows 72..193 of both pages, the
+  same cursor, presumably), F2D2D (the computer's tables) 517 bytes: the
+  original has FFFFh where the port has 0 in the 9-byte records from
+  computer_attack_units+4, so MOON's computer_start or what it calls
+  differs (T178C..T1ED2, not read). What MOON's setup does otherwise:
+  - no `.PMP`, no `.COM` swap of bytes 2 and 3, no `LIB\*.DAT`; the song
+    and the effects are read after the map's files (buffers of 4E20h, not
+    A028h, bytes); no 4650h-byte buffer for the overview.
+  - the ground's parts: T0DA1:16AE loads PART.LIB, the map's `.FIN` and
+    STATMAP.FIN behind it and stores only the parts a square of the two
+    files has (150 parts do not fit in video memory; a count past 100 ends
+    it), the table of far pointers at F2825:0050, the count at F280C:0099
+    (the port's `moon_parts`; the stored parts are the original's).
+  - two buffers of 2BCh and 898h bytes, filled at the end of the setup from
+    `MAPINFO.DAT` and, by the map's size (width above 20h or height above
+    28h: 1, else 2, at F280C:009B), `MAP02.DAT` or `MAP04.DAT`: MOON's
+    overview data (not read: `draw_overview` is still BATTLE's, which needs
+    the `.PMP`, so the overview is wrong in MOON).
+  - the palette is zeroed and shown black before its file is read; the
+    fight record's random routine is T0DA1:05F2.
+  What it taught about the names (for all of MOON): the carry names data by
+  votes of matched code and is wrong where the program lays its data out
+  otherwise. `hqs` was at F2902:0C6F and `depots` at 41E5; they are at 2D6F
+  and 2DA7, `factories` at 2EBF (the three tables after the cargo, records
+  of 1Ch bytes, as make_unit's neighbours address them); `map0` was not
+  mapped (F2902:0C8B), nor `random` and `state_248e`. A wrong name writes
+  into other data without a sign: the map's pointer became FFFFh:FFFFh in
+  load_fin and the whole ground showed one tile. It was found by printing
+  the pointer between the steps. Not checked: the other names the port uses
+  (the computer's, the fights', the status screens', ...); 35 data names it
+  uses are still unmapped in MOON.hints.
 - Then (2026-10-02): `lib.c` needed no new loader: MOON.EXE's `load_lib`
   (T0D67:0003, read in MOON.ASM) is BATTLE's T0CEB:0008 instruction for
   instruction in shape, calling the same loader and file size; the only

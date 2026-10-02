@@ -51,6 +51,60 @@ static void lib(fptr record, fptr *p, fptr work, int sorted, int keep)
         *p = hadd(*p, (long)pd(record, 0x0A));
 }
 
+/* the song and the effects of the game's files, the song's buffer of `size`
+ * bytes first */
+static void songs(fptr *p, fptr work, long size)
+{
+    load_song(*p, make_path(1, -1, FP(name_game), 7), work);
+    *p = hadd(*p, size);
+    if (!load_effects(*p, make_path(1, -1, FP(name_game), 8), work))
+        fatal_error(2);
+}
+
+/* MOON.EXE's T0DA1:16AE: the ground parts of a map.  The library of parts
+ * is loaded at `p`, the map's file and STATMAP.FIN behind it, and only the
+ * parts some square of the two files has (the first of each at most 101:
+ * a count past 100 ends it) are stored behind the pages; the table of far
+ * pointers to them, in the order of the library, goes to the work buffer
+ * and from there to `parts_table`, which takes the library's place.  The
+ * squares are the bytes at every second place of the two files from their
+ * first byte (the four bytes of the header among them).  Returns how many
+ * parts it stored, -1 when a file cannot be read. */
+static int moon_parts(fptr p, fptr work)
+{
+    fptr rec = FP(lib_part), name, map, tbl;
+    long size, size2, size3;
+    int n, sq, di, si, count = 0;
+
+    fade_in();
+    name = t26ea_000f((int16_t)GW(map_number), FP(save_name), 2, 4);
+    size = load_lib(make_path(1, 0, rec, 3), p, work, rec, 0);
+    if (size == -1)
+        return -1;
+    map = hadd(p, size);
+    size2 = t2624_0006(map, make_path(1, 1, name, 0), work, NULL);
+    if (size2 == -1)
+        return -1;
+    size3 = t2624_0006(hadd(map, size2), make_path(1, 1, FP(name_statmap), 0), work, NULL);
+    if (size3 == -1)
+        return -1;
+    SWO(parts_next, 0, 0);
+    n = (int16_t)pw(rec, 0x12);
+    tbl = pfp(rec, 0x0E);
+    sq = (int16_t)((size2 + size3 - 4) >> 1);
+    for (di = 0; di < n; di++)
+        for (si = 0; si < sq; si++)
+            if (pb(map, (unsigned)(2 * si)) == di) {
+                spfp(work, 4 * (unsigned)di, store_part(pfp(tbl, 4 * (unsigned)di)));
+                if (++count > 0x64)
+                    di = n;
+                break;
+            }
+    t0d36_15e9(work, FP(parts_table), (uint32_t)(4L * n));
+    spfp(rec, 0x0E, FP(parts_table));
+    return count;
+}
+
 /* what a map needs: its buffers cut from the program's block, the
  * libraries, the picture and palette, the tables, the map's files, the
  * cursors.  The buffers the loop needs go to *palette (also the saved
@@ -82,17 +136,23 @@ static void map_setup(fptr work0, fptr *palette, fptr *orders, fptr *cursor_lib,
     SFP(game_txt, p);
     p = hadd(p, 0x3E8);
     *spare = p;
-    /* the ground: each part stored behind the pages, the table of where
-     * they are takes the library's place */
-    lib(FP(lib_part), &p, work, 1, 0);
-    SWO(parts_next, 0, 0);
-    table = pfp(FP(lib_part), 0x0E);
-    n = (int16_t)pw(FP(lib_part), 0x12);
-    for (i = 0; n > i; i++)
-        spfp(table, 4 * (unsigned)i, store_part(pfp(table, 4 * (unsigned)i)));
-    t0d36_15e9(table, p, (uint32_t)((int32_t)n << 2));
-    spfp(FP(lib_part), 0x0E, p);
-    p = hadd(p, (int32_t)n << 2);
+    if (bi_prog == BI_MOON) {
+        SW(parts_stored, (uint16_t)moon_parts(p, work));
+        if ((int16_t)GW(parts_stored) < 0)
+            fatal_error(2);
+    } else {
+        /* the ground: each part stored behind the pages, the table of where
+         * they are takes the library's place */
+        lib(FP(lib_part), &p, work, 1, 0);
+        SWO(parts_next, 0, 0);
+        table = pfp(FP(lib_part), 0x0E);
+        n = (int16_t)pw(FP(lib_part), 0x12);
+        for (i = 0; n > i; i++)
+            spfp(table, 4 * (unsigned)i, store_part(pfp(table, 4 * (unsigned)i)));
+        t0d36_15e9(table, p, (uint32_t)((int32_t)n << 2));
+        spfp(FP(lib_part), 0x0E, p);
+        p = hadd(p, (int32_t)n << 2);
+    }
     lib(FP(lib_unit), &p, work, 1, 1);
     lib(FP(lib_exp), &p, work, 0, 1);
     lib(FP(lib_patt), &p, work, 0, 1);
@@ -110,10 +170,23 @@ static void map_setup(fptr work0, fptr *palette, fptr *orders, fptr *cursor_lib,
     p = hadd(p, 0x3E8);
     spfp(player_rec(1), 9, p);
     p = hadd(p, 0x3E8);
+    if (bi_prog == BI_MOON) {
+        /* the buffers of the overview's two files (MAPINFO.DAT and MAP02.DAT or MAP04.DAT) */
+        SFP(mapinfo_data, p);
+        p = hadd(p, 0x2BC);
+        SFP(overview_data, p);
+        p = hadd(p, 0x898);
+    }
     /* where what each cursor covers is kept: behind the pages */
     spfp(player_rec(0), 5, MKFP(0xA7E8, 4));
     spfp(player_rec(1), 5, MKFP(0xA7D0, 0x300));
     load_picture(p, make_path(1, -1, FP(name_game), 0x0A), work, NULL, NULL);
+    if (bi_prog == BI_MOON) {
+        /* MOON blacks the screen out before the palette's file is read */
+        for (i = 0; i < 0x300; i++)
+            SBO(picture_palette, i, 0);
+        set_palette(0xFF, FP(picture_palette));
+    }
     /* the palette chosen in the menu (/m: the third) */
     name = t26ea_000f((int8_t)GBO(menu_items, 11 * 0x2E + 0x2B), FP(save_name), 2, 4);
     if (!load_file(*palette, make_path(1, -1, name, 4), work))
@@ -123,15 +196,14 @@ static void map_setup(fptr work0, fptr *palette, fptr *orders, fptr *cursor_lib,
     if (!load_file(GFP(game_txt), make_path(1, -1, FP(name_game), 6), work))
         fatal_error(2);
     *pmp = p;
-    p = hadd(p, 0x4650);
+    if (bi_prog != BI_MOON)
+        p = hadd(p, 0x4650);
     *cursor_lib = p;
     lib(FP(lib_cursor), &p, work, 0, 1);
     lib(FP(lib_bigunit), &p, work, 1, 1);
     lib(FP(lib_shop), &p, work, 0, 1);
-    load_song(p, make_path(1, -1, FP(name_game), 7), work);
-    p = hadd(p, 0xA028);
-    if (!load_effects(p, make_path(1, -1, FP(name_game), 8), work))
-        fatal_error(2);
+    if (bi_prog != BI_MOON)
+        songs(&p, work, 0xA028);
     if (!load_file(FP(amok), make_path(1, -1, FP(name_amok), 5), work))
         fatal_error(2);
     if (!load_file(FP(unit_types), make_path(1, -1, FP(name_unit), 5), work))
@@ -148,13 +220,17 @@ static void map_setup(fptr work0, fptr *palette, fptr *orders, fptr *cursor_lib,
          * bytes exchanged */
         if (!load_file(FP(computer_types), make_path(1, 1, name, 9), work))
             fatal_error(2);
-        for (i = 0; i < 0x1B; i++) {
+        /* MOON.EXE's loader has no such loop (MOON.ASM, behind the load of
+         * the .COM file); its records stay as the file has them */
+        for (i = 0; bi_prog != BI_MOON && i < 0x1B; i++) {
             unsigned b = GBO(computer_types, 6 * i + 3);
 
             SBO(computer_types, 6 * i + 3, GBO(computer_types, 6 * i + 2));
             SBO(computer_types, 6 * i + 2, b);
         }
     }
+    if (bi_prog == BI_MOON)
+        songs(&p, work, 0x4E20);   /* MOON reads them last, of other sizes */
     clear_marks(0xFF);
     t0e9b_000b();
     SD(passes, 0);
@@ -224,6 +300,20 @@ static void map_setup(fptr work0, fptr *palette, fptr *orders, fptr *cursor_lib,
     if (bi_prog != BI_MOON) {
         name = t26ea_000f((int16_t)GW(map_number), FP(save_name), 2, 4);
         if (!load_file(*pmp, make_path(1, 1, name, 1), work))
+            fatal_error(2);
+    } else {
+        /* what MOON draws its overview from: MAPINFO.DAT and, by the map's
+         * size, MAP02.DAT or MAP04.DAT (what they hold: not read) */
+        if (!load_file(GFP(mapinfo_data), make_path(1, -1, FP(name_mapinfo), -1), work))
+            fatal_error(2);
+        if ((int16_t)GW(map_width) > 0x20 || (int16_t)GW(map_height) > 0x28) {
+            SW(overview_scale, 1);
+            name = FP(name_map02);
+        } else {
+            SW(overview_scale, 2);
+            name = FP(name_map04);
+        }
+        if (!load_file(GFP(overview_data), make_path(1, -1, name, -1), work))
             fatal_error(2);
     }
     draw_window(pw(CURSOR(0), 2), 0);

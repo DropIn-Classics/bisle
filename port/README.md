@@ -60,11 +60,16 @@ timers' and keys' counts, the C library's variables (`DATA:004C..007F`,
 code segments, as BATTLE.EXE's. MOON has no `LIB\*.DAT`: its `load_lib`
 (T0CEB's counterpart) is called with the flag 0 everywhere, so `lib.c`
 does not sort there (read, then a headless run: the libraries load).
-MOON has no `MAP\NN.PMP` (its `MAP\` holds `.COM`, `.FIN` and `.SHP`; its
-overview is drawn otherwise, not read), so `map_setup` does not load one
-for MOON. START then shows the first map's two windows (headless picture
-looked at, not compared with the original; the overview is not right in
-MOON, the rest not tried). The names MOON.hints lacked for
+MOON's `map_setup` follows MOON.EXE's setup where it differs (the handoff
+lists how: no `.PMP`, only the ground parts the map has stored behind the
+pages, the files of its own overview read, the song and effects last).
+START shows the first map, the original's at its 200th pass (`pcmp.py`
+with MOON's names): the data segment and video memory the same but for the
+right cursor's animation state and 980 bytes of video memory (not looked
+into), the computer's tables 517 bytes (`computer_start` differs in MOON,
+not read). Not in the port for MOON: its overview (the keys, the dots), the
+fights, the statistics, the end of a map; MOON.hints' carried names are
+unchecked beyond what the setup uses (see the handoff). The names MOON.hints lacked for
 the port are its own lines now (`name` lines above the carried block:
 make_path's tables, the menus' texts, the statistics' and the logo's
 names, the sound's variables at DATA:1514 + the offset of BATTLE.EXE's
