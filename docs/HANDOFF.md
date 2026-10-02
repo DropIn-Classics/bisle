@@ -1657,13 +1657,27 @@ compared):
    doskit/docs/RELEASE.md says.
    The user's order for it (2026-10-02), the aim being all three
    titles in one program, chosen on the setup screen:
-   a. DESERT in the port: DESERT.EX2 is BATTLE.EXE's code, so the port
-      with DESERT's files, presumably (not tried); the 3 bytes of far
-      data that differ, the starter DESERT.EXE read, a game of two
-      computers compared with the original.
-   b. The setup screen's choice of the title (ISLE and DESERT first):
-      pages and items from the port, anything new the screen needs
-      into the kit (rule 9).
+   a. DESERT in the port: begun (port/README.md). DESERT.EX2 differs
+      from BATTLE.EXE in the header (the file's length, the minimum
+      allocation), in F2789:0139 and in key_set_keyboard+18h and
+      key_set_other+18h (F27EE:0B33, 0B56: the scancode that answers
+      QUIT THE GAME and its letter in the message), and ends before
+      the stack. The starter DESERT.EXE is read (the scratch
+      dstart.py disassembles it): it shrinks its memory, hooks INT
+      21h, makes three folders on C:, runs DESERT.EX2 (AX=4B00h) and
+      takes the hook out; the hook, for AH=3Ch, 3Dh, 41h, 43h and 4Eh,
+      puts the name in capitals, looks it up in a table (10 names of
+      6 letters, 35 of 9: the saved games and MAP's scores,
+      presumably; the table itself not printed) and for those puts
+      the folder's path before it. The port loads DESERT.EX2 with
+      `-title desert` and is the original's at the first map's 200th
+      pass. Left: a game of two computers compared (cvcmap.py takes
+      ISLE's codes: DESERT's maps against the computer are 8..32),
+      a save, a map's end, the key for QUIT.
+   b. The setup screen's choice of the title: the item "Title" is
+      there for ISLE and DESERT (main.c, an LI_CHOICE of the titles
+      whose folders are found; nothing needed of the kit). Left: it
+      changed and the game started from the screen, in a window.
    c. MOON: what MOON.EXE does otherwise than BATTLE.EXE, read routine
       by routine, and the port doing both. The large part; its size is
       not known before the reading.

@@ -28,13 +28,25 @@ still end the program with a message that names them (`bi_todo`: a
 picture larger than a page, a block of the second page in
 restore_sprites, the question for another disk, a timer's handler that
 is not one of the program's). Not in the port: the game's other
-programs (the starter BI.EXE, the intros, DESERT.EXE and MOON.EXE of
-the two scenario disks), the PC speaker's sound (not wanted), joystick
+programs (the starter BI.EXE, the intros, MOON.EXE of the second
+scenario disk), the PC speaker's sound (not wanted), joystick
 and mouse (the port answers as a PC without them).
+
+The first scenario disk (2026-10-02): its game program
+`DESERT/DESERT.EX2` is BATTLE.EXE's code and data but for three bytes
+(the key that answers QUIT THE GAME in both key sets, and its letter in
+the message), so the port plays it as it is: `main.c` loads that file
+instead (its size and SHA-256 checked) and gives the program DESERT's
+folder. Its starter `DESERT.EXE` (read from its code, 1750 bytes) makes
+a folder on C: and, while the game runs, sends the saved games `NN.DAT`
+and the scores `MAP\NN.HI` there; the port has the data folder's
+`save-desert` for what DESERT writes instead. The title is chosen on
+the setup screen (the item "Title", offered for each title whose folder
+is in the game's files) or by `-title isle|desert`.
 
 | File | The original's | What |
 |---|---|---|
-| `main.c` | - | finds the game's files, the setup screen's page, loads BATTLE.EXE, starts it |
+| `main.c` | - | finds the game's files, the setup screen's page, loads BATTLE.EXE or DESERT.EX2, starts it |
 | `bi.h` | - | the names, far pointers, what the modules share |
 | `dos.c` | DOS, BIOS, PIT | files, the keyboard, the clock (timer interrupt, retrace) |
 | `timer.c` | T2354 | the timers, the keys, the players' input |
@@ -282,8 +294,15 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   the same again; these ran the command 7 (a unit made in a factory),
   the plan's step 6 and the tasks 9, 0Ah and 0Ch too. Not reached in
   any game: the command 5, the plan's step 2, the task 0Bh. The maps
-  22, 23, 26, 28, 29 and 31 were played by the port alone to their ends
-  (nothing new reached) and not compared; map 30 did not end within
+  22, 23, 26, 28, 29 and 31 likewise, each compared once at its last
+  pass (29136, 19796, 14270, 34878, 36001 and 35740; after it the game
+  waits for a key, `key_wait`): the same in memory and video memory but
+  for the kinds of differences above. Map 26 ran in the runner as the
+  others before; the other five in a runner built at 07:59 on
+  2026-10-02 from the kit's sources as another session had them, not
+  committed, with a mouse driver (INT 33h): there the original finds
+  the mouse and its variables differ from the port's (`mouse_on` and
+  DATA:040E..044A), nothing else new. Map 30 did not end within
   the 400 s given to the port's run: the port reaches the map loop's
   pass 30304 (round 10) in about 20 s and not the pass 30305 within
   45 s, and no wait for a key, message box, film or map's end either
@@ -311,6 +330,18 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   original. Compared again with that change, at the ends of the maps
   17, 18 and 20 (the passes 4196, 3423 and 14236): the same as before.
   Not run again: the other comparisons of this list.
+- DESERT (`-title desert`): its first map (START at the title menu;
+  space at the title's 200th pass, enter at the menu's 30th), the
+  original DESERT.EX2 in the runner and the port stopped at the map
+  loop's 200th pass: all of the video memory the same, the memory the
+  same but for the kinds of differences above (and the mouse's
+  variables, the runner being the one with the mouse driver). Nothing
+  else of DESERT was compared: no key on the map, no game of the
+  computer, no save, no map's end; the answer to QUIT THE GAME with
+  DESERT's key not tried. The setup screen's item "Title" was looked
+  at in the headless build's picture (`DK_DUMP`, Esc scripted): it is
+  there under "The game", showing "Battle Isle"; changed to the data
+  disk and started from there: not tried.
 - The setup screen, in the headless build with scripted keys (`DK_KEYS`,
   the picture through `DK_DUMP`, looked at): the page as the kit draws
   it; down twice, right, up twice and Enter start the game with `/m`

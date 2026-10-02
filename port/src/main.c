@@ -1,7 +1,7 @@
 /* main.c - Battle Isle: a native compatibility implementation requiring an
  * installed copy of the original game.
  *
- *     battle-isle [-game DIR | -gog FILE|FOLDER|SETUP.exe] [/s] [/m]
+ *     battle-isle [-game DIR | -gog FILE|FOLDER|SETUP.exe] [-title isle|desert] [/s] [/m]
  *
  * DIR is the game's unpacked files: -game, else $BATTLE_ISLE_GAME, else the first
  * folder `game` holding ISLE/BI.EXE beside the program, in the current
@@ -26,6 +26,11 @@
  * this port runs over that memory (bi.h, battle.c); /s and /m are the
  * original's switches.  Files the game writes go to the data folder's
  * `save`.
+ *
+ * The first data disk is the same program with its own files (`titles`
+ * below): chosen on the setup screen when its folder is there, or by
+ * -title, it is loaded from DESERT/DESERT.EX2 and writes to the data
+ * folder's `save-desert`.
  *
  * For comparisons with the original (doskit/tools/memcmp.py):
  * BI_BREAK=NAME#N ends the program at the Nth pass of a place of that
@@ -68,6 +73,29 @@ static const char *const old_files[] = { "game", NULL };
 
 static const LauncherApp app = { "Battle Isle", "battle-isle", PORT_VERSION };
 
+/* The titles this program plays: the folder in the game's files, the
+ * program in it, its size and SHA-256 (the GOG release's), where its own
+ * files go in the data folder.
+ * DESERT.EX2 is BATTLE.EXE but for three bytes of data (the key that
+ * answers QUIT THE GAME in both key sets and its letter in the message)
+ * and its end: the file stops before the stack, which is zeros in
+ * BATTLE.EXE.  Its starter DESERT.EXE (read from its code) only makes the
+ * folders BLUEBYTE, BI1D1 in it and MAP in that on C: and, while
+ * DESERT.EX2 runs, sends the saved games NN.DAT and the scores MAP/NN.HI
+ * there (INT 21h's create, open, delete, attributes and find first of
+ * those names): the port's folder for what a title writes does the same. */
+static const struct {
+    const char *arg, *label, *folder, *exe;
+    unsigned long size;
+    const char *sha256, *save;
+} titles[] = {
+    { "isle", "Battle Isle", "ISLE", "BATTLE.EXE", BATTLE_SIZE, BATTLE_SHA256, "save" },
+    { "desert", "Data disk 1 (Desert)", "DESERT", "DESERT.EX2", 212242ul,
+      "1042af4eb941908cae776cc2118b4664c16b56975ec9353ffa05633626a1cff4", "save-desert" },
+};
+
+#define TITLES ((int)(sizeof titles / sizeof titles[0]))
+
 /* ---- the setup screen (launcher.h; doskit/docs/LAUNCHER.md) ---- */
 
 enum { ACT_START = 1, ACT_PAGE };
@@ -75,7 +103,10 @@ enum { ACT_START = 1, ACT_PAGE };
 static const char *const no_yes[] = { "no", "yes", NULL };
 static const char *const off_on[] = { "off", "on", NULL };
 
-static int set_fullscreen, set_m, set_updates;
+static int set_fullscreen, set_m, set_updates, set_title;
+/* the titles whose folders are there, for the setup screen's choice */
+static const char *title_labels[TITLES + 1];
+static int title_of[TITLES];
 static UpdateInfo newer;
 static char newer_label[64];
 
@@ -85,6 +116,8 @@ static LauncherItem game_items[] = {
     { LI_CHOICE, "Full screen", "fullscreen", no_yes, &set_fullscreen, 0,
       "Alt+Enter changes it while the game runs." },
     { LI_HEAD, "The game", NULL, NULL, NULL, 0, NULL },
+    { LI_CHOICE, "Title", "title", title_labels, &set_title, 0,
+      "Battle Isle, or a data disk whose folder is in the game's files." },
     { LI_CHOICE, "Switch /m", "m", off_on, &set_m, 0,
       "The original's /m: the map in its other palette." },
     { LI_HEAD, "This port", NULL, NULL, NULL, 0, NULL },
@@ -114,15 +147,23 @@ static void setting_changed(const LauncherItem *item)
  * yes).  A newer release known at the start (update.h: fetched in the
  * background, so one found by this start's fetch shows at the next) gets
  * a line that opens its page. */
-static int setup(int *m)
+static int setup(const char *game, int *m, int *title)
 {
-    char data[SYS_PATH], cfg[SYS_PATH];
-    int r;
+    char data[SYS_PATH], cfg[SYS_PATH], dir[SYS_PATH];
+    int r, i, n = 0;
 
+    for (i = 0; i < TITLES; i++)
+        if (sys_find(game, titles[i].folder, dir, sizeof dir)) {
+            title_labels[n] = titles[i].label;
+            title_of[n++] = i;
+        }
+    title_labels[n] = NULL;
     sys_data_dir(data, sizeof data);
     sys_join(cfg, sizeof cfg, data, "battle-isle.cfg");
     set_fullscreen = plat_fullscreen();
     launcher_load(cfg, pages, 1);
+    if (set_title < 0 || set_title >= n)
+        set_title = 0;
     plat_set_fullscreen(set_fullscreen);
     set_updates = update_consent() > 0;
     for (;;) {
@@ -140,6 +181,7 @@ static int setup(int *m)
     set_fullscreen = plat_fullscreen();
     launcher_save(cfg, "battle-isle: the setup screen's settings", pages, 1);
     *m = set_m;
+    *title = n ? title_of[set_title] : 0;
     return r == ACT_START;
 }
 
@@ -191,25 +233,28 @@ static int get_game(const char *given, const char *gog, char *out, size_t n)
     return 0;
 }
 
-/* BATTLE.EXE of the game's folder into memory, the program's files in
- * ISLE, its own in the data folder's `save`; 1, or 0 after saying why not */
-static int load_program(const char *game)
+/* the title's program of the game's folder into memory, the program's
+ * files in the title's folder, its own in the data folder's `save` (or
+ * the title's); 1, or 0 after saying why not */
+static int load_program(const char *game, int title)
 {
     char isle[SYS_PATH], exe[SYS_PATH], data[SYS_PATH], save[SYS_PATH], err[256];
 
-    if (!sys_find(game, "ISLE", isle, sizeof isle) || !sys_find(isle, "BATTLE.EXE", exe, sizeof exe)) {
-        plat_message("ISLE/BATTLE.EXE is not in the game's folder.");
+    if (!sys_find(game, titles[title].folder, isle, sizeof isle) ||
+        !sys_find(isle, titles[title].exe, exe, sizeof exe)) {
+        snprintf(err, sizeof err, "%s/%s is not in the game's folder.", titles[title].folder, titles[title].exe);
+        plat_message(err);
         return 0;
     }
     /* what the program keeps of its memory (INT 21h AH=4Ah, seen in the
      * runner): 3080h paragraphs from its PSP on */
-    if (rm_load_exe(exe, BATTLE_SIZE, BATTLE_SHA256, RM_LOAD_PSP, 0x3080, err, sizeof err) != 0) {
+    if (rm_load_exe(exe, titles[title].size, titles[title].sha256, RM_LOAD_PSP, 0x3080, err, sizeof err) != 0) {
         plat_message(err);
         return 0;
     }
     rm_ds = SEG(DATA);
     sys_data_dir(data, sizeof data);
-    sys_join(save, sizeof save, data, "save");
+    sys_join(save, sizeof save, data, titles[title].save);
     sys_mkdir(save);
     dos_set_dirs(isle, save);
     return 1;
@@ -220,7 +265,7 @@ int main(int argc, char **argv)
     const char *given = NULL, *gog = NULL;
     char game[SYS_PATH];
     char *args[8];
-    int i, nargs = 1;
+    int i, nargs = 1, title = 0, given_title = 0, m = 0;
 
     args[0] = argv[0];
     for (i = 1; i < argc; i++) {
@@ -228,10 +273,18 @@ int main(int argc, char **argv)
             given = argv[++i];
         else if (!strcmp(argv[i], "-gog") && i + 1 < argc)
             gog = argv[++i];
-        else if (argv[i][0] == '/' && nargs < 8)
+        else if (!strcmp(argv[i], "-title") && i + 1 < argc) {
+            for (title = 0, i++; title < TITLES && strcmp(argv[i], titles[title].arg) != 0; title++)
+                ;
+            if (title == TITLES) {
+                fprintf(stderr, "-title: isle or desert\n");
+                return 2;
+            }
+            given_title = 1;
+        } else if (argv[i][0] == '/' && nargs < 8)
             args[nargs++] = argv[i];
         else {
-            fprintf(stderr, "usage: battle-isle [-game DIR | -gog FILE|FOLDER] [/s] [/m]\n");
+            fprintf(stderr, "usage: battle-isle [-game DIR | -gog FILE|FOLDER] [-title isle|desert] [/s] [/m]\n");
             return 2;
         }
     }
@@ -239,21 +292,27 @@ int main(int argc, char **argv)
     sys_data_migrate(old_files);
     if (!plat_init("Battle Isle"))
         return 1;
-    if (!get_game(given, gog, game, sizeof game) || !load_program(game)) {
+    if (!get_game(given, gog, game, sizeof game)) {
         plat_shutdown();
         return 1;
     }
     /* the setup screen: in a window; headless only in a run scripted with
-     * keys that is not a comparison */
+     * keys that is not a comparison.  -title goes before its choice. */
     if (plat_has_window() || (getenv("DK_KEYS") && !getenv("BI_BREAK"))) {
-        int m = 0;
+        int chosen = 0;
 
-        if (!setup(&m)) {
+        if (!setup(game, &m, &chosen)) {
             plat_shutdown();
             return 0;
         }
+        if (!given_title)
+            title = chosen;
         if (m && nargs < 8)
             args[nargs++] = "/m";
+    }
+    if (!load_program(game, title)) {
+        plat_shutdown();
+        return 1;
     }
     battle_main(nargs, args);
     plat_shutdown();
