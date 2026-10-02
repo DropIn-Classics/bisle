@@ -67,6 +67,18 @@ original's (oplcmp.py is for the game), `/s` (the PC speaker: not
 wanted), the Ctrl-Break handler and the texts before the mode is set
 (left out).
 
+The intro showed a black screen in the window (the user, 2026-10-02).
+Cause, found with a headless run that goes through the setup screen
+(`DK_KEYS="20:1C 22:9C" BI_INTRO=1`, pictures 8 by 1 pixels, no timer
+interrupt for thousands of pictures): the intro waits 50 ticks
+(`wait_ticks(0x32)`) before it sets its mode, and until then the VGA's
+registers were zero, its refresh rate absurd, so the clock presented
+thousands of pictures for one timer tick. `intro_main` sets text mode 3
+first, as DOS has it when a program starts. After the change the first
+wait ends at once (picture 400 of a headless run is the first text
+card). Checked headless only (the shots above, one run through the setup
+screen); not looked at in the window, not compared with the runner again.
+
 The port runs more than one program now (2026-10-02, begun for the
 intro INTEGA/INTRO.EXE, later MOON.EXE): `gen/names.h` holds a column a
 program (`symmap.py ... BATTLE=src/BATTLE.hints INTEGA=src/INTEGA.hints`),

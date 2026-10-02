@@ -789,6 +789,11 @@ void intro_main(void)
 {
     fptr work;
 
+    /* a program starts in DOS's text mode.  Without it the VGA's registers
+     * are zero until set_mode, its refresh rate absurd, the clock's pictures
+     * thousands for each timer tick and the first wait (wait_ticks(0x32), before
+     * the mode is set) lasts for minutes: in a window a black screen */
+    vga_set_mode(3);
     t2354_0011();
     work = t2619_0004(0x1000);
     SFP(intro_work, work);
