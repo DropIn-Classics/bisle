@@ -343,8 +343,22 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   same but for the kinds of differences above (and the mouse's
   variables, the runner being the one with the mouse driver). Nothing
   else of DESERT was compared but the games of two computers (below):
-  no key on the map, no save; the answer to QUIT THE GAME with
-  DESERT's key not tried.
+  no key on the map; the answer to QUIT THE GAME with DESERT's key not
+  tried.
+  A game saved and loaded in DESERT (2026-10-02, the scratch pcmp.py):
+  the first map, the cursors moved right twice (player 1 right, player 2
+  down) and both asking for the change of phase (player 1 left with fire,
+  player 2 left with fire, as in ISLE but the first move to the right:
+  the left of the start square is a depot there), D, a key at key_wait
+  (T0D36:0D0D), the digit 0 at save_key: the file the port wrote to
+  `save-desert/00.DAT` is the original's byte for byte (37815 bytes),
+  the video memory the same and the memory the same but for the kinds of
+  differences above, at the map loop's 500th pass. Loaded again (DISK,
+  LOAD, 0, two keys; the keys by time, 14 space, 33 down, 34 down, 35
+  enter, 37 enter, 39 0, 42 enter): at the map loop's 10th pass the same
+  in memory and video memory. That the loaded map is the saved one and not
+  the first map anew was not looked at apart from the comparison with
+  the original, which loads it too.
   Games of two computers (the menu keys as for ISLE, the map's code
   from DESERT's CODES.DAT; the scratch `dcv.sh MAP`): the maps 8, 17
   and 32 ran to their ends (the passes 8507, 19969 and 29107, a wait in

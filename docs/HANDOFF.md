@@ -43,7 +43,8 @@ menu's entry (port/README.md; "The port" below).
     Z: right on a QWERTY keyboard, wrong on QWERTZ, in the original
     too; the port has the choice "Quit key Y and Z" (port/README.md).
     Also new: "Skip logo, intro, and title" (the intro not in yet).
-    Next for DESERT: a save. Then the order in Next, point 0: MOON,
+    A save and a load in DESERT are the original's too (port/README.md).
+    Then the order in Next, point 0: MOON,
     the 256-colour intro, later the mouse.
   - The user played the window build: full screen and the keys are
     right, the speed is a fast 386's, the music seems right, the
