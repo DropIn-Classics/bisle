@@ -92,7 +92,7 @@ static const struct {
     const char *sha256, *save;
 } titles[] = {
     { "isle", "Battle Isle", "ISLE", "BATTLE.EXE", BATTLE_SIZE, BATTLE_SHA256, "save" },
-    { "desert", "Data disk 1 (Desert)", "DESERT", "DESERT.EX2", 212242ul,
+    { "desert", "Scenario Disk 1 - Air-Land-Sea", "DESERT", "DESERT.EX2", 212242ul,
       "1042af4eb941908cae776cc2118b4664c16b56975ec9353ffa05633626a1cff4", "save-desert" },
 };
 
@@ -102,8 +102,8 @@ static const struct {
 
 enum { ACT_START = 1, ACT_PAGE };
 
-static const char *const no_yes[] = { "no", "yes", NULL };
-static const char *const off_on[] = { "off", "on", NULL };
+static const char *const no_yes[] = { "No", "Yes", NULL };
+static const char *const off_on[] = { "Off", "On", NULL };
 
 static int set_fullscreen, set_m, set_updates, set_title, set_skip, set_quit = 1;
 /* the titles whose folders are there, for the setup screen's choice */
@@ -118,18 +118,18 @@ enum { PAGE_MENU, PAGE_GAME, PAGE_PICTURE, PAGE_QOL, PAGE_PORT };
 static LauncherItem menu_items[] = {
     { LI_ACTION, "Start the game", NULL, NULL, NULL, ACT_START, NULL },
     { LI_HEAD, "", NULL, NULL, NULL, 0, NULL },
-    { LI_PAGE, "Game", NULL, NULL, NULL, PAGE_GAME, "Which game, and the original's switch." },
+    { LI_PAGE, "Game", NULL, NULL, NULL, PAGE_GAME, "Game selection and settings." },
     { LI_PAGE, "Picture", NULL, NULL, NULL, PAGE_PICTURE, "Full screen." },
-    { LI_PAGE, "Quality of life fixes", NULL, NULL, NULL, PAGE_QOL,
-      "Choices the original does not have." },
+    { LI_PAGE, "Quality of Life changes", NULL, NULL, NULL, PAGE_QOL,
+      "Improvements to the gameplay experience." },
     { LI_PAGE, "This port", NULL, NULL, NULL, PAGE_PORT, "New versions." },
 };
 
 static LauncherItem game_items[] = {
     { LI_CHOICE, "Title", "title", title_labels, &set_title, 0,
-      "Battle Isle, or a data disk whose folder is in the game's files." },
-    { LI_CHOICE, "Switch /m", "m", off_on, &set_m, 0,
-      "The original's /m: the map in its other palette." },
+      "Battle Isle or one of the data disks." },
+    { LI_CHOICE, "Alternate palette", "m", off_on, &set_m, 0,
+      "Use the alternate color scheme for unit sprites." },
 };
 
 static LauncherItem picture_items[] = {
@@ -139,9 +139,9 @@ static LauncherItem picture_items[] = {
 
 static LauncherItem qol_items[] = {
     { LI_CHOICE, "Skip logo, intro, and title", "skip_intro", no_yes, &set_skip, 0,
-      "Starts at the main menu (the intro is not in the port yet)." },
+      "Starts at the main menu." },
     { LI_CHOICE, "Quit key Y and Z", "quit_yz", no_yes, &set_quit, 0,
-      "QUIT THE GAME takes Y and Z: the original has one, by layout." },
+      "QUIT THE GAME takes Y and Z on any keyboard layout." },
 };
 
 static LauncherItem port_items[] = {
@@ -157,7 +157,7 @@ static LauncherPage pages[] = {
     { "Setup", menu_items, (int)(sizeof menu_items / sizeof menu_items[0]) },
     { "Game", game_items, (int)(sizeof game_items / sizeof game_items[0]) },
     { "Picture", picture_items, (int)(sizeof picture_items / sizeof picture_items[0]) },
-    { "Quality of life fixes", qol_items, (int)(sizeof qol_items / sizeof qol_items[0]) },
+    { "Quality of Life changes", qol_items, (int)(sizeof qol_items / sizeof qol_items[0]) },
     { "This port", port_items, PORT_ITEMS },
 };
 
