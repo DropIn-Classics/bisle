@@ -128,8 +128,8 @@ static LauncherItem menu_items[] = {
 static LauncherItem game_items[] = {
     { LI_CHOICE, "Title", "title", title_labels, &set_title, 0,
       "Battle Isle or one of the data disks." },
-    { LI_CHOICE, "Alternate palette", "m", off_on, &set_m, 0,
-      "Use the alternate color scheme for unit sprites." },
+    { LI_CHOICE, "Monochrome", "m", off_on, &set_m, 0,
+      "The original's /m: grey pictures, as for a monochrome monitor." },
 };
 
 static LauncherItem picture_items[] = {

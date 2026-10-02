@@ -126,8 +126,12 @@ stays undefined.
 looks for newer ones (doskit/runtime/update.h); the workflow sets it to
 the latest release's `latest.json`.
 
-`/m` is the original's switch (another text at the start; what else it
-does is not known). Its `/s`, the PC speaker's sound, is not taken.
+`/m` is the original's switch: it prints "Monochrome." in place of
+"Color." at the start and sets F2740:02C8 to 2, which is passed to the
+file name routine (T26EA:000F); the pictures are grey with it (the user
+saw), so the setup screen's item is "Monochrome" (it was "Alternate
+palette", a guess that was wrong). Not compared with the original's own
+/m run. Its `/s`, the PC speaker's sound, is not taken.
 
 ## Releases
 
