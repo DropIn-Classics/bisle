@@ -1655,6 +1655,28 @@ compared):
    DESERT.EXE and MOON.EXE (their hints are carried over from
    BATTLE's; what differs is to be read). A release only as
    doskit/docs/RELEASE.md says.
+   The user's order for it (2026-10-02), the aim being all three
+   titles in one program, chosen on the setup screen:
+   a. DESERT in the port: DESERT.EX2 is BATTLE.EXE's code, so the port
+      with DESERT's files, presumably (not tried); the 3 bytes of far
+      data that differ, the starter DESERT.EXE read, a game of two
+      computers compared with the original.
+   b. The setup screen's choice of the title (ISLE and DESERT first):
+      pages and items from the port, anything new the screen needs
+      into the kit (rule 9).
+   c. MOON: what MOON.EXE does otherwise than BATTLE.EXE, read routine
+      by routine, and the port doing both. The large part; its size is
+      not known before the reading.
+   d. The intro: only the one of 256 colours, INTEGA's (mode 13h, the
+      one GOG's start runs). INTVGA's (16 colours, mode 0Dh) is left
+      out: the user wants VGA only.
+   e. Later: the mouse. The original has it (DISK's item MOUSE, its
+      speed, a key on the map that switches it, INT 33h; T2683, T263D,
+      T268A, T267C: not read, mouse_on is the only name) and the port
+      leaves it out so far ("the port has none" in battle.c, menu.c,
+      timer.c). To do: read the four routines, runs of the original
+      with a mouse (whether the runner has an INT 33h is not checked),
+      then the port's.
 1. BATTLE.EXE's last 4.1 KB: menus, a map, saving, loading, battles
    against the computer and poked wins with their animations ran none
    of it (above) but for a RETF; unused library code and switch tables,
