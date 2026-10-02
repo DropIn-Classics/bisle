@@ -284,7 +284,16 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   any game: the command 5, the plan's step 2, the task 0Bh. The maps
   22, 23, 26, 28, 29 and 31 were played by the port alone to their ends
   (nothing new reached) and not compared; map 30 did not end within
-  the 400 s given to the port's run, not looked into.
+  the 400 s given to the port's run: the port reaches the map loop's
+  pass 30304 (round 10) in about 20 s and not the pass 30305 within
+  45 s, and no wait for a key, message box, film or map's end either
+  (key_clear, key_wait, box_key, after_map not reached): it spins
+  inside that pass. At the pass 30304 the original (there after 2132 s
+  of its time) and the port are the same in memory and video memory
+  but for the kinds of differences above. Not known yet: whether the
+  original reaches the pass 30305 (that run was stopped by the machine
+  running short of memory), so whether the game itself hangs there or
+  the port goes wrong within the pass.
 - The setup screen, in the headless build with scripted keys (`DK_KEYS`,
   the picture through `DK_DUMP`, looked at): the page as the kit draws
   it; down twice, right, up twice and Enter start the game with `/m`
@@ -293,6 +302,11 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   in that build), a release build's line for a newer release, a
   controller.
 - The window build was started for 8 s and ran (nothing looked at or
-  heard: nobody was there).
+  heard: nobody was there). The user then played it (Windows 11, by
+  eye and ear, not beside the original): full screen works, the keys
+  seem as the original's, the speed is that of a fast 386, the music
+  seems right at first hearing; the percussion may be too quiet (not
+  sure, to be heard against the original: HANDOFF.md's Next, point 5).
+  Not tried: a controller.
 
 Not built: macOS, Linux.
