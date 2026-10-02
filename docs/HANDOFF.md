@@ -23,6 +23,19 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- Then (2026-10-02): `lib.c` needed no new loader: MOON.EXE's `load_lib`
+  (T0D67:0003, read in MOON.ASM) is BATTLE's T0CEB:0008 instruction for
+  instruction in shape, calling the same loader and file size; the only
+  difference is that all 16 of its callers pass flag 0 (BATTLE passes 1 for
+  part, unit and bigunit), so MOON never sorts by a `LIB\*.DAT` (it has none).
+  `load_lib` does not sort when `bi_prog == BI_MOON`. With it the port loads
+  MOON's libraries and stops at `MAP\00.PMP`: MOON's `MAP\` has `NN.COM`,
+  `NN.FIN` and `NN.SHP` only (25, 35 and 34 files, plus STATMAP.FIN), no
+  `.PMP`. The map's setup (T070B's counterpart, 63% matched) is the next
+  reading: which of those files holds what BATTLE's `.PMP` holds. Checked: a
+  headless run (`BI_SKIP_INTRO=1`, Enter at passes 20, 200, ..., the failing
+  names printed by a temporary line in dos_open, not kept). Not checked:
+  anything past that file.
 - Later still on 2026-10-02: MOON starts in the port (`-title moon`) and its
   title menu is the original's at the menu's entry (port/README.md: how
   checked, what differs). The next step is `lib.c`: MOON has no `LIB\*.DAT`

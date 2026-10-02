@@ -57,10 +57,11 @@ pass; `pcmp.py` with `OEXE=MOON/MOON.EXE HINTS=src/MOON.hints
 TITLE=moon`): all of video memory the same, of the program's memory the
 timers' and keys' counts, the C library's variables (`DATA:004C..007F`,
 `DATA:1216..14FE`) and the routines' scratch variables in the library's
-code segments, as BATTLE.EXE's. START then stops at once: MOON has no
-`LIB\*.DAT` (`LIB\part.DAT` is the first file the port asks for in
-vain); `lib.c` has to load its libraries as MOON.EXE's `load_lib`
-(T0CEB's counterpart) does, not read. The names MOON.hints lacked for
+code segments, as BATTLE.EXE's. MOON has no `LIB\*.DAT`: its `load_lib`
+(T0CEB's counterpart) is called with the flag 0 everywhere, so `lib.c`
+does not sort there (read, then a headless run: the libraries load).
+START then stops at `MAP\00.PMP`, which MOON does not have (its `MAP\`
+holds `.COM`, `.FIN` and `.SHP`; not read yet). The names MOON.hints lacked for
 the port are its own lines now (`name` lines above the carried block:
 make_path's tables, the menus' texts, the statistics' and the logo's
 names, the sound's variables at DATA:1514 + the offset of BATTLE.EXE's

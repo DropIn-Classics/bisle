@@ -33,10 +33,15 @@ static void sort_lib(fptr end, fptr dir, fptr record, fptr work)
  * entry's offset).  The directory is made a table of far pointers to the
  * entries, in place; the record gets the file's length (+0Ah), the table
  * (+0Eh) and the number of entries (+12h).  With `sorted` the directory
- * is first put into the order of the library's .DAT file.  Returns the
- * length the library takes, -1 when it cannot be loaded. */
+ * is first put into the order of the library's .DAT file (MOON.EXE's
+ * counterpart, T0D67:0003, is the same code, but all 16 places that call
+ * it pass 0 and the game has no LIB\*.DAT: read in MOON.ASM, so the port
+ * does not sort there).  Returns the length the library takes, -1 when it
+ * cannot be loaded. */
 long load_lib(fptr path, fptr dest, fptr work, fptr record, int sorted)
 {
+    if (bi_prog == BI_MOON)
+        sorted = 0;
     fptr base = dest, dir, table;
     long size = t2624_0006(dest, path, work, NULL);
     uint32_t offset;
