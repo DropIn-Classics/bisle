@@ -380,7 +380,7 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   four pages as the kit draws them (the design of pddnative's setup
   screen, which doskit/docs/LAUNCHER.md made the standard on 2026-10-02:
   the earlier tabs are gone); Esc on a page comes back to the menu and
-  from the menu ends the program. Earlier, with the earlier screen: `/m`
+  in the menu moves to Quit, Enter there ends the program. Earlier, with the earlier screen: `/m`
   chosen and `battle-isle.cfg` written and read back. Not checked since
   the new design: the settings file written and read again by this port,
   full screen (no window in that build), a release build's line for a
