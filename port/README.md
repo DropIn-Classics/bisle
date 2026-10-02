@@ -336,9 +336,18 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   loop's 200th pass: all of the video memory the same, the memory the
   same but for the kinds of differences above (and the mouse's
   variables, the runner being the one with the mouse driver). Nothing
-  else of DESERT was compared: no key on the map, no game of the
-  computer, no save, no map's end; the answer to QUIT THE GAME with
-  DESERT's key not tried. The setup screen's item "Title" was looked
+  else of DESERT was compared but the games of two computers (below):
+  no key on the map, no save; the answer to QUIT THE GAME with
+  DESERT's key not tried.
+  Games of two computers (the menu keys as for ISLE, the map's code
+  from DESERT's CODES.DAT; the scratch `dcv.sh MAP`): the maps 8, 17
+  and 32 ran to their ends (the passes 8507, 19969 and 29107, a wait in
+  key_wait) and the original DESERT.EX2 in the runner and the port
+  were compared one pass later at map_pass: the video memory the same,
+  the heap the same, the data segment above DATA:2000 and the code
+  segments the same but for the kinds of differences above (the mouse,
+  the timers, input counts, the interrupt's stack leftovers). The other
+  maps (9 to 16, 18 to 31) not run. The setup screen's item "Title" was looked
   at in the headless build's picture (`DK_DUMP`, Esc scripted): it is
   there under "The game", showing "Battle Isle"; changed to the data
   disk and started from there: not tried.

@@ -34,13 +34,11 @@ menu's entry (port/README.md; "The port" below).
     `cvcn.sh N NAME LT0708_135C#P map_pass#P` compares there (P the
     pass printed plus 1), `stall.py` finds a last pass by halving.
   - DESERT is in the port (`-title desert`, the setup screen's item
-    "Title"); compared only at the first map's 200th pass. Next for
-    it: a game of two computers (DESERT's codes: `datfiles.py
-    --codes`, its maps against the computer are 8..32; cvcmap.py takes
-    the first table's code, ISLE's, and wants a way to name the
-    title; pp.py and pcmp.py take TITLE=desert, pcmp.py also
-    OEXE=DESERT/DESERT.EX2 and HINTS=src/DESERT.hints), a save, a
-    map's end, the key for QUIT. Then the order in Next, point 0: MOON,
+    "Title"); compared at the first map's 200th pass and, as games of
+    two computers, at the ends of the maps 8, 17 and 32 (the same as
+    the original; cvcmap.py takes TITLE=desert now, the scratch
+    `dcv.sh MAP` does the whole comparison, 2 to 9 minutes of the
+    runner). Next for it: a save, the key for QUIT. Then the order in Next, point 0: MOON,
     the 256-colour intro, later the mouse.
   - The user played the window build: full screen and the keys are
     right, the speed is a fast 386's, the music seems right, the
