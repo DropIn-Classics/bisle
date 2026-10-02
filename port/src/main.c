@@ -112,26 +112,18 @@ static UpdateInfo newer;
 static char newer_label[64];
 
 /* the menu, and a page for each group of settings (doskit/docs/LAUNCHER.md) */
-enum { PAGE_MENU, PAGE_GAME, PAGE_PICTURE, PAGE_QOL, PAGE_PORT };
+enum { PAGE_MENU, PAGE_QOL, PAGE_PORT };
 
 static LauncherItem menu_items[] = {
     { LI_ACTION, "Start the game", NULL, NULL, NULL, ACT_START, NULL },
+    { LI_CHOICE, "Game", "title", title_labels, &set_title, 0,
+      "Battle Isle or one of the data disks." },
+    { LI_CHOICE, "Full screen", "fullscreen", no_yes, &set_fullscreen, 0,
+      "Alt+Enter changes it while the game runs." },
     { LI_HEAD, "", NULL, NULL, NULL, 0, NULL },
-    { LI_PAGE, "Game", NULL, NULL, NULL, PAGE_GAME, "Game selection and settings." },
-    { LI_PAGE, "Picture", NULL, NULL, NULL, PAGE_PICTURE, "Full screen." },
     { LI_PAGE, "Quality of Life changes", NULL, NULL, NULL, PAGE_QOL,
       "Improvements to the gameplay experience." },
     { LI_PAGE, "This port", NULL, NULL, NULL, PAGE_PORT, "New versions." },
-};
-
-static LauncherItem game_items[] = {
-    { LI_CHOICE, "Title", "title", title_labels, &set_title, 0,
-      "Battle Isle or one of the data disks." },
-};
-
-static LauncherItem picture_items[] = {
-    { LI_CHOICE, "Full screen", "fullscreen", no_yes, &set_fullscreen, 0,
-      "Alt+Enter changes it while the game runs." },
 };
 
 static LauncherItem qol_items[] = {
@@ -152,8 +144,6 @@ static LauncherItem port_items[] = {
 
 static LauncherPage pages[] = {
     { "Setup", menu_items, (int)(sizeof menu_items / sizeof menu_items[0]) },
-    { "Game", game_items, (int)(sizeof game_items / sizeof game_items[0]) },
-    { "Picture", picture_items, (int)(sizeof picture_items / sizeof picture_items[0]) },
     { "Quality of Life changes", qol_items, (int)(sizeof qol_items / sizeof qol_items[0]) },
     { "This port", port_items, PORT_ITEMS },
 };
