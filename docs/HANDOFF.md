@@ -47,7 +47,16 @@ menu's entry (port/README.md; "The port" below).
   does the same for MOON). After it both pages, the lists and the parts
   are the original's at that pass. What remains of the comparison: DATA
   bytes below 2000h (149 in 89 runs, all looked at, below) and the
-  library segments' bytes (82 unfiltered, not looked at).
+  library segments' bytes (82 in CODE and T249A..T27A6, looked at, below).
+  They are all inside routines of the library (draw_entry_p/_u, draw_chars,
+  draw_ilbm, file_size, load_file, rand's neighbourhood and unnamed stretches
+  at the segments' starts) where the original keeps values it wrote while
+  running (words such as 2F24h and 3198h that look like saved segment values,
+  presumably; draw_entry's are the drawn rectangle's last coordinates) and
+  the port, which does not run those routines, has 0. No port routine reads
+  them; the segments' code bytes are otherwise the same. Not traced one by
+  one. CODE:156E (song_wait+0, 04 against 03) is the one byte that is a
+  count and not scratch, presumably the song's wait; not looked into.
   A correction: MOON's image is loaded at 0076h (BATTLE's at 0077h, the
   default of memcmp.py), so the comparison of MOON wants
   `pcmp.py ... -- --load 76`; without it every offset in the segments
