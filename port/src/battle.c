@@ -218,9 +218,14 @@ static void map_setup(fptr work0, fptr *palette, fptr *orders, fptr *cursor_lib,
         load_game(*palette);
         SW(game_flags, GW(game_flags) & ~0x200);
     }
-    name = t26ea_000f((int16_t)GW(map_number), FP(save_name), 2, 4);
-    if (!load_file(*pmp, make_path(1, 1, name, 1), work))
-        fatal_error(2);
+    /* the overview's picture; MOON.EXE has no such file (MOON.ASM: no call
+     * of make_path with the extension 1 in its map setup) and draws its
+     * overview otherwise (not read) */
+    if (bi_prog != BI_MOON) {
+        name = t26ea_000f((int16_t)GW(map_number), FP(save_name), 2, 4);
+        if (!load_file(*pmp, make_path(1, 1, name, 1), work))
+            fatal_error(2);
+    }
     draw_window(pw(CURSOR(0), 2), 0);
     draw_marks(pw(CURSOR(0), 2), 0);
     draw_window(pw(CURSOR(1), 2), 1);

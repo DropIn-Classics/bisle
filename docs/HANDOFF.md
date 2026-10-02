@@ -31,11 +31,17 @@ menu's entry (port/README.md; "The port" below).
   `load_lib` does not sort when `bi_prog == BI_MOON`. With it the port loads
   MOON's libraries and stops at `MAP\00.PMP`: MOON's `MAP\` has `NN.COM`,
   `NN.FIN` and `NN.SHP` only (25, 35 and 34 files, plus STATMAP.FIN), no
-  `.PMP`. The map's setup (T070B's counterpart, 63% matched) is the next
-  reading: which of those files holds what BATTLE's `.PMP` holds. Checked: a
-  headless run (`BI_SKIP_INTRO=1`, Enter at passes 20, 200, ..., the failing
-  names printed by a temporary line in dos_open, not kept). Not checked:
-  anything past that file.
+  `.PMP`. Its map setup has no call of make_path with the extension 1 (the
+  overview's picture; MOON draws its overview otherwise, not read), so
+  `map_setup` skips that load for MOON. Then the port starts the first map:
+  `DK_FRAMES=2500 DK_SHOTS="1000:a.png 2400:b.png" DK_KEYS="20:1C 24:9C
+  200:1C 204:9C 400:1C 404:9C 600:1C 604:9C 800:1C 804:9C" BI_SKIP_INTRO=1
+  battle-isle-headless -title moon` shows both players' windows with the
+  moon ground, units and buildings, no error, nothing running in the 1400
+  passes between the pictures (no key pressed). Looked at only: not compared
+  with the runner, so the rest of T070B's differences (63% matched) are
+  unread; the overview (right on an empty square), the fights, the computer
+  player and the end of a map are not tried in MOON.
 - Later still on 2026-10-02: MOON starts in the port (`-title moon`) and its
   title menu is the original's at the menu's entry (port/README.md: how
   checked, what differs). The next step is `lib.c`: MOON has no `LIB\*.DAT`
