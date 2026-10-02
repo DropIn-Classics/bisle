@@ -127,6 +127,75 @@ dptr CODE:196F CODE   ; PUSH CS / PUSH 1986h: a buffer, not code
 ; CODE:2B71 puts CODE:2D7D into the far pointer at DATA:1502
 ptr CODE:2B71 CODE
 
+; ---- names of data, for the port (the intro's own; what BATTLE.hints
+; names at these addresses by the carry below is another program's data)
+; T0529 (the screen, mode 13h unchained: a page is 3E80h bytes a plane,
+; the two pages' segments, the old video mode, the DAC's values)
+name DATA:0092 intro_old_mode
+name DATA:0093 intro_page_drawn
+name DATA:0095 intro_page_shown
+name DATA:0097 intro_dac
+; T03FA: the file names (20 bytes each: a space, the name), the pictures
+; and palettes loaded (a stack), the texts' tables and fonts, the text's
+; place, the frame to come, the escape's jump buffer
+name F0728:0001 intro_pic_names
+name F0728:0105 intro_pal_names
+name F0728:0208 intro_pics
+name F0728:020A intro_slack
+name F0728:020C intro_pal
+name F0728:0210 intro_text_x
+name F0728:0212 intro_work
+name F0728:0216 intro_small_table
+name F0728:0416 intro_big_table
+name F0728:0616 intro_frame
+name F0728:061A intro_text_y
+name F0728:061C intro_pal_list
+name F0728:066C intro_escaped
+name F0728:066E intro_jmpbuf
+name F0728:0682 intro_big_font
+name F0728:0686 intro_small_font
+name F0728:068A intro_pic_list
+name F0728:0705 intro_vowels
+name F07D4:0000 intro_effects
+; the list of DOS blocks (T064C:000E, T0656:0006: the count, then the segments);
+; the carry names them at other addresses
+name DATA:0728 blocks_count
+name DATA:072A blocks
+; the sound's variables (ZEROS is the intro's BSS as BATTLE.EXE's: the
+; library's opl_reset and song code address them at DATA:1860 + the offsets
+; of BATTLE.hints, e.g. voice_volume DATA:1886, seen) and its tables (found
+; in the data by their bytes), the second player's input counts (T0559:0117)
+name ZEROS:0000 op_scratch
+name ZEROS:001C opl_note_sel
+name ZEROS:001D voice_key
+name ZEROS:0026 voice_volume
+name ZEROS:0032 voice_count
+name ZEROS:0034 opl_port
+name ZEROS:0036 opl_wave_on
+name ZEROS:0038 voice_note
+name ZEROS:0042 bend_range
+name ZEROS:0044 voice_b0
+name ZEROS:004E voice_bend
+name ZEROS:0060 opl_am_deep
+name ZEROS:0061 perc_keys
+name ZEROS:0062 opl_vib_deep
+name ZEROS:0063 op_params
+name ZEROS:015F perc_mode
+name ZEROS:0160 track_ptr
+name ZEROS:01A0 track_time
+name ZEROS:01E0 track_status
+name ZEROS:01F0 song_ptr
+name ZEROS:01F4 song_ended
+name ZEROS:01F6 status_ptr
+name ZEROS:01FA song_volume
+name ZEROS:0210 track_cur
+name ZEROS:0214 song_division
+name ZEROS:0216 song_playing
+name DATA:10C4 voice_scale
+name DATA:114F slots
+name DATA:1161 slots_perc
+name DATA:06F0 input1_counts
+
 ; ==== carried over from BATTLE.hints by tools/xfer.py; check, then keep or edit
 ; BATTLE.EXE: the game (Battle Isle), Borland C++ 1991, large model;
 ; started by BI.EXE after the intro.
@@ -1922,7 +1991,7 @@ name DATA:10BA pit_run_high
 name DATA:10BC old_int08
 name DATA:10C0 pit_period_low
 name DATA:10C2 pit_period_high
-; (not mapped: DATA:10C4 would be pit_period_set and voice_scale) name DATA:0DEA pit_period_set
+; (not mapped: DATA:10C4 would be voice_scale and pit_period_set and voice_scale) name DATA:0DEA pit_period_set
 ; the Blue Byte logo's steps (HANDOFF.md at libfiles.py): 43h records of
 ; x, y and the entry's offset in BB.DAT
 ; (not mapped) name T2433:01A7 logo_steps
@@ -1967,7 +2036,7 @@ name T0559:04F6 old_timer
 ; each), the operators of each voice (two bytes a voice: nine voices, and
 ; the percussion mode's eleven), each operator's register offset, whether
 ; it is a carrier, its voice and its voice in the percussion mode
-; (not mapped: DATA:10C4 would be pit_period_set and voice_scale) name DATA:1336 voice_scale
+; (not mapped: DATA:10C4 would be voice_scale and pit_period_set and voice_scale) name DATA:1336 voice_scale
 name DATA:10DA perc_bits
 name DATA:10DF op_modulator
 name DATA:10ED op_carrier
@@ -2117,15 +2186,15 @@ name F07D4:0006 effects_asked
 ; frame to come, the folder, whether the files are loaded, the path made,
 ; the files' names
 ; (not mapped: F0728:020E would be anim_y and anim_names) name F2D7A:0006 anim_y
-name F0728:0210 anim_work
+; (not mapped: F0728:0210 would be intro_text_x and anim_work) name F2D7A:0008 anim_work
 name F0728:0214 anim_count
-name F0728:0616 anim_frame
-name F0728:061A anim_dir
+; (not mapped: F0728:0616 would be intro_frame and anim_frame) name F2D7A:000E anim_frame
+; (not mapped: F0728:061A would be intro_text_y and anim_dir) name F2D7A:0012 anim_dir
 name F0728:061E anim_load
 name F0728:0620 anim_path
 name F0728:0652 anim_palette
 name F0728:0656 anim_data
-name F0728:020C anim_x
+; (not mapped: F0728:020C would be intro_pal and anim_x) name F2D7A:0052 anim_x
 ; (not mapped: F0728:020E would be anim_y and anim_names) name F2D7A:0054 anim_names
 ; the credits' values (end_credits): the cursor's blinking, where the next
 ; letter goes, the page kept, where the cursor is, the sounds' file, the

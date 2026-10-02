@@ -560,15 +560,15 @@
     X(F2D65, scene_ground_bonus, 0x000E, 0xFFFF) \
     X(F2D66, scene_scripts, 0x0000, 0xFFFF) \
     X(F2D7A, anim_y, 0x0006, 0xFFFF) \
-    X(F2D7A, anim_work, 0x0008, 0x0210) \
+    X(F2D7A, anim_work, 0x0008, 0xFFFF) \
     X(F2D7A, anim_count, 0x000C, 0x0214) \
-    X(F2D7A, anim_frame, 0x000E, 0x0616) \
-    X(F2D7A, anim_dir, 0x0012, 0x061A) \
+    X(F2D7A, anim_frame, 0x000E, 0xFFFF) \
+    X(F2D7A, anim_dir, 0x0012, 0xFFFF) \
     X(F2D7A, anim_load, 0x0016, 0x061E) \
     X(F2D7A, anim_path, 0x0018, 0x0620) \
     X(F2D7A, anim_palette, 0x004A, 0x0652) \
     X(F2D7A, anim_data, 0x004E, 0x0656) \
-    X(F2D7A, anim_x, 0x0052, 0x020C) \
+    X(F2D7A, anim_x, 0x0052, 0xFFFF) \
     X(F2D7A, anim_names, 0x0054, 0xFFFF) \
     X(F2D88, credits_blink, 0x0000, 0xFFFF) \
     X(F2D88, credits_count, 0x0002, 0xFFFF) \
@@ -628,13 +628,13 @@
     X(DATA, input1_now, 0x03D8, 0x06DA) \
     X(DATA, input1_before, 0x03DE, 0x06E0) \
     X(DATA, input1_events, 0x03E4, 0x06E6) \
-    X(DATA, input1_counts, 0x03EE, 0xFFFF) \
+    X(DATA, input1_counts, 0x03EE, 0x06F0) \
     X(DATA, key_scan, 0x0404, 0x0706) \
     X(DATA, key_char, 0x0406, 0x0708) \
     X(DATA, key_there, 0x0408, 0x070A) \
     X(DATA, mouse_on, 0x040A, 0x070C) \
-    X(DATA, blocks_count, 0x044E, 0x0744) \
-    X(DATA, blocks, 0x0450, 0x0746) \
+    X(DATA, blocks_count, 0x044E, 0x0728) \
+    X(DATA, blocks, 0x0450, 0x072A) \
     X(DATA, picture_palette, 0x04A0, 0xFFFF) \
     X(DATA, crtc_port, 0x0AB6, 0xFFFF) \
     X(DATA, crtc_data_port, 0x0AB8, 0xFFFF) \
@@ -661,13 +661,13 @@
     X(DATA, pit_period_high, 0x0DE8, 0x10C2) \
     X(DATA, pit_period_set, 0x0DEA, 0xFFFF) \
     X(DATA, credits_text, 0x0DEC, 0x10C6) \
-    X(DATA, voice_scale, 0x1336, 0xFFFF) \
+    X(DATA, voice_scale, 0x1336, 0x10C4) \
     X(DATA, perc_bits, 0x134C, 0x10DA) \
     X(DATA, op_modulator, 0x1351, 0x10DF) \
     X(DATA, op_carrier, 0x135F, 0x10ED) \
     X(DATA, op_drums, 0x136D, 0x10FB) \
-    X(DATA, slots, 0x13C1, 0xFFFF) \
-    X(DATA, slots_perc, 0x13D3, 0xFFFF) \
+    X(DATA, slots, 0x13C1, 0x114F) \
+    X(DATA, slots_perc, 0x13D3, 0x1161) \
     X(DATA, op_offsets, 0x13E9, 0x1177) \
     X(DATA, op_is_carrier, 0x13FB, 0x1189) \
     X(DATA, op_voice, 0x140D, 0x119B) \
@@ -693,32 +693,55 @@
     X(DATA, fx_voice, 0x16D6, 0x1464) \
     X(DATA, adlib_found, 0x16EC, 0x147A) \
     X(DATA, rand_seed, 0x1938, 0x16CA) \
-    X(ZEROS, op_scratch, 0x0000, 0xFFFF) \
-    X(ZEROS, opl_note_sel, 0x001C, 0xFFFF) \
-    X(ZEROS, voice_key, 0x001D, 0xFFFF) \
-    X(ZEROS, voice_volume, 0x0026, 0xFFFF) \
-    X(ZEROS, voice_count, 0x0032, 0xFFFF) \
-    X(ZEROS, opl_port, 0x0034, 0xFFFF) \
-    X(ZEROS, opl_wave_on, 0x0036, 0xFFFF) \
-    X(ZEROS, voice_note, 0x0038, 0xFFFF) \
-    X(ZEROS, bend_range, 0x0042, 0xFFFF) \
-    X(ZEROS, voice_b0, 0x0044, 0xFFFF) \
-    X(ZEROS, voice_bend, 0x004E, 0xFFFF) \
-    X(ZEROS, opl_am_deep, 0x0060, 0xFFFF) \
-    X(ZEROS, perc_keys, 0x0061, 0xFFFF) \
-    X(ZEROS, opl_vib_deep, 0x0062, 0xFFFF) \
-    X(ZEROS, op_params, 0x0063, 0xFFFF) \
-    X(ZEROS, perc_mode, 0x015F, 0xFFFF) \
-    X(ZEROS, track_ptr, 0x0160, 0xFFFF) \
-    X(ZEROS, track_time, 0x01A0, 0xFFFF) \
-    X(ZEROS, track_status, 0x01E0, 0xFFFF) \
-    X(ZEROS, song_ptr, 0x01F0, 0xFFFF) \
-    X(ZEROS, song_ended, 0x01F4, 0xFFFF) \
-    X(ZEROS, status_ptr, 0x01F6, 0xFFFF) \
-    X(ZEROS, song_volume, 0x01FA, 0xFFFF) \
-    X(ZEROS, track_cur, 0x0210, 0xFFFF) \
-    X(ZEROS, song_division, 0x0214, 0xFFFF) \
-    X(ZEROS, song_playing, 0x0216, 0xFFFF) \
+    X(DATA, intro_old_mode, 0xFFFF, 0x0092) \
+    X(DATA, intro_page_drawn, 0xFFFF, 0x0093) \
+    X(DATA, intro_page_shown, 0xFFFF, 0x0095) \
+    X(DATA, intro_dac, 0xFFFF, 0x0097) \
+    X(ZEROS, op_scratch, 0x0000, 0x0000) \
+    X(ZEROS, opl_note_sel, 0x001C, 0x001C) \
+    X(ZEROS, voice_key, 0x001D, 0x001D) \
+    X(ZEROS, voice_volume, 0x0026, 0x0026) \
+    X(ZEROS, voice_count, 0x0032, 0x0032) \
+    X(ZEROS, opl_port, 0x0034, 0x0034) \
+    X(ZEROS, opl_wave_on, 0x0036, 0x0036) \
+    X(ZEROS, voice_note, 0x0038, 0x0038) \
+    X(ZEROS, bend_range, 0x0042, 0x0042) \
+    X(ZEROS, voice_b0, 0x0044, 0x0044) \
+    X(ZEROS, voice_bend, 0x004E, 0x004E) \
+    X(ZEROS, opl_am_deep, 0x0060, 0x0060) \
+    X(ZEROS, perc_keys, 0x0061, 0x0061) \
+    X(ZEROS, opl_vib_deep, 0x0062, 0x0062) \
+    X(ZEROS, op_params, 0x0063, 0x0063) \
+    X(ZEROS, perc_mode, 0x015F, 0x015F) \
+    X(ZEROS, track_ptr, 0x0160, 0x0160) \
+    X(ZEROS, track_time, 0x01A0, 0x01A0) \
+    X(ZEROS, track_status, 0x01E0, 0x01E0) \
+    X(ZEROS, song_ptr, 0x01F0, 0x01F0) \
+    X(ZEROS, song_ended, 0x01F4, 0x01F4) \
+    X(ZEROS, status_ptr, 0x01F6, 0x01F6) \
+    X(ZEROS, song_volume, 0x01FA, 0x01FA) \
+    X(ZEROS, track_cur, 0x0210, 0x0210) \
+    X(ZEROS, song_division, 0x0214, 0x0214) \
+    X(ZEROS, song_playing, 0x0216, 0x0216) \
+    X(F0728, intro_pic_names, 0xFFFF, 0x0001) \
+    X(F0728, intro_pal_names, 0xFFFF, 0x0105) \
+    X(F0728, intro_pics, 0xFFFF, 0x0208) \
+    X(F0728, intro_slack, 0xFFFF, 0x020A) \
+    X(F0728, intro_pal, 0xFFFF, 0x020C) \
+    X(F0728, intro_text_x, 0xFFFF, 0x0210) \
+    X(F0728, intro_work, 0xFFFF, 0x0212) \
+    X(F0728, intro_small_table, 0xFFFF, 0x0216) \
+    X(F0728, intro_big_table, 0xFFFF, 0x0416) \
+    X(F0728, intro_frame, 0xFFFF, 0x0616) \
+    X(F0728, intro_text_y, 0xFFFF, 0x061A) \
+    X(F0728, intro_pal_list, 0xFFFF, 0x061C) \
+    X(F0728, intro_escaped, 0xFFFF, 0x066C) \
+    X(F0728, intro_jmpbuf, 0xFFFF, 0x066E) \
+    X(F0728, intro_big_font, 0xFFFF, 0x0682) \
+    X(F0728, intro_small_font, 0xFFFF, 0x0686) \
+    X(F0728, intro_pic_list, 0xFFFF, 0x068A) \
+    X(F0728, intro_vowels, 0xFFFF, 0x0705) \
+    X(F07D4, intro_effects, 0xFFFF, 0x0000) \
 
 /* X(SEG, name, BATTLE, INTEGA): the frame of the name segment in each program */
 #define BI_FRAMES(X) \
@@ -1105,15 +1128,15 @@
     X(F2D65, scene_ground_bonus, BATTLE_F2D65, 0xFFFF) \
     X(F2D66, scene_scripts, BATTLE_F2D66, 0xFFFF) \
     X(F2D7A, anim_y, BATTLE_F2D7A, 0xFFFF) \
-    X(F2D7A, anim_work, BATTLE_F2D7A, INTEGA_F0728) \
+    X(F2D7A, anim_work, BATTLE_F2D7A, 0xFFFF) \
     X(F2D7A, anim_count, BATTLE_F2D7A, INTEGA_F0728) \
-    X(F2D7A, anim_frame, BATTLE_F2D7A, INTEGA_F0728) \
-    X(F2D7A, anim_dir, BATTLE_F2D7A, INTEGA_F0728) \
+    X(F2D7A, anim_frame, BATTLE_F2D7A, 0xFFFF) \
+    X(F2D7A, anim_dir, BATTLE_F2D7A, 0xFFFF) \
     X(F2D7A, anim_load, BATTLE_F2D7A, INTEGA_F0728) \
     X(F2D7A, anim_path, BATTLE_F2D7A, INTEGA_F0728) \
     X(F2D7A, anim_palette, BATTLE_F2D7A, INTEGA_F0728) \
     X(F2D7A, anim_data, BATTLE_F2D7A, INTEGA_F0728) \
-    X(F2D7A, anim_x, BATTLE_F2D7A, INTEGA_F0728) \
+    X(F2D7A, anim_x, BATTLE_F2D7A, 0xFFFF) \
     X(F2D7A, anim_names, BATTLE_F2D7A, 0xFFFF) \
     X(F2D88, credits_blink, BATTLE_F2D88, 0xFFFF) \
     X(F2D88, credits_count, BATTLE_F2D88, 0xFFFF) \
@@ -1173,7 +1196,7 @@
     X(DATA, input1_now, BATTLE_DATA, INTEGA_DATA) \
     X(DATA, input1_before, BATTLE_DATA, INTEGA_DATA) \
     X(DATA, input1_events, BATTLE_DATA, INTEGA_DATA) \
-    X(DATA, input1_counts, BATTLE_DATA, 0xFFFF) \
+    X(DATA, input1_counts, BATTLE_DATA, INTEGA_DATA) \
     X(DATA, key_scan, BATTLE_DATA, INTEGA_DATA) \
     X(DATA, key_char, BATTLE_DATA, INTEGA_DATA) \
     X(DATA, key_there, BATTLE_DATA, INTEGA_DATA) \
@@ -1206,13 +1229,13 @@
     X(DATA, pit_period_high, BATTLE_DATA, INTEGA_DATA) \
     X(DATA, pit_period_set, BATTLE_DATA, 0xFFFF) \
     X(DATA, credits_text, BATTLE_DATA, INTEGA_DATA) \
-    X(DATA, voice_scale, BATTLE_DATA, 0xFFFF) \
+    X(DATA, voice_scale, BATTLE_DATA, INTEGA_DATA) \
     X(DATA, perc_bits, BATTLE_DATA, INTEGA_DATA) \
     X(DATA, op_modulator, BATTLE_DATA, INTEGA_DATA) \
     X(DATA, op_carrier, BATTLE_DATA, INTEGA_DATA) \
     X(DATA, op_drums, BATTLE_DATA, INTEGA_DATA) \
-    X(DATA, slots, BATTLE_DATA, 0xFFFF) \
-    X(DATA, slots_perc, BATTLE_DATA, 0xFFFF) \
+    X(DATA, slots, BATTLE_DATA, INTEGA_DATA) \
+    X(DATA, slots_perc, BATTLE_DATA, INTEGA_DATA) \
     X(DATA, op_offsets, BATTLE_DATA, INTEGA_DATA) \
     X(DATA, op_is_carrier, BATTLE_DATA, INTEGA_DATA) \
     X(DATA, op_voice, BATTLE_DATA, INTEGA_DATA) \
@@ -1238,31 +1261,54 @@
     X(DATA, fx_voice, BATTLE_DATA, INTEGA_DATA) \
     X(DATA, adlib_found, BATTLE_DATA, INTEGA_DATA) \
     X(DATA, rand_seed, BATTLE_DATA, INTEGA_DATA) \
-    X(ZEROS, op_scratch, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, opl_note_sel, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, voice_key, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, voice_volume, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, voice_count, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, opl_port, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, opl_wave_on, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, voice_note, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, bend_range, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, voice_b0, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, voice_bend, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, opl_am_deep, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, perc_keys, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, opl_vib_deep, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, op_params, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, perc_mode, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, track_ptr, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, track_time, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, track_status, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, song_ptr, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, song_ended, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, status_ptr, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, song_volume, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, track_cur, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, song_division, BATTLE_ZEROS, 0xFFFF) \
-    X(ZEROS, song_playing, BATTLE_ZEROS, 0xFFFF) \
+    X(DATA, intro_old_mode, 0xFFFF, INTEGA_DATA) \
+    X(DATA, intro_page_drawn, 0xFFFF, INTEGA_DATA) \
+    X(DATA, intro_page_shown, 0xFFFF, INTEGA_DATA) \
+    X(DATA, intro_dac, 0xFFFF, INTEGA_DATA) \
+    X(ZEROS, op_scratch, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, opl_note_sel, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, voice_key, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, voice_volume, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, voice_count, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, opl_port, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, opl_wave_on, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, voice_note, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, bend_range, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, voice_b0, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, voice_bend, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, opl_am_deep, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, perc_keys, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, opl_vib_deep, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, op_params, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, perc_mode, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, track_ptr, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, track_time, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, track_status, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, song_ptr, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, song_ended, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, status_ptr, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, song_volume, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, track_cur, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, song_division, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(ZEROS, song_playing, BATTLE_ZEROS, INTEGA_ZEROS) \
+    X(F0728, intro_pic_names, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_pal_names, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_pics, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_slack, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_pal, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_text_x, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_work, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_small_table, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_big_table, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_frame, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_text_y, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_pal_list, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_escaped, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_jmpbuf, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_big_font, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_small_font, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_pic_list, 0xFFFF, INTEGA_F0728) \
+    X(F0728, intro_vowels, 0xFFFF, INTEGA_F0728) \
+    X(F07D4, intro_effects, 0xFFFF, INTEGA_F07D4) \
 
 #endif
