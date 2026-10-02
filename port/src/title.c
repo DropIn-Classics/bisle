@@ -3,6 +3,36 @@
 #include <string.h>
 #include "bi.h"
 
+int bi_skip_intro, bi_quit_yz;
+
+/* the key set of the keyboard and twelve of its keys copied, as the title
+ * does when space ends it (the key set of the other, what for is not known,
+ * is chosen when it is not the keyboard's space) */
+static void title_key_set(fptr set)
+{
+    static const uint8_t from[12] = { 8, 8, 9, 0x0B, 0x0A, 6, 0x1A, 0x1E, 0x1C, 0x1B, 0x1D, 1 };
+    int i;
+
+    SFP(key_set, set);
+    for (i = 0; i < 12; i++)
+        SBO(key_set_copy, i, pb(set, from[i]));
+}
+
+/* the title left out (setup screen): what it leaves behind that the rest
+ * of the program uses is the key set and a cleared page, the picture's
+ * palette being set by the menu's own picture */
+int title_skip(void)
+{
+    title_key_set(FP(key_set_keyboard));
+    fade_out();
+    restore_sprites();
+    SW(draw_colour, 0);
+    clear_page();
+    flip_page();
+    restore_sprites();
+    return 0;
+}
+
 int title(fptr work)
 {
     fptr p = hadd(work, 0x2710), path, text, line[3], at, picture;
@@ -79,14 +109,7 @@ int title(fptr work)
                 break;
             }
         if (GW(key_there) && GB(key_char) == 0x20) {
-            /* the key set of the keyboard, or the other (what for is not
-             * known), and twelve of its keys copied */
-            static const uint8_t from[12] = { 8, 8, 9, 0x0B, 0x0A, 6, 0x1A, 0x1E, 0x1C, 0x1B, 0x1D, 1 };
-            fptr set = GB(key_scan) == 0x39 ? FP(key_set_keyboard) : FP(key_set_other);
-
-            SFP(key_set, set);
-            for (i = 0; i < 12; i++)
-                SBO(key_set_copy, i, pb(set, from[i]));
+            title_key_set(GB(key_scan) == 0x39 ? FP(key_set_keyboard) : FP(key_set_other));
             SW(key_there, 0);
             break;
         }

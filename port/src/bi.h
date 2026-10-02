@@ -211,6 +211,12 @@ int draw_text24(int x, int y, fptr text, unsigned keep_off, unsigned keep_seg);
 fptr next_line(fptr at, fptr start);
 long load_lib(fptr path, fptr dest, fptr work, fptr record, int sorted);
 int title(fptr work);
+/* the title's end without the logo and the title: the key set of the keyboard */
+int title_skip(void);
+/* the port's own settings (the setup screen's): not in the original.  Both
+ * 0, as the headless comparisons run them. */
+extern int bi_skip_intro; /* leave out the logo and the title */
+extern int bi_quit_yz;    /* QUIT THE GAME is answered by Y or Z, whatever the layout */
 
 /* ---- menu.c: T1090 ---- */
 int menu(fptr work);

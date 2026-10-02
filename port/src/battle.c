@@ -315,7 +315,9 @@ static void loop_keys(unsigned key)
         flip_page();
         copy_page();
         for (;;) {
-            if (pb(ks, 0x18) == GB(key_scan)) {
+            /* bi_quit_yz: the letters Y and Z, the keys 15h and 2Ch, whichever of
+             * them the key set and the message name, as the layout has them */
+            if (pb(ks, 0x18) == GB(key_scan) || (bi_quit_yz && (GB(key_scan) == 0x15 || GB(key_scan) == 0x2C))) {
                 SW(game_flags, GW(game_flags) & ~2);
                 SW(game_flags, GW(game_flags) | 1);
                 SD(score_now, 0);
@@ -1239,7 +1241,7 @@ void battle_main(int argc, char **argv)
     work = hadd(work, 0xBF4);
     if (!load_file(GFP(font_ptr), make_path(1, -1, FP(name_char6), 5), work))
         fatal_error(2);
-    if (title(work))
+    if (bi_skip_intro ? title_skip() : title(work))
         fatal_error(2);
     SWO(players, 0x17, 0);
     SWO(players, 0, 0);

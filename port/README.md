@@ -351,6 +351,29 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   at in the headless build's picture (`DK_DUMP`, Esc scripted): it is
   there under "The game", showing "Battle Isle"; changed to the data
   disk and started from there: not tried.
+- Two choices of the setup screen that the original has not (both
+  also set in scripted runs by BI_SKIP_INTRO and BI_QUIT_YZ):
+  - "Skip logo, intro, and title" (`bi_skip_intro`): battle_main calls
+    `title_skip` instead of `title`: the key set of the keyboard as
+    space chooses it, the page cleared. Compared with the original
+    (space at the title's 200th pass, enter at the menu's 30th) at the
+    menu's entry (video memory of the pages the same; the sprite lists
+    at A7E8 differ, 4842 bytes, not looked into) and at the first
+    map's 200th pass (video memory the same, data above DATA:2000 the
+    same; unlike before: the heap behind, 7754 bytes, which the
+    title's files leave there, and T2515:0004..0005, not looked into).
+    The intro of 256 colours is not in the port yet: the choice is to
+    leave it out too when it is.
+  - "Quit key Y and Z" (`bi_quit_yz`, on by default): QUIT THE GAME is
+    answered by the key at the scancode 15h and by that at 2Ch. The
+    original takes the one its key set has at index 18h: 15h in
+    BATTLE.EXE (the message shows Y), 2Ch in DESERT.EX2 (shows Z). The
+    keys are scancodes, so these are the letters on a QWERTY keyboard
+    and the other way round on QWERTZ: the original is right on QWERTY
+    and wrong on QWERTZ in both. Tried in the headless build on ISLE's
+    map (Esc, then the scancode 15h and 2Ch): without the choice 15h
+    leaves the map and 2Ch does not, with it both do. DESERT's key not
+    tried; the message's text is not changed.
 - The setup screen, in the headless build with scripted keys (`DK_KEYS`,
   the picture through `DK_DUMP`, looked at): the page as the kit draws
   it; down twice, right, up twice and Enter start the game with `/m`

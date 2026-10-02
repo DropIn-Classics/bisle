@@ -33,6 +33,8 @@
  * folder's `save-desert`.
  *
  * For comparisons with the original (doskit/tools/memcmp.py):
+ * BI_SKIP_INTRO and BI_QUIT_YZ set the setup screen's two choices of the
+ * same names without it.
  * BI_BREAK=NAME#N ends the program at the Nth pass of a place of that
  * name (bi_at), after writing the memory to $BI_RAM and the video memory
  * to $BI_VRAM, as the runner's -break, -ram and -vram do.
@@ -103,7 +105,7 @@ enum { ACT_START = 1, ACT_PAGE };
 static const char *const no_yes[] = { "no", "yes", NULL };
 static const char *const off_on[] = { "off", "on", NULL };
 
-static int set_fullscreen, set_m, set_updates, set_title;
+static int set_fullscreen, set_m, set_updates, set_title, set_skip, set_quit = 1;
 /* the titles whose folders are there, for the setup screen's choice */
 static const char *title_labels[TITLES + 1];
 static int title_of[TITLES];
@@ -120,6 +122,12 @@ static LauncherItem game_items[] = {
       "Battle Isle, or a data disk whose folder is in the game's files." },
     { LI_CHOICE, "Switch /m", "m", off_on, &set_m, 0,
       "The original's /m: the map in its other palette." },
+    { LI_CHOICE, "Skip logo, intro, and title", "skip_intro", no_yes, &set_skip, 0,
+      "Starts at the main menu, leaving out the Blue Byte logo and the title's credits "
+      "(and the intro, once the port has it)." },
+    { LI_CHOICE, "Quit key Y and Z", "quit_yz", no_yes, &set_quit, 0,
+      "QUIT THE GAME is answered by the Y key and the Z key: the original has the one the key set names, "
+      "which is not the letter shown on every keyboard layout." },
     { LI_HEAD, "This port", NULL, NULL, NULL, 0, NULL },
     { LI_CHOICE, "Look for new versions", NULL, no_yes, &set_updates, 0,
       "One small file from GitHub, at most once a day; nothing is sent." },
@@ -181,6 +189,8 @@ static int setup(const char *game, int *m, int *title)
     set_fullscreen = plat_fullscreen();
     launcher_save(cfg, "battle-isle: the setup screen's settings", pages, 1);
     *m = set_m;
+    bi_skip_intro = set_skip;
+    bi_quit_yz = set_quit;
     *title = n ? title_of[set_title] : 0;
     return r == ACT_START;
 }
@@ -310,6 +320,11 @@ int main(int argc, char **argv)
         if (m && nargs < 8)
             args[nargs++] = "/m";
     }
+    /* for scripted runs without the setup screen (the comparisons) */
+    if (getenv("BI_SKIP_INTRO"))
+        bi_skip_intro = 1;
+    if (getenv("BI_QUIT_YZ"))
+        bi_quit_yz = 1;
     if (!load_program(game, title)) {
         plat_shutdown();
         return 1;

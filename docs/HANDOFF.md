@@ -38,7 +38,12 @@ menu's entry (port/README.md; "The port" below).
     two computers, at the ends of the maps 8, 17 and 32 (the same as
     the original; cvcmap.py takes TITLE=desert now, the scratch
     `dcv.sh MAP` does the whole comparison, 2 to 9 minutes of the
-    runner). Next for it: a save, the key for QUIT. Then the order in Next, point 0: MOON,
+    runner). The QUIT key: BATTLE.EXE and DESERT.EX2 answer with the
+    scancodes 15h and 2Ch (key set index 18h), the messages show Y and
+    Z: right on a QWERTY keyboard, wrong on QWERTZ, in the original
+    too; the port has the choice "Quit key Y and Z" (port/README.md).
+    Also new: "Skip logo, intro, and title" (the intro not in yet).
+    Next for DESERT: a save. Then the order in Next, point 0: MOON,
     the 256-colour intro, later the mouse.
   - The user played the window build: full screen and the keys are
     right, the speed is a fast 386's, the music seems right, the
