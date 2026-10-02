@@ -102,9 +102,10 @@ What the port does otherwise than a PC:
 - The original's routines keep scratch values in their code segments;
   the port keeps them in C variables.
 - Before the game the kit's setup screen is shown (doskit/docs/LAUNCHER.md:
-  `main.c` gives `launcher_run` one page of items and draws nothing):
-  start, full screen, the original's `/m`, and whether to look for newer
-  releases (update.h). The settings are kept in the data folder's
+  `main.c` gives `launcher_run` a menu and four pages of items and draws
+  nothing; the menu: start, then the pages Game (title, the original's
+  `/m`), Picture (full screen), Quality of life fixes (the two choices
+  below) and This port (whether to look for newer releases, update.h)). The settings are kept in the data folder's
   `battle-isle.cfg`. Looking for newer releases is not asked about at the
   first start: it is off until the player switches it on there (a
   question of its own would be a dialog the kit does not have). A newer
@@ -375,12 +376,15 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
     leaves the map and 2Ch does not, with it both do. DESERT's key not
     tried; the message's text is not changed.
 - The setup screen, in the headless build with scripted keys (`DK_KEYS`,
-  the picture through `DK_DUMP`, looked at): the page as the kit draws
-  it; down twice, right, up twice and Enter start the game with `/m`
-  and write `battle-isle.cfg`; started again the screen shows the kept
-  value, and Esc ends the program. Not checked: full screen (no window
-  in that build), a release build's line for a newer release, a
-  controller.
+  the pictures through `DK_SHOTS`, looked at): the menu and each of the
+  four pages as the kit draws them (the design of pddnative's setup
+  screen, which doskit/docs/LAUNCHER.md made the standard on 2026-10-02:
+  the earlier tabs are gone); Esc on a page comes back to the menu and
+  from the menu ends the program. Earlier, with the earlier screen: `/m`
+  chosen and `battle-isle.cfg` written and read back. Not checked since
+  the new design: the settings file written and read again by this port,
+  full screen (no window in that build), a release build's line for a
+  newer release, a controller.
 - The window build was started for 8 s and ran (nothing looked at or
   heard: nobody was there). The user then played it (Windows 11, by
   eye and ear, not beside the original): full screen works, the keys

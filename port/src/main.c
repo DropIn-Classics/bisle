@@ -112,34 +112,56 @@ static int title_of[TITLES];
 static UpdateInfo newer;
 static char newer_label[64];
 
-static LauncherItem game_items[] = {
+/* the menu, and a page for each group of settings (doskit/docs/LAUNCHER.md) */
+enum { PAGE_MENU, PAGE_GAME, PAGE_PICTURE, PAGE_QOL, PAGE_PORT };
+
+static LauncherItem menu_items[] = {
     { LI_ACTION, "Start the game", NULL, NULL, NULL, ACT_START, NULL },
-    { LI_HEAD, "Picture", NULL, NULL, NULL, 0, NULL },
-    { LI_CHOICE, "Full screen", "fullscreen", no_yes, &set_fullscreen, 0,
-      "Alt+Enter changes it while the game runs." },
-    { LI_HEAD, "The game", NULL, NULL, NULL, 0, NULL },
+    { LI_HEAD, "", NULL, NULL, NULL, 0, NULL },
+    { LI_PAGE, "Game", NULL, NULL, NULL, PAGE_GAME, "Which game, and the original's switch." },
+    { LI_PAGE, "Picture", NULL, NULL, NULL, PAGE_PICTURE, "Full screen." },
+    { LI_PAGE, "Quality of life fixes", NULL, NULL, NULL, PAGE_QOL,
+      "Choices the original does not have." },
+    { LI_PAGE, "This port", NULL, NULL, NULL, PAGE_PORT, "New versions." },
+};
+
+static LauncherItem game_items[] = {
     { LI_CHOICE, "Title", "title", title_labels, &set_title, 0,
       "Battle Isle, or a data disk whose folder is in the game's files." },
     { LI_CHOICE, "Switch /m", "m", off_on, &set_m, 0,
       "The original's /m: the map in its other palette." },
+};
+
+static LauncherItem picture_items[] = {
+    { LI_CHOICE, "Full screen", "fullscreen", no_yes, &set_fullscreen, 0,
+      "Alt+Enter changes it while the game runs." },
+};
+
+static LauncherItem qol_items[] = {
     { LI_CHOICE, "Skip logo, intro, and title", "skip_intro", no_yes, &set_skip, 0,
-      "Starts at the main menu, leaving out the Blue Byte logo and the title's credits "
-      "(and the intro, once the port has it)." },
+      "Starts at the main menu (the intro is not in the port yet)." },
     { LI_CHOICE, "Quit key Y and Z", "quit_yz", no_yes, &set_quit, 0,
-      "QUIT THE GAME is answered by the Y key and the Z key: the original has the one the key set names, "
-      "which is not the letter shown on every keyboard layout." },
-    { LI_HEAD, "This port", NULL, NULL, NULL, 0, NULL },
+      "QUIT THE GAME takes Y and Z: the original has one, by layout." },
+};
+
+static LauncherItem port_items[] = {
     { LI_CHOICE, "Look for new versions", NULL, no_yes, &set_updates, 0,
       "One small file from GitHub, at most once a day; nothing is sent." },
     /* the line of a newer release: counted only when there is one */
     { LI_ACTION, newer_label, NULL, NULL, NULL, ACT_PAGE, "Opens the release's page in the browser." },
 };
 
-#define GAME_ITEMS ((int)(sizeof game_items / sizeof game_items[0]) - 1)
+#define PORT_ITEMS ((int)(sizeof port_items / sizeof port_items[0]) - 1)
 
 static LauncherPage pages[] = {
-    { "Game", game_items, GAME_ITEMS },
+    { "Setup", menu_items, (int)(sizeof menu_items / sizeof menu_items[0]) },
+    { "Game", game_items, (int)(sizeof game_items / sizeof game_items[0]) },
+    { "Picture", picture_items, (int)(sizeof picture_items / sizeof picture_items[0]) },
+    { "Quality of life fixes", qol_items, (int)(sizeof qol_items / sizeof qol_items[0]) },
+    { "This port", port_items, PORT_ITEMS },
 };
+
+#define NPAGES ((int)(sizeof pages / sizeof pages[0]))
 
 static void setting_changed(const LauncherItem *item)
 {
@@ -169,25 +191,25 @@ static int setup(const char *game, int *m, int *title)
     sys_data_dir(data, sizeof data);
     sys_join(cfg, sizeof cfg, data, "battle-isle.cfg");
     set_fullscreen = plat_fullscreen();
-    launcher_load(cfg, pages, 1);
+    launcher_load(cfg, pages, NPAGES);
     if (set_title < 0 || set_title >= n)
         set_title = 0;
     plat_set_fullscreen(set_fullscreen);
     set_updates = update_consent() > 0;
     for (;;) {
         update_start(PORT_VERSION, PORT_UPDATE_URL);
-        pages[0].count = GAME_ITEMS;
+        pages[PAGE_PORT].count = PORT_ITEMS;
         if (update_poll(&newer)) {
             snprintf(newer_label, sizeof newer_label, "%.20s is out: its page", newer.version);
-            pages[0].count = GAME_ITEMS + 1;
+            pages[PAGE_PORT].count = PORT_ITEMS + 1;
         }
-        r = launcher_run(&app, NULL, pages, 1, setting_changed);
+        r = launcher_run(&app, NULL, pages, NPAGES, setting_changed);
         if (r != ACT_PAGE)
             break;
         update_open(newer.page);
     }
     set_fullscreen = plat_fullscreen();
-    launcher_save(cfg, "battle-isle: the setup screen's settings", pages, 1);
+    launcher_save(cfg, "battle-isle: the setup screen's settings", pages, NPAGES);
     *m = set_m;
     bi_skip_intro = set_skip;
     bi_quit_yz = set_quit;
