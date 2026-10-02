@@ -110,6 +110,19 @@ static int task_helper(int player, unsigned unit, unsigned score, unsigned task,
 
 static int half(unsigned n) { return (pw(UNIT(n), 4) & 0x40) && !(pw(UNIT(n), 4) & 0x80); }
 
+/* MOON.EXE's T1BCB:0001 (a unit, the enemy): a unit that has more than 2
+ * fewer than the enemy (the count a type with 4 in its +0Eh keeps in +3,
+ * else in +2) and less than 3 in its +1 is left out of the units that go
+ * for the enemy */
+static int much_weaker(unsigned a, unsigned b)
+{
+    fptr ua = UNIT(a), ub = UNIT(b);
+    int ca = pb(ua, (pw(TYPE(pb(ua, 8)), 0x0E) & 4) ? 3 : 2);
+    int cb = pb(ub, (pw(TYPE(pb(ub, 8)), 0x0E) & 4) ? 3 : 2);
+
+    return ca - cb < -2 && pb(ua, 1) < 3;
+}
+
 /* the distance of two squares given as offsets */
 static int distance(unsigned a, unsigned b)
 {
@@ -505,6 +518,8 @@ int computer_plan(int player)
                 fptr t = TYPE(pb(UNIT(n), 8));
 
                 if (half(n) || !same_side(player, FLAGS(n)) || (FLAGS(n) & 0xC000))
+                    continue;
+                if (bi_prog == BI_MOON && much_weaker(n, foe))
                     continue;
                 if (SCORE(n) >= (int16_t)pw(T(foe), 6))
                     continue;
