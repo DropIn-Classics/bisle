@@ -23,6 +23,29 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- Later still on 2026-10-02: MOON starts in the port (`-title moon`) and its
+  title menu is the original's at the menu's entry (port/README.md: how
+  checked, what differs). The next step is `lib.c`: MOON has no `LIB\*.DAT`
+  and its loader reads the libraries otherwise (T0CEB's counterpart, 71%
+  matched; the port stops at `LIB\part.DAT`), then the map's setup
+  (T070B, 63%). What the step taught:
+  - MOON's memory is laid out otherwise below the program: PSP 0066h (the
+    original loads it at 0076h), `LOAD_SEG` is `rm_psp + 10h` in the port
+    now; the program keeps 3180h paragraphs from its PSP.
+  - MOON has no ZEROS segment (its header asks for no memory after the
+    file): the sound's variables and the C library's BSS are in DATA. The
+    library's code addresses the sound's at DATA:1514 + the offset of
+    BATTLE.EXE's ZEROS names (173 matched instructions, all 5BCh lower than
+    BATTLE's DATA:1AD0 + offset). DATA's other shifts against BATTLE.EXE's
+    by the same kind of count: +0 up to DATA:0DEA (and +8 for the first
+    2Bh bytes), -54Ah for 1336..16EC, -538h and -4F4h further on (few
+    instructions).
+  - A name the carry leaves out is 0xFFFF for the port: bytes written
+    through it land far away (the first sign). The own `name` lines above
+    the carried block of MOON.hints stay when xfer.py runs again.
+  - The runner's comparison of the port at the menu's entry needs the
+    addresses of MOON (`build/scratch/moonaddr.py SEG:OFF` maps a BATTLE
+    address by xfer.py's alignment).
 - Later on 2026-10-02: the intro of 256 colours (INTEGA/INTRO.EXE) is in
   the port (port/README.md: what was checked, what not), the names'
   addresses are chosen per program (`prog.c`, `bi_program`; names.h has a

@@ -1,7 +1,7 @@
 /* main.c - Battle Isle: a native compatibility implementation requiring an
  * installed copy of the original game.
  *
- *     battle-isle [-game DIR | -gog FILE|FOLDER|SETUP.exe] [-title isle|desert] [/s] [/m]
+ *     battle-isle [-game DIR | -gog FILE|FOLDER|SETUP.exe] [-title isle|desert|moon] [/s] [/m]
  *
  * DIR is the game's unpacked files: -game, else $BATTLE_ISLE_GAME, else the first
  * folder `game` holding ISLE/BI.EXE beside the program, in the current
@@ -90,10 +90,14 @@ static const struct {
     const char *arg, *label, *folder, *exe;
     unsigned long size;
     const char *sha256, *save;
+    int prog;               /* BI_GAME or BI_MOON: which names' column */
+    uint16_t psp, paragraphs;    /* what the program keeps of its memory (INT 21h AH=4Ah, last call, seen in the runner) */
 } titles[] = {
-    { "isle", "Battle Isle", "ISLE", "BATTLE.EXE", BATTLE_SIZE, BATTLE_SHA256, "save" },
+    { "isle", "Battle Isle", "ISLE", "BATTLE.EXE", BATTLE_SIZE, BATTLE_SHA256, "save", BI_GAME, 0x0067, 0x3080 },
     { "desert", "Scenario Disk 1 - Air-Land-Sea", "DESERT", "DESERT.EX2", 212242ul,
-      "1042af4eb941908cae776cc2118b4664c16b56975ec9353ffa05633626a1cff4", "save-desert" },
+      "1042af4eb941908cae776cc2118b4664c16b56975ec9353ffa05633626a1cff4", "save-desert", BI_GAME, 0x0067, 0x3080 },
+    { "moon", "Scenario Disk 2 - Moon", "MOON", "MOON.EXE", 216720ul,
+      "b8a8ed7a342d3bf1d15082d8ec71c880f846e574cf04c8ad87738ac8d2b6c3b3", "save-moon", BI_MOON, 0x0066, 0x3180 },
 };
 
 #define TITLES ((int)(sizeof titles / sizeof titles[0]))
@@ -265,14 +269,12 @@ static int load_program(const char *game, int title)
         plat_message(err);
         return 0;
     }
-    /* what the program keeps of its memory (INT 21h AH=4Ah, seen in the
-     * runner): 3080h paragraphs from its PSP on */
-    if (rm_load_exe(exe, titles[title].size, titles[title].sha256, RM_LOAD_PSP, 0x3080, err, sizeof err) != 0) {
+    if (rm_load_exe(exe, titles[title].size, titles[title].sha256, titles[title].psp, titles[title].paragraphs, err, sizeof err) != 0) {
         plat_message(err);
         return 0;
     }
-    bi_program(BI_GAME);
-    rm_ds = bi_data_seg(BI_GAME);
+    bi_program(titles[title].prog);
+    rm_ds = bi_data_seg(titles[title].prog);
     sys_data_dir(data, sizeof data);
     sys_join(save, sizeof save, data, titles[title].save);
     sys_mkdir(save);
@@ -323,14 +325,14 @@ int main(int argc, char **argv)
             for (title = 0, i++; title < TITLES && strcmp(argv[i], titles[title].arg) != 0; title++)
                 ;
             if (title == TITLES) {
-                fprintf(stderr, "-title: isle or desert\n");
+                fprintf(stderr, "-title: isle, desert or moon\n");
                 return 2;
             }
             given_title = 1;
         } else if (argv[i][0] == '/' && nargs < 8)
             args[nargs++] = argv[i];
         else {
-            fprintf(stderr, "usage: battle-isle [-game DIR | -gog FILE|FOLDER] [-title isle|desert] [/s] [/m]\n");
+            fprintf(stderr, "usage: battle-isle [-game DIR | -gog FILE|FOLDER] [-title isle|desert|moon] [/s] [/m]\n");
             return 2;
         }
     }

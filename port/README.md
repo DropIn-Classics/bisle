@@ -45,6 +45,32 @@ and the scores `MAP\NN.HI` there; the port has the data folder's
 the setup screen (the item "Title", offered for each title whose folder
 is in the game's files) or by `-title isle|desert`.
 
+The second scenario disk (2026-10-02, begun): `MOON/MOON.EXE` is chosen
+as the others are (`-title moon`, the setup screen's "Game"), `main.c`
+loads it with its own PSP (0066h: the image at 0076h, a paragraph before
+BATTLE.EXE's, which is why `LOAD_SEG` is `rm_psp + 10h` now) and the
+names' column of `gen/names.h` for MOON (`bi_program(BI_MOON)`). Its
+title runs on the shared C (the logo, the title, the menu's drawing) and
+is the original's at the menu's entry (`menu_pass`, the 50th pass; the
+runner at T1151:058E, the title's loop at T1800:0331, space at its 200th
+pass; `pcmp.py` with `OEXE=MOON/MOON.EXE HINTS=src/MOON.hints
+TITLE=moon`): all of video memory the same, of the program's memory the
+timers' and keys' counts, the C library's variables (`DATA:004C..007F`,
+`DATA:1216..14FE`) and the routines' scratch variables in the library's
+code segments, as BATTLE.EXE's. START then stops at once: MOON has no
+`LIB\*.DAT` (`LIB\part.DAT` is the first file the port asks for in
+vain); `lib.c` has to load its libraries as MOON.EXE's `load_lib`
+(T0CEB's counterpart) does, not read. The names MOON.hints lacked for
+the port are its own lines now (`name` lines above the carried block:
+make_path's tables, the menus' texts, the statistics' and the logo's
+names, the sound's variables at DATA:1514 + the offset of BATTLE.EXE's
+ZEROS, found by the 173 matched instructions of the library that address
+them, all 5BCh lower; the rest by the bytes their place holds in
+BATTLE.EXE), 195 others stay `(not mapped)` and are 0xFFFF in the
+column: a write through one lands far outside the program, so a run that
+needs one shows garbage first (`build/scratch/moonnames.py` and
+`moonvotes.py` list the candidates by bytes and votes).
+
 The intro (2026-10-02): `ISLE/INTEGA/INTRO.EXE`, the intro of 256
 colours that GOG's start runs before the game (BI.EXE's branch for the
 EGA; the folder names are the wrong way round, docs/HANDOFF.md), runs

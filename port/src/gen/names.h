@@ -520,41 +520,41 @@
     X(T2695, load_file, 0x0004, 0x0002, 0x000E) \
     X(T26D2, save_file, 0x000A, 0xFFFF, 0x0004) \
     X(F273A, reach_args, 0x0006, 0xFFFF, 0xFFFF) \
-    X(F273B, fatal_messages, 0x0008, 0xFFFF, 0xFFFF) \
-    X(F2740, name_menu, 0x0000, 0xFFFF, 0xFFFF) \
-    X(F2740, name_codes, 0x000A, 0xFFFF, 0xFFFF) \
-    X(F2740, score_empty, 0x0010, 0xFFFF, 0xFFFF) \
-    X(F2740, text_select, 0x002B, 0xFFFF, 0xFFFF) \
-    X(F2740, text_position, 0x0034, 0xFFFF, 0xFFFF) \
-    X(F2740, text_0_to_9, 0x003D, 0xFFFF, 0xFFFF) \
-    X(F2740, text_please, 0x0046, 0xFFFF, 0xFFFF) \
-    X(F2740, text_insert, 0x004D, 0xFFFF, 0xFFFF) \
-    X(F2740, text_disk, 0x0054, 0xFFFF, 0xFFFF) \
-    X(F2740, text_type_name, 0x005B, 0xFFFF, 0xFFFF) \
-    X(F2740, text_for_top, 0x0065, 0xFFFF, 0xFFFF) \
-    X(F2740, text_four, 0x006F, 0xFFFF, 0xFFFF) \
+    X(F273B, fatal_messages, 0x0008, 0xFFFF, 0x000C) \
+    X(F2740, name_menu, 0x0000, 0xFFFF, 0x0004) \
+    X(F2740, name_codes, 0x000A, 0xFFFF, 0x000E) \
+    X(F2740, score_empty, 0x0010, 0xFFFF, 0x0014) \
+    X(F2740, text_select, 0x002B, 0xFFFF, 0x002F) \
+    X(F2740, text_position, 0x0034, 0xFFFF, 0x0038) \
+    X(F2740, text_0_to_9, 0x003D, 0xFFFF, 0x0041) \
+    X(F2740, text_please, 0x0046, 0xFFFF, 0x004A) \
+    X(F2740, text_insert, 0x004D, 0xFFFF, 0x0051) \
+    X(F2740, text_disk, 0x0054, 0xFFFF, 0x0058) \
+    X(F2740, text_type_name, 0x005B, 0xFFFF, 0x005F) \
+    X(F2740, text_for_top, 0x0065, 0xFFFF, 0x0069) \
+    X(F2740, text_four, 0x006F, 0xFFFF, 0x0073) \
     X(F2740, menus, 0x0079, 0xFFFF, 0x007D) \
     X(F2740, menu_items, 0x00A3, 0xFFFF, 0x00A7) \
-    X(F2789, messages, 0x0008, 0xFFFF, 0xFFFF) \
-    X(F27E3, name_stats, 0x0008, 0xFFFF, 0xFFFF) \
-    X(F27E3, name_winner, 0x000E, 0xFFFF, 0xFFFF) \
-    X(F27E3, name_looser, 0x0015, 0xFFFF, 0xFFFF) \
-    X(F27E3, lib_stats, 0x001C, 0xFFFF, 0xFFFF) \
-    X(F27E6, name_bidisk, 0x0000, 0xFFFF, 0xFFFF) \
-    X(F27E6, disk_names, 0x000B, 0xFFFF, 0xFFFF) \
-    X(F27E6, path_dirs, 0x0023, 0xFFFF, 0xFFFF) \
-    X(F27E6, path_exts, 0x003B, 0xFFFF, 0xFFFF) \
-    X(F27E6, path_made, 0x0077, 0xFFFF, 0xFFFF) \
+    X(F2789, messages, 0x0008, 0xFFFF, 0x000C) \
+    X(F27E3, name_stats, 0x0008, 0xFFFF, 0x0002) \
+    X(F27E3, name_winner, 0x000E, 0xFFFF, 0x0008) \
+    X(F27E3, name_looser, 0x0015, 0xFFFF, 0x000F) \
+    X(F27E3, lib_stats, 0x001C, 0xFFFF, 0x0016) \
+    X(F27E6, name_bidisk, 0x0000, 0xFFFF, 0x000A) \
+    X(F27E6, disk_names, 0x000B, 0xFFFF, 0x0015) \
+    X(F27E6, path_dirs, 0x0023, 0xFFFF, 0x002D) \
+    X(F27E6, path_exts, 0x003B, 0xFFFF, 0x0045) \
+    X(F27E6, path_made, 0x0077, 0xFFFF, 0x0081) \
     X(F27EE, version, 0x000C, 0xFFFF, 0x0006) \
     X(F27EE, flank_bonus, 0x000E, 0xFFFF, 0x0008) \
     X(F27EE, ordinals, 0x0013, 0xFFFF, 0x000D) \
     X(F27EE, unit_types, 0x001F, 0xFFFF, 0x0019) \
     X(F27EE, ground, 0x0751, 0xFFFF, 0x074B) \
-    X(F27EE, around10_even, 0x09E5, 0xFFFF, 0xFFFF) \
-    X(F27EE, around10_odd, 0x09F9, 0xFFFF, 0xFFFF) \
-    X(F27EE, around4_even, 0x0A0D, 0xFFFF, 0xFFFF) \
-    X(F27EE, around4_odd, 0x0A15, 0xFFFF, 0xFFFF) \
-    X(F27EE, lib_unit, 0x0A1D, 0xFFFF, 0xFFFF) \
+    X(F27EE, around10_even, 0x09E5, 0xFFFF, 0x0ACF) \
+    X(F27EE, around10_odd, 0x09F9, 0xFFFF, 0x0AE3) \
+    X(F27EE, around4_even, 0x0A0D, 0xFFFF, 0x0AF7) \
+    X(F27EE, around4_odd, 0x0A15, 0xFFFF, 0x0AFF) \
+    X(F27EE, lib_unit, 0x0A1D, 0xFFFF, 0x0B07) \
     X(F27EE, lib_part, 0x0A31, 0xFFFF, 0x0B1B) \
     X(F27EE, lib_cursor, 0x0A45, 0xFFFF, 0x0B2F) \
     X(F27EE, lib_patt, 0x0A59, 0xFFFF, 0x0B43) \
@@ -572,7 +572,7 @@
     X(F27EE, name_unit, 0x0B0F, 0xFFFF, 0x0BF9) \
     X(F27EE, name_ground, 0x0B14, 0xFFFF, 0x0BFE) \
     X(F27EE, key_set_keyboard, 0x0B1B, 0xFFFF, 0x0C05) \
-    X(F27EE, key_set_other, 0x0B3E, 0xFFFF, 0xFFFF) \
+    X(F27EE, key_set_other, 0x0B3E, 0xFFFF, 0x0C28) \
     X(F27EE, path_count, 0x0B62, 0xFFFF, 0x0CB0) \
     X(F27EE, cargo, 0x0B64, 0xFFFF, 0x25C7) \
     X(F27EE, window_y_even, 0x130C, 0xFFFF, 0x2FE7) \
@@ -630,8 +630,8 @@
     X(F27EE, strength_values, 0x418C, 0xFFFF, 0x0CB2) \
     X(F27EE, window_y_odd, 0x4192, 0xFFFF, 0x2FD7) \
     X(F27EE, around, 0x41A2, 0xFFFF, 0x0CB8) \
-    X(F2C09, name_titel, 0x0006, 0xFFFF, 0xFFFF) \
-    X(F2C09, name_bb, 0x000C, 0xFFFF, 0xFFFF) \
+    X(F2C09, name_titel, 0x0006, 0xFFFF, 0x0000) \
+    X(F2C09, name_bb, 0x000C, 0xFFFF, 0x0006) \
     X(F2C0A, computer_types, 0x0000, 0xFFFF, 0x000A) \
     X(F2C0A, computer_state, 0x00A2, 0xFFFF, 0xFFFF) \
     X(F2C0A, computer_move_units, 0x00BA, 0xFFFF, 0xFFFF) \
@@ -640,9 +640,9 @@
     X(F2C0A, computer_keys, 0x11EE, 0xFFFF, 0x128F) \
     X(F2C0A, computer_command, 0x11F6, 0xFFFF, 0x1297) \
     X(F2C0A, computer_queues, 0x11FE, 0xFFFF, 0x11E5) \
-    X(F2D33, computer_hq_order, 0x0000, 0xFFFF, 0xFFFF) \
-    X(F2D33, computer_key_bits, 0x0006, 0xFFFF, 0xFFFF) \
-    X(F2D33, computer_key_sequences, 0x0010, 0xFFFF, 0xFFFF) \
+    X(F2D33, computer_hq_order, 0x0000, 0xFFFF, 0x0008) \
+    X(F2D33, computer_key_bits, 0x0006, 0xFFFF, 0x000E) \
+    X(F2D33, computer_key_sequences, 0x0010, 0xFFFF, 0x0018) \
     X(F2D33, computer_holder, 0x001F, 0xFFFF, 0xFFFF) \
     X(F2D35, computer_out_square, 0x0003, 0xFFFF, 0xFFFF) \
     X(F2D35, computer_repair_holder, 0x0005, 0xFFFF, 0xFFFF) \
@@ -680,7 +680,7 @@
     X(F2D37, scene_a_after, 0x01DA, 0xFFFF, 0xFFFF) \
     X(F2D37, scene_shots_b, 0x01DC, 0xFFFF, 0xFFFF) \
     X(F2D37, scene_b_silent, 0x0284, 0xFFFF, 0xFFFF) \
-    X(F2D5F, scene_pieces, 0x0000, 0xFFFF, 0xFFFF) \
+    X(F2D5F, scene_pieces, 0x0000, 0xFFFF, 0x0006) \
     X(F2D65, scene_ground_bonus, 0x000E, 0xFFFF, 0x0004) \
     X(F2D66, scene_scripts, 0x0000, 0xFFFF, 0xFFFF) \
     X(F2D7A, anim_y, 0x0006, 0xFFFF, 0x000C) \
@@ -752,14 +752,14 @@
     X(DATA, input1_now, 0x03D8, 0x06DA, 0x03D8) \
     X(DATA, input1_before, 0x03DE, 0x06E0, 0x03DE) \
     X(DATA, input1_events, 0x03E4, 0x06E6, 0x03E4) \
-    X(DATA, input1_counts, 0x03EE, 0x06F0, 0xFFFF) \
+    X(DATA, input1_counts, 0x03EE, 0x06F0, 0x03EE) \
     X(DATA, key_scan, 0x0404, 0x0706, 0x0404) \
     X(DATA, key_char, 0x0406, 0x0708, 0x0406) \
     X(DATA, key_there, 0x0408, 0x070A, 0x0408) \
     X(DATA, mouse_on, 0x040A, 0x070C, 0x040A) \
     X(DATA, blocks_count, 0x044E, 0x0728, 0x044E) \
     X(DATA, blocks, 0x0450, 0x072A, 0x0450) \
-    X(DATA, picture_palette, 0x04A0, 0xFFFF, 0xFFFF) \
+    X(DATA, picture_palette, 0x04A0, 0xFFFF, 0x04A0) \
     X(DATA, crtc_port, 0x0AB6, 0xFFFF, 0x0AB6) \
     X(DATA, crtc_data_port, 0x0AB8, 0xFFFF, 0x0AB8) \
     X(DATA, status_port, 0x0ABA, 0xFFFF, 0x0ABA) \
@@ -785,13 +785,13 @@
     X(DATA, pit_period_high, 0x0DE8, 0x10C2, 0x0DE8) \
     X(DATA, pit_period_set, 0x0DEA, 0xFFFF, 0x0DEA) \
     X(DATA, credits_text, 0x0DEC, 0x10C6, 0xFFFF) \
-    X(DATA, voice_scale, 0x1336, 0x10C4, 0xFFFF) \
+    X(DATA, voice_scale, 0x1336, 0x10C4, 0x0DEC) \
     X(DATA, perc_bits, 0x134C, 0x10DA, 0x0E02) \
     X(DATA, op_modulator, 0x1351, 0x10DF, 0x0E07) \
     X(DATA, op_carrier, 0x135F, 0x10ED, 0x0E15) \
     X(DATA, op_drums, 0x136D, 0x10FB, 0x0E23) \
-    X(DATA, slots, 0x13C1, 0x114F, 0xFFFF) \
-    X(DATA, slots_perc, 0x13D3, 0x1161, 0xFFFF) \
+    X(DATA, slots, 0x13C1, 0x114F, 0x0E77) \
+    X(DATA, slots_perc, 0x13D3, 0x1161, 0x0E89) \
     X(DATA, op_offsets, 0x13E9, 0x1177, 0x0E9F) \
     X(DATA, op_is_carrier, 0x13FB, 0x1189, 0x0EB1) \
     X(DATA, op_voice, 0x140D, 0x119B, 0x0EC3) \
@@ -821,32 +821,32 @@
     X(DATA, intro_page_drawn, 0xFFFF, 0x0093, 0xFFFF) \
     X(DATA, intro_page_shown, 0xFFFF, 0x0095, 0xFFFF) \
     X(DATA, intro_dac, 0xFFFF, 0x0097, 0xFFFF) \
-    X(ZEROS, op_scratch, 0x0000, 0x0000, 0xFFFF) \
-    X(ZEROS, opl_note_sel, 0x001C, 0x001C, 0xFFFF) \
-    X(ZEROS, voice_key, 0x001D, 0x001D, 0xFFFF) \
-    X(ZEROS, voice_volume, 0x0026, 0x0026, 0xFFFF) \
-    X(ZEROS, voice_count, 0x0032, 0x0032, 0xFFFF) \
-    X(ZEROS, opl_port, 0x0034, 0x0034, 0xFFFF) \
-    X(ZEROS, opl_wave_on, 0x0036, 0x0036, 0xFFFF) \
-    X(ZEROS, voice_note, 0x0038, 0x0038, 0xFFFF) \
-    X(ZEROS, bend_range, 0x0042, 0x0042, 0xFFFF) \
-    X(ZEROS, voice_b0, 0x0044, 0x0044, 0xFFFF) \
-    X(ZEROS, voice_bend, 0x004E, 0x004E, 0xFFFF) \
-    X(ZEROS, opl_am_deep, 0x0060, 0x0060, 0xFFFF) \
-    X(ZEROS, perc_keys, 0x0061, 0x0061, 0xFFFF) \
-    X(ZEROS, opl_vib_deep, 0x0062, 0x0062, 0xFFFF) \
-    X(ZEROS, op_params, 0x0063, 0x0063, 0xFFFF) \
-    X(ZEROS, perc_mode, 0x015F, 0x015F, 0xFFFF) \
-    X(ZEROS, track_ptr, 0x0160, 0x0160, 0xFFFF) \
-    X(ZEROS, track_time, 0x01A0, 0x01A0, 0xFFFF) \
-    X(ZEROS, track_status, 0x01E0, 0x01E0, 0xFFFF) \
-    X(ZEROS, song_ptr, 0x01F0, 0x01F0, 0xFFFF) \
-    X(ZEROS, song_ended, 0x01F4, 0x01F4, 0xFFFF) \
-    X(ZEROS, status_ptr, 0x01F6, 0x01F6, 0xFFFF) \
-    X(ZEROS, song_volume, 0x01FA, 0x01FA, 0xFFFF) \
-    X(ZEROS, track_cur, 0x0210, 0x0210, 0xFFFF) \
-    X(ZEROS, song_division, 0x0214, 0x0214, 0xFFFF) \
-    X(ZEROS, song_playing, 0x0216, 0x0216, 0xFFFF) \
+    X(ZEROS, op_scratch, 0x0000, 0x0000, 0x1514) \
+    X(ZEROS, opl_note_sel, 0x001C, 0x001C, 0x1530) \
+    X(ZEROS, voice_key, 0x001D, 0x001D, 0x1531) \
+    X(ZEROS, voice_volume, 0x0026, 0x0026, 0x153A) \
+    X(ZEROS, voice_count, 0x0032, 0x0032, 0x1546) \
+    X(ZEROS, opl_port, 0x0034, 0x0034, 0x1548) \
+    X(ZEROS, opl_wave_on, 0x0036, 0x0036, 0x154A) \
+    X(ZEROS, voice_note, 0x0038, 0x0038, 0x154C) \
+    X(ZEROS, bend_range, 0x0042, 0x0042, 0x1556) \
+    X(ZEROS, voice_b0, 0x0044, 0x0044, 0x1558) \
+    X(ZEROS, voice_bend, 0x004E, 0x004E, 0x1562) \
+    X(ZEROS, opl_am_deep, 0x0060, 0x0060, 0x1574) \
+    X(ZEROS, perc_keys, 0x0061, 0x0061, 0x1575) \
+    X(ZEROS, opl_vib_deep, 0x0062, 0x0062, 0x1576) \
+    X(ZEROS, op_params, 0x0063, 0x0063, 0x1577) \
+    X(ZEROS, perc_mode, 0x015F, 0x015F, 0x1673) \
+    X(ZEROS, track_ptr, 0x0160, 0x0160, 0x1674) \
+    X(ZEROS, track_time, 0x01A0, 0x01A0, 0x16B4) \
+    X(ZEROS, track_status, 0x01E0, 0x01E0, 0x16F4) \
+    X(ZEROS, song_ptr, 0x01F0, 0x01F0, 0x1704) \
+    X(ZEROS, song_ended, 0x01F4, 0x01F4, 0x1708) \
+    X(ZEROS, status_ptr, 0x01F6, 0x01F6, 0x170A) \
+    X(ZEROS, song_volume, 0x01FA, 0x01FA, 0x170E) \
+    X(ZEROS, track_cur, 0x0210, 0x0210, 0x1724) \
+    X(ZEROS, song_division, 0x0214, 0x0214, 0x1728) \
+    X(ZEROS, song_playing, 0x0216, 0x0216, 0x172A) \
     X(F0728, intro_pic_names, 0xFFFF, 0x0001, 0xFFFF) \
     X(F0728, intro_pal_names, 0xFFFF, 0x0105, 0xFFFF) \
     X(F0728, intro_pics, 0xFFFF, 0x0208, 0xFFFF) \
@@ -1090,41 +1090,41 @@
     X(T2695, load_file, BATTLE_T2695, INTEGA_T060D, MOON_T2768) \
     X(T26D2, save_file, BATTLE_T26D2, 0xFFFF, MOON_T27A6) \
     X(F273A, reach_args, BATTLE_F273A, 0xFFFF, 0xFFFF) \
-    X(F273B, fatal_messages, BATTLE_F273B, 0xFFFF, 0xFFFF) \
-    X(F2740, name_menu, BATTLE_F2740, 0xFFFF, 0xFFFF) \
-    X(F2740, name_codes, BATTLE_F2740, 0xFFFF, 0xFFFF) \
-    X(F2740, score_empty, BATTLE_F2740, 0xFFFF, 0xFFFF) \
-    X(F2740, text_select, BATTLE_F2740, 0xFFFF, 0xFFFF) \
-    X(F2740, text_position, BATTLE_F2740, 0xFFFF, 0xFFFF) \
-    X(F2740, text_0_to_9, BATTLE_F2740, 0xFFFF, 0xFFFF) \
-    X(F2740, text_please, BATTLE_F2740, 0xFFFF, 0xFFFF) \
-    X(F2740, text_insert, BATTLE_F2740, 0xFFFF, 0xFFFF) \
-    X(F2740, text_disk, BATTLE_F2740, 0xFFFF, 0xFFFF) \
-    X(F2740, text_type_name, BATTLE_F2740, 0xFFFF, 0xFFFF) \
-    X(F2740, text_for_top, BATTLE_F2740, 0xFFFF, 0xFFFF) \
-    X(F2740, text_four, BATTLE_F2740, 0xFFFF, 0xFFFF) \
+    X(F273B, fatal_messages, BATTLE_F273B, 0xFFFF, MOON_F2825) \
+    X(F2740, name_menu, BATTLE_F2740, 0xFFFF, MOON_F2850) \
+    X(F2740, name_codes, BATTLE_F2740, 0xFFFF, MOON_F2850) \
+    X(F2740, score_empty, BATTLE_F2740, 0xFFFF, MOON_F2850) \
+    X(F2740, text_select, BATTLE_F2740, 0xFFFF, MOON_F2850) \
+    X(F2740, text_position, BATTLE_F2740, 0xFFFF, MOON_F2850) \
+    X(F2740, text_0_to_9, BATTLE_F2740, 0xFFFF, MOON_F2850) \
+    X(F2740, text_please, BATTLE_F2740, 0xFFFF, MOON_F2850) \
+    X(F2740, text_insert, BATTLE_F2740, 0xFFFF, MOON_F2850) \
+    X(F2740, text_disk, BATTLE_F2740, 0xFFFF, MOON_F2850) \
+    X(F2740, text_type_name, BATTLE_F2740, 0xFFFF, MOON_F2850) \
+    X(F2740, text_for_top, BATTLE_F2740, 0xFFFF, MOON_F2850) \
+    X(F2740, text_four, BATTLE_F2740, 0xFFFF, MOON_F2850) \
     X(F2740, menus, BATTLE_F2740, 0xFFFF, MOON_F2850) \
     X(F2740, menu_items, BATTLE_F2740, 0xFFFF, MOON_F2850) \
-    X(F2789, messages, BATTLE_F2789, 0xFFFF, 0xFFFF) \
-    X(F27E3, name_stats, BATTLE_F27E3, 0xFFFF, 0xFFFF) \
-    X(F27E3, name_winner, BATTLE_F27E3, 0xFFFF, 0xFFFF) \
-    X(F27E3, name_looser, BATTLE_F27E3, 0xFFFF, 0xFFFF) \
-    X(F27E3, lib_stats, BATTLE_F27E3, 0xFFFF, 0xFFFF) \
-    X(F27E6, name_bidisk, BATTLE_F27E6, 0xFFFF, 0xFFFF) \
-    X(F27E6, disk_names, BATTLE_F27E6, 0xFFFF, 0xFFFF) \
-    X(F27E6, path_dirs, BATTLE_F27E6, 0xFFFF, 0xFFFF) \
-    X(F27E6, path_exts, BATTLE_F27E6, 0xFFFF, 0xFFFF) \
-    X(F27E6, path_made, BATTLE_F27E6, 0xFFFF, 0xFFFF) \
+    X(F2789, messages, BATTLE_F2789, 0xFFFF, MOON_F2899) \
+    X(F27E3, name_stats, BATTLE_F27E3, 0xFFFF, MOON_F28F7) \
+    X(F27E3, name_winner, BATTLE_F27E3, 0xFFFF, MOON_F28F7) \
+    X(F27E3, name_looser, BATTLE_F27E3, 0xFFFF, MOON_F28F7) \
+    X(F27E3, lib_stats, BATTLE_F27E3, 0xFFFF, MOON_F28F7) \
+    X(F27E6, name_bidisk, BATTLE_F27E6, 0xFFFF, MOON_F28F9) \
+    X(F27E6, disk_names, BATTLE_F27E6, 0xFFFF, MOON_F28F9) \
+    X(F27E6, path_dirs, BATTLE_F27E6, 0xFFFF, MOON_F28F9) \
+    X(F27E6, path_exts, BATTLE_F27E6, 0xFFFF, MOON_F28F9) \
+    X(F27E6, path_made, BATTLE_F27E6, 0xFFFF, MOON_F28F9) \
     X(F27EE, version, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, flank_bonus, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, ordinals, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, unit_types, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, ground, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
-    X(F27EE, around10_even, BATTLE_F27EE, 0xFFFF, 0xFFFF) \
-    X(F27EE, around10_odd, BATTLE_F27EE, 0xFFFF, 0xFFFF) \
-    X(F27EE, around4_even, BATTLE_F27EE, 0xFFFF, 0xFFFF) \
-    X(F27EE, around4_odd, BATTLE_F27EE, 0xFFFF, 0xFFFF) \
-    X(F27EE, lib_unit, BATTLE_F27EE, 0xFFFF, 0xFFFF) \
+    X(F27EE, around10_even, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
+    X(F27EE, around10_odd, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
+    X(F27EE, around4_even, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
+    X(F27EE, around4_odd, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
+    X(F27EE, lib_unit, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, lib_part, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, lib_cursor, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, lib_patt, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
@@ -1142,7 +1142,7 @@
     X(F27EE, name_unit, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, name_ground, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, key_set_keyboard, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
-    X(F27EE, key_set_other, BATTLE_F27EE, 0xFFFF, 0xFFFF) \
+    X(F27EE, key_set_other, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, path_count, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, cargo, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, window_y_even, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
@@ -1200,8 +1200,8 @@
     X(F27EE, strength_values, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, window_y_odd, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, around, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
-    X(F2C09, name_titel, BATTLE_F2C09, 0xFFFF, 0xFFFF) \
-    X(F2C09, name_bb, BATTLE_F2C09, 0xFFFF, 0xFFFF) \
+    X(F2C09, name_titel, BATTLE_F2C09, 0xFFFF, MOON_F2D2D) \
+    X(F2C09, name_bb, BATTLE_F2C09, 0xFFFF, MOON_F2D2D) \
     X(F2C0A, computer_types, BATTLE_F2C0A, 0xFFFF, MOON_F2D2D) \
     X(F2C0A, computer_state, BATTLE_F2C0A, 0xFFFF, 0xFFFF) \
     X(F2C0A, computer_move_units, BATTLE_F2C0A, 0xFFFF, 0xFFFF) \
@@ -1210,9 +1210,9 @@
     X(F2C0A, computer_keys, BATTLE_F2C0A, 0xFFFF, MOON_F2D2D) \
     X(F2C0A, computer_command, BATTLE_F2C0A, 0xFFFF, MOON_F2D2D) \
     X(F2C0A, computer_queues, BATTLE_F2C0A, 0xFFFF, MOON_F2D2D) \
-    X(F2D33, computer_hq_order, BATTLE_F2D33, 0xFFFF, 0xFFFF) \
-    X(F2D33, computer_key_bits, BATTLE_F2D33, 0xFFFF, 0xFFFF) \
-    X(F2D33, computer_key_sequences, BATTLE_F2D33, 0xFFFF, 0xFFFF) \
+    X(F2D33, computer_hq_order, BATTLE_F2D33, 0xFFFF, MOON_F2E56) \
+    X(F2D33, computer_key_bits, BATTLE_F2D33, 0xFFFF, MOON_F2E56) \
+    X(F2D33, computer_key_sequences, BATTLE_F2D33, 0xFFFF, MOON_F2E56) \
     X(F2D33, computer_holder, BATTLE_F2D33, 0xFFFF, 0xFFFF) \
     X(F2D35, computer_out_square, BATTLE_F2D35, 0xFFFF, 0xFFFF) \
     X(F2D35, computer_repair_holder, BATTLE_F2D35, 0xFFFF, 0xFFFF) \
@@ -1250,7 +1250,7 @@
     X(F2D37, scene_a_after, BATTLE_F2D37, 0xFFFF, 0xFFFF) \
     X(F2D37, scene_shots_b, BATTLE_F2D37, 0xFFFF, 0xFFFF) \
     X(F2D37, scene_b_silent, BATTLE_F2D37, 0xFFFF, 0xFFFF) \
-    X(F2D5F, scene_pieces, BATTLE_F2D5F, 0xFFFF, 0xFFFF) \
+    X(F2D5F, scene_pieces, BATTLE_F2D5F, 0xFFFF, MOON_F2E82) \
     X(F2D65, scene_ground_bonus, BATTLE_F2D65, 0xFFFF, MOON_F2E89) \
     X(F2D66, scene_scripts, BATTLE_F2D66, 0xFFFF, 0xFFFF) \
     X(F2D7A, anim_y, BATTLE_F2D7A, 0xFFFF, MOON_F2E9D) \
@@ -1322,14 +1322,14 @@
     X(DATA, input1_now, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, input1_before, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, input1_events, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
-    X(DATA, input1_counts, BATTLE_DATA, INTEGA_DATA, 0xFFFF) \
+    X(DATA, input1_counts, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, key_scan, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, key_char, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, key_there, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, mouse_on, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, blocks_count, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, blocks, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
-    X(DATA, picture_palette, BATTLE_DATA, 0xFFFF, 0xFFFF) \
+    X(DATA, picture_palette, BATTLE_DATA, 0xFFFF, MOON_DATA) \
     X(DATA, crtc_port, BATTLE_DATA, 0xFFFF, MOON_DATA) \
     X(DATA, crtc_data_port, BATTLE_DATA, 0xFFFF, MOON_DATA) \
     X(DATA, status_port, BATTLE_DATA, 0xFFFF, MOON_DATA) \
@@ -1355,13 +1355,13 @@
     X(DATA, pit_period_high, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, pit_period_set, BATTLE_DATA, 0xFFFF, MOON_DATA) \
     X(DATA, credits_text, BATTLE_DATA, INTEGA_DATA, 0xFFFF) \
-    X(DATA, voice_scale, BATTLE_DATA, INTEGA_DATA, 0xFFFF) \
+    X(DATA, voice_scale, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, perc_bits, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, op_modulator, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, op_carrier, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, op_drums, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
-    X(DATA, slots, BATTLE_DATA, INTEGA_DATA, 0xFFFF) \
-    X(DATA, slots_perc, BATTLE_DATA, INTEGA_DATA, 0xFFFF) \
+    X(DATA, slots, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
+    X(DATA, slots_perc, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, op_offsets, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, op_is_carrier, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, op_voice, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
@@ -1391,32 +1391,32 @@
     X(DATA, intro_page_drawn, 0xFFFF, INTEGA_DATA, 0xFFFF) \
     X(DATA, intro_page_shown, 0xFFFF, INTEGA_DATA, 0xFFFF) \
     X(DATA, intro_dac, 0xFFFF, INTEGA_DATA, 0xFFFF) \
-    X(ZEROS, op_scratch, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, opl_note_sel, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, voice_key, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, voice_volume, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, voice_count, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, opl_port, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, opl_wave_on, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, voice_note, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, bend_range, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, voice_b0, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, voice_bend, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, opl_am_deep, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, perc_keys, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, opl_vib_deep, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, op_params, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, perc_mode, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, track_ptr, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, track_time, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, track_status, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, song_ptr, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, song_ended, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, status_ptr, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, song_volume, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, track_cur, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, song_division, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
-    X(ZEROS, song_playing, BATTLE_ZEROS, INTEGA_ZEROS, 0xFFFF) \
+    X(ZEROS, op_scratch, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, opl_note_sel, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, voice_key, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, voice_volume, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, voice_count, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, opl_port, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, opl_wave_on, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, voice_note, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, bend_range, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, voice_b0, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, voice_bend, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, opl_am_deep, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, perc_keys, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, opl_vib_deep, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, op_params, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, perc_mode, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, track_ptr, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, track_time, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, track_status, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, song_ptr, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, song_ended, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, status_ptr, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, song_volume, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, track_cur, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, song_division, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
+    X(ZEROS, song_playing, BATTLE_ZEROS, INTEGA_ZEROS, MOON_DATA) \
     X(F0728, intro_pic_names, 0xFFFF, INTEGA_F0728, 0xFFFF) \
     X(F0728, intro_pal_names, 0xFFFF, INTEGA_F0728, 0xFFFF) \
     X(F0728, intro_pics, 0xFFFF, INTEGA_F0728, 0xFFFF) \

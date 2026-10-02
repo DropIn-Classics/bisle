@@ -16,8 +16,9 @@
 #include "rmem.h"
 #include "gen/names.h"
 
-/* the segment the image is loaded at */
-#define LOAD_SEG (RM_LOAD_PSP + 0x10u)
+/* the segment the image is loaded at: after the PSP (0067h for BATTLE.EXE and the intro, 0066h for MOON.EXE: the
+ * environment before it is shorter, its path shorter by a letter) */
+#define LOAD_SEG (rm_psp + 0x10u)
 /* The programs the port runs: the game (BATTLE.EXE, DESERT.EX2) and the
  * intro (INTEGA/INTRO.EXE).  The hints' names are in other places in each
  * (prog.c): A_name is the offset and S_name the segment as loaded of the
