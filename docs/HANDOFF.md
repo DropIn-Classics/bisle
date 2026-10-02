@@ -28,28 +28,36 @@ menu's entry (port/README.md; "The port" below).
   `build/scratch/mcvc.sh NAME PASS [MAP]` (cvc.sh's way: the menu keys of
   cvcmap.py with MOON's code; `rdiff.py NAME` compares a named routine of
   BATTLE.ASM with MOON.ASM's, `moonroutines.py` lists the routines by
-  instructions unmatched). Same to pass 346 but for scratch bytes; at 348 the
-  original has done one step more (computer_state+7 06 against 05,
-  path_count 0Ah against 07, `around` another) and at 400 a unit is on
-  another square; the port needs more than 300 s to pass 900 (a loop, not
-  looked into). Read and made MOON's (reach.c, MOON only): `find_path` sets
-  the end node's (2) column and row to 0 and stops when the search comes to
-  it (BATTLE's goes on with it as with a square), `neighbours64` puts a
-  column or row outside the map on its edge first. Three data names the
-  port used had no address for MOON, so it wrote to 0FFFFh: `rand_seed` is
-  DATA:1448, `reach_args` F2824:000A, `cursor_kept` F2902:4212 (own lines
-  in MOON.hints). Neither changed the divergence at 348. Not the cause:
-  `rand`/`random` (the same but an unsigned compare of the upper bound),
-  `timer_set`/`timer_due`/`square_distance`/`off_map` (read: the same).
+  instructions unmatched). The pass-348 divergence is found and gone: MOON's
+  `task_move` has one stage more than BATTLE's (computer_state+7: 1 is
+  `can_go` with flags 3, 2 is `can_go` with flags 2, 3 is flags 0, 4 copies the
+  path, 5 reach, 6 list_reach, 7 picks the square), the port now uses MOON's
+  numbers and maps BATTLE's onto them. MOON's `can_go` leaves a square whose
+  ground the type cannot be on at that (BATTLE's lets an own unit holding
+  others make it free), and with flag 2 an own unit on the square makes it no
+  way unless the moving unit's recorded square word equals the map offset
+  (read from the code, a case never seen to matter). Found by logging the
+  order of `neighbours64` calls in both (a log at T0C0E:00DB, SI = column +
+  64 * row) up to the first other order, then the mark bits at the next
+  find_path. The game of two computers on map 0 is now the same as the
+  runner's in all compared memory at passes 346, 347, 348, 400, 600 and 900
+  (not checked: 2000 and 4000, the port needs more than 900 s for 2000; BATTLE
+  after the change only at pass 400 of map 16, where DATA's usual filtered
+  differences show, not compared with the build before). Earlier in this
+  session: `find_path` sets the end node's (2) column and row to 0 and does not
+  expand it, `neighbours64` puts a column or row outside the map on its edge
+  first. Three data names the port used had no address for MOON, so it wrote
+  to 0FFFFh: `rand_seed` is DATA:1448, `reach_args` F2824:000A, `cursor_kept`
+  F2902:4212 (own lines in MOON.hints). Not the cause of anything seen:
+  `rand`/`random`, `timer_set`/`timer_due`/`square_distance`/`off_map`.
   Still unmapped data names the port uses: scene_count_a, scene_a_after,
   scene_b_silent (the scene's, F2E5B in MOON), credits_*, credits_text.
-  Next: bisect the pass-348 step further (which routine of the computer
-  first gives another result: the scratch pcmp.py -break at the computer's
-  routines), then T178C..T1ED2 (computer_plan 386 of 4118 instructions
-  unmatched, computer_assess 224 of 1214, command_out 159, stop_check
-  248, change_phase 255, make_unit 169), then fights (fight_reckon's
-  differences read so far are register changes only), the statistics and the
-  end of a map.
+  Next: why the port is slow past pass 900 (first look at what it does per
+  pass), then compare further passes, then T178C..T1ED2 (computer_plan 386 of
+  4118 instructions unmatched, computer_assess 224 of 1214, command_out 159,
+  stop_check 248, change_phase 255, make_unit 169), then fights
+  (fight_reckon's differences read so far are register changes only), the
+  statistics and the end of a map.
 
 - MOON's overview (2026-10-02, later still): read in MOON.ASM (T0F3E:094A,
   T039B:0007, and the loop at T070B:226C..25FD) and done in map.c

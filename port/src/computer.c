@@ -158,13 +158,23 @@ int can_go(int square, int unit, int player, int flags)
         unsigned there = pb(map, s + 1);
         int ok = (GBO(ground, 6 * pb(map, s) + 2) & mask) != 0;
 
-        if (there <= 0xF0) {
+        /* MOON.EXE leaves a square whose ground the type cannot be on at
+         * that, BATTLE.EXE lets a unit of the own side that holds others
+         * make it free all the same */
+        if (there <= 0xF0 && (ok || bi_prog != BI_MOON)) {
             unsigned f = pw(UNIT(there), 4);
 
             if ((flags & 1) && !same_side(player, (int)f))
                 ok = 0;
-            if (same_side((int)f, player) && (f & 0x1000))
-                ok = 1;
+            if (same_side((int)f, player)) {
+                /* MOON.EXE, with flag 2: a unit of the own side on the square
+                 * makes it no way unless it is the moving unit's own */
+                if (bi_prog == BI_MOON && (flags & 2)) {
+                    if (pw(UNIT(unit), 0x0B + 2 * player) != s)
+                        ok = 0;
+                } else if (f & 0x1000)
+                    ok = 1;
+            }
         }
         if (ok)
             SBO(marks, ai_mark(s), GBO(marks, ai_mark(s)) | bit);
@@ -338,26 +348,34 @@ int task_move(int unit, int player)
 {
     fptr s = AI_STATE(player), table = ai_table(player), map = ai_map(player), rec, path, stops, u;
     unsigned n = ai_first_half((unsigned)unit & 0xFF), bit = player ? 2 : 1;
-    int i, d;
+    int i, d, stage;
 
     rec = ai_rec(table, n);
     u = UNIT(n);
-    switch (pb(s, 7)) {
+    /* MOON.EXE has a stage more (2, a path with flag 2 after the one with 3):
+     * its numbers are used here, BATTLE.EXE's from its stage 2 on are one less */
+    stage = pb(s, 7);
+    if (bi_prog != BI_MOON && stage >= 2)
+        stage++;
+    switch (stage) {
     case 0:
         if (!(GW(game_flags2) & 0x80))
             spb(s, 7, pb(s, 7) + 1);
         break;
     case 1:
-        if (can_go(pw(rec, 0), (int)n, player, 1))
-            spb(s, 7, 3);
+        if (can_go(pw(rec, 0), (int)n, player, bi_prog == BI_MOON ? 3 : 1))
+            spb(s, 7, bi_prog == BI_MOON ? 4 : 3);
         else
             spb(s, 7, pb(s, 7) + 1);
         break;
     case 2:
+        spb(s, 7, can_go(pw(rec, 0), (int)n, player, 2) ? 4 : 3);
+        break;
+    case 3:
         can_go(pw(rec, 0), (int)n, player, 0);
         spb(s, 7, pb(s, 7) + 1);
         break;
-    case 3:
+    case 4:
         path = ai_aims(player);
         stops = MKFP(FSEG(ai_paths(player)), FOFF(ai_paths(player)) + 0x1F40);
         SW(task_path_count, GW(path_count));
@@ -365,16 +383,16 @@ int task_move(int unit, int player)
             spw(path, (unsigned)(2 * i), pw(stops, (unsigned)(2 * i)));
         spb(s, 7, pb(s, 7) + 1);
         break;
-    case 4:
+    case 5:
         reach_for(n, player, (pw(u, 6) & 1) ? 0xFFFF : (pw(u, 4) & 1) ? 6 : 3);
         spb(s, 7, pb(s, 7) + 1);
         break;
-    case 5:
+    case 6:
         list_reach(ai_paths(player), player, (int)n);
         clear_marks((int)bit);
         spb(s, 7, pb(s, 7) + 1);
         break;
-    case 6:
+    case 7:
         path = ai_aims(player);
         stops = ai_paths(player);
         spb(s, 7, 0);
