@@ -23,6 +23,37 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- MOON's overview (2026-10-02, later still): read in MOON.ASM (T0F3E:094A,
+  T039B:0007, and the loop at T070B:226C..25FD) and done in map.c
+  (`moon_draw_overview`, `moon_overview_map`) and `loop_overview`. It draws
+  no `.PMP` picture: for each square of the map (columns and rows but the
+  outer ones) the entry of its ground from `MAP02.DAT`/`MAP04.DAT`
+  (`overview_data`: a table of 24 entries, 12 bytes each, the entry's
+  offset in the last 4; the table's offset is the file's first dword) as
+  `MAPINFO.DAT` (`mapinfo_data`, 4 bytes a ground: entry, kind of
+  thing on it, colour index, mask of 6 overlay entries 0Eh..13h) says, the
+  odd columns lower by the scale, then the kinds' entries (kind 1..8 to
+  entries 8, 9, 0, 1, 2, 4, 5, 6; kinds 6..8 offset (-8, -2), others
+  (-4, 0), shifted right by 2 - scale), all with colour base 70h under a
+  clip rectangle round the picture; then a frame (rows and columns in the
+  colours amok+0Dh and +0Ch), and the units' dots as BATTLE's, but at
+  `y + (row << scale)` plus 2 when the square's number is odd (as the
+  original has it; the parity of the square, not of the column) and only
+  above the picture's lower edge. The scale (`overview_scale`, 2 for
+  maps up to 20h by 28h, else 1) is also the loop's: the window of the
+  overview is 2 * width + 2 pixels wide at scale 2, the frame's start
+  and size and its step (2 squares) are `<< scale`. Checked: opened,
+  moved down and right, closed by fire, at passes 700 and 730 of the
+  first map (scale 2): all memory and video memory the same as the
+  original's. Not checked: scale 1 (a bigger map), player 1's overview,
+  a dot in the other colour (a unit with 200h in +4), a colour index
+  other than 0 and 1 in MAPINFO.DAT (the original reads its stack for
+  index 2), the entry index above 23 (same). The keys of a comparison
+  are given by pass (`map_pass@LT070B_13DD=620:space+,...`): by seconds
+  the countdown of the cursor's animation (cursor +2Ch) was a pass off.
+  CODE:156E (song_wait, 4 against 3 at the first map) is presumably the
+  same kind of phase; not looked into.
+
 - MOON's computer tables (2026-10-02, later still): the 517 bytes of F2D2D
   that differed at the first map's 200th pass were names the carry had left
   unmapped, so the port's `computer_start` wrote through 0xFFFF: from

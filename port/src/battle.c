@@ -569,18 +569,22 @@ static void loop_cursor_move(fptr cur, int bits, int side)
 static void loop_overview(fptr cur, fptr in, int bits, int side, fptr pmp)
 {
     fptr pl = player_rec(side);
+    /* MOON's overview has 4 pixels a square on the small maps (scale 2),
+     * BATTLE's 2 */
+    int sc = bi_prog == BI_MOON ? (int16_t)GW(overview_scale) : 1;
+    int sq = sc == 2 ? 2 : 1;
 
     if (pb(cur, 0x18) == 4) {
-        spw(cur, 0x10, ((side & 1) ? 0xA0 : 0) + 0x50 - (GW(map_width) + 2) - 3);
+        spw(cur, 0x10, ((side & 1) ? 0xA0 : 0) + 0x50 - (sq * GW(map_width) + 2) - 3);
         spw(cur, 4, pw(cur, 0x10));
-        spw(cur, 0x12, 0x64 - (GW(map_height) + 2) - 4);
+        spw(cur, 0x12, 0x64 - (sq * GW(map_height) + 2) - 4);
         spw(cur, 6, pw(cur, 0x12));
         spw(cur, 8, pw(cur, 0x0C));
         spw(cur, 0x0A, pw(cur, 0x0E));
         spw(cur, 0x0C, (int8_t)pb(cur, 0x14) << 1);
         spw(cur, 0x0E, (int8_t)pb(cur, 0x15) << 1);
-        spw(cur, 0x10, pw(cur, 0x10) + (pw(cur, 0x0C) << 1));
-        spw(cur, 0x12, pw(cur, 0x12) + (pw(cur, 0x0E) << 1));
+        spw(cur, 0x10, pw(cur, 0x10) + (pw(cur, 0x0C) << sc));
+        spw(cur, 0x12, pw(cur, 0x12) + (pw(cur, 0x0E) << sc));
         draw_shop_window(side);
         draw_overview(side, (int16_t)pw(cur, 4), (int16_t)pw(cur, 6), pmp);
         spw(pl, 0, pw(pl, 0) | 4);
@@ -612,20 +616,20 @@ static void loop_overview(fptr cur, fptr in, int bits, int side, fptr pmp)
     if (bits & 1) {
         if ((int16_t)pw(cur, 0x0E) > 0) {
             spw(cur, 0x0E, pw(cur, 0x0E) - 2);
-            spw(cur, 0x12, pw(cur, 0x12) - 4);
+            spw(cur, 0x12, pw(cur, 0x12) - (sc << 2));
         }
     } else if ((bits & 2) && (int16_t)pw(cur, 0x0E) < (int16_t)(GW(map_height) - 8)) {
         spw(cur, 0x0E, pw(cur, 0x0E) + 2);
-        spw(cur, 0x12, pw(cur, 0x12) + 4);
+        spw(cur, 0x12, pw(cur, 0x12) + (sc << 2));
     }
     if (bits & 4) {
         if ((int16_t)pw(cur, 0x0C) > 0) {
             spw(cur, 0x0C, pw(cur, 0x0C) - 2);
-            spw(cur, 0x10, pw(cur, 0x10) - 4);
+            spw(cur, 0x10, pw(cur, 0x10) - (sc << 2));
         }
     } else if ((bits & 8) && (int16_t)pw(cur, 0x0C) < (int16_t)(GW(map_width) - 10)) {
         spw(cur, 0x0C, pw(cur, 0x0C) + 2);
-        spw(cur, 0x10, pw(cur, 0x10) + 4);
+        spw(cur, 0x10, pw(cur, 0x10) + (sc << 2));
     }
     t24d3_0000(pfp(pl, 5));
 }

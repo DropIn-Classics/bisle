@@ -196,12 +196,134 @@ static void overview_dot(int x, int y, int colour)
     put_pixel();
 }
 
+/* MOON.EXE's T039B:0007: the map's picture drawn square by square from
+ * the overview file (`od`: a table of 24 entries, 12 bytes each, the
+ * entry's offset in its last 4) and MAPINFO.DAT (`info`: 4 bytes for each
+ * ground: the entry of its square, the kind of what stands on it (an index
+ * of the table below), the colour index and a mask of up to 6 more entries
+ * drawn over it).  Columns col0.. and rows row0.. of the map, w + 1 by h +
+ * 1 of them, at x, y, (1 << sc) pixels a square, the odd columns sc lower.
+ * The ground's entry is the table's entry of its first byte, the kinds'
+ * entries are those of kind_entry, the overlays are entries 0Eh.. and
+ * have colour base 70h, plus 7 for colour index 1 (the original reads a
+ * word of its stack for index 2: not checked what MAPINFO.DAT holds,
+ * presumably only 0 and 1). */
+static void moon_overview_map(fptr map, fptr od, fptr info, unsigned col0, unsigned row0,
+                              unsigned w, unsigned h, int x, int y, int sc)
+{
+    static const uint8_t kind_entry[9] = { 3, 8, 9, 0, 1, 2, 4, 5, 6 };
+    uint16_t mw = GW(map_width), mh = GW(map_height);
+    fptr entry[24], tbl;
+    unsigned r, c, i;
+    uint16_t keep_x1 = GW(clip_x1), keep_y1 = GW(clip_y1), keep_x2 = GW(clip_x2), keep_y2 = GW(clip_y2);
+
+    SW(clip_x1, x);
+    SW(clip_y1, y + 2);
+    SW(clip_x2, x + (w << sc) + (1 << sc));
+    SW(clip_y2, y + (h << sc) + (1 << sc));
+    tbl = hadd(od, (long)((uint32_t)pw(od, 0) | (uint32_t)pw(od, 2) << 16));
+    for (i = 0; i < 24; i++) {
+        fptr p = hadd(tbl, 12 * (long)i + 8);
+
+        entry[i] = hadd(od, (long)((uint32_t)pw(p, 0) | (uint32_t)pw(p, 2) << 16));
+    }
+    for (r = 0; r <= h; r++) {
+        for (c = 0; c <= w; c++) {
+            uint16_t idx, sx, sy;
+            unsigned g, k, count;
+
+            if ((uint16_t)(r + row0) >= (uint16_t)(mh - 1) || (uint16_t)(c + col0) >= (uint16_t)(mw - 1))
+                continue;
+            idx = (uint16_t)((uint16_t)(r + row0) * mw + c + col0);
+            sx = (uint16_t)((c << sc) + x);
+            sy = (uint16_t)((r << sc) + y);
+            if (c & 1)
+                sy = (uint16_t)(sy + sc);
+            g = pb(hadd(map, 2 * (long)idx), 0);
+            draw_entry((int16_t)sx, (int16_t)sy, entry[pb(info, 4 * g) % 24], 0, 0, 0x70);
+            count = pb(info, 4 * g + 2);
+            if (!count)
+                continue;
+            for (k = 0; k < 6; k++)
+                if (pb(info, 4 * g + 3) & (1u << k))
+                    draw_entry((int16_t)sx, (int16_t)sy, entry[0x0E + k], 0, 0,
+                               (count == 1 ? 7 : 0) + 0x70);
+        }
+    }
+    for (r = 0; r <= h; r++) {
+        for (c = 0; c <= w; c++) {
+            uint16_t idx;
+            int ox = -4, oy = 0, px, py;
+            unsigned g, kind;
+
+            if ((uint16_t)(r + row0) >= (uint16_t)(mh - 1) || (uint16_t)(c + col0) >= (uint16_t)(mw - 1))
+                continue;
+            idx = (uint16_t)((uint16_t)(r + row0) * mw + c + col0);
+            g = pb(hadd(map, 2 * (long)idx), 0);
+            kind = pb(info, 4 * g + 1);
+            if (!kind)
+                continue;
+            if (kind >= 6 && kind <= 8)
+                ox = -8, oy = -2;
+            px = (int)((c << sc) + x) + (ox >> (2 - sc));
+            py = (int)((r << sc) + y) + (oy >> (2 - sc));
+            if (c & 1)
+                py += sc;
+            draw_entry(px, py, entry[kind_entry[kind % 9]], 0, 0, 0x70);
+        }
+    }
+    SW(clip_x1, keep_x1), SW(clip_y1, keep_y1), SW(clip_x2, keep_x2), SW(clip_y2, keep_y2);
+}
+
+/* MOON.EXE's T0F3E:094A: the overview at x, y, as the above, a frame
+ * round it (two rows, two columns, in two colours) and a dot for each
+ * unit as `player` sees it */
+static void moon_draw_overview(int player, int x, int y)
+{
+    int sc = (int16_t)GW(overview_scale), i, w = (int16_t)GW(map_width);
+    int right = (int16_t)(x + (((int16_t)GW(map_width) - 1) << sc) - 1);
+    int bottom = (int16_t)(y + (((int16_t)GW(map_height) - 1) << sc) - 2);
+
+    moon_overview_map(map_of(player), GFP(overview_data), GFP(mapinfo_data), 0, 0,
+                      (uint16_t)(GW(map_width) - 2), (uint16_t)(GW(map_height) - 2), x - 1, y - 2, sc);
+    SW(draw_colour, GBO(amok, 0x0D)), SW(draw_x1, x - 1), SW(draw_y1, y - 1), SW(draw_x2, right);
+    draw_row();
+    SW(draw_x1, x - 1), SW(draw_y1, y - 1), SW(draw_y2, bottom);
+    draw_column();
+    SW(draw_colour, GBO(amok, 0x0C)), SW(draw_x1, x - 1), SW(draw_y1, bottom), SW(draw_x2, right);
+    draw_row();
+    SW(draw_x1, right), SW(draw_y1, y - 1), SW(draw_y2, bottom);
+    draw_column();
+    for (i = 0; i <= 0xF0; i++) {
+        fptr u = UNIT(i);
+        int side, sq, colour, py;
+
+        if (pw(u, 4) & (0x8000 | 0x4000 | 2))
+            continue;
+        side = pw(u, 4) & 1;
+        if (pw(u, 6) & 2)
+            continue;
+        sq = (int16_t)(pw(u, 0x0B + 2 * player) - 1) >> 1;
+        if (same_side(side, player) && (pw(u, 4) & 0x200))
+            colour = GBO(amok, 0x20 + side);
+        else
+            colour = GBO(amok, 0x22 + side);
+        py = y + ((sq / w) << sc) + ((sq & 1) ? 2 : 0);
+        if (bottom - 1 > py)
+            overview_dot(x + ((sq % w) << sc), py, colour);
+    }
+}
+
 /* the map's overview (the .PMP's picture, 2 pixels a square and 2
  * around) at x, y, and a dot for each unit as `player` sees it */
 void draw_overview(int player, int x, int y, fptr pmp)
 {
     int i, w = (int16_t)GW(map_width);
 
+    if (bi_prog == BI_MOON) {
+        moon_draw_overview(player, x, y);
+        return;
+    }
     draw_entry(x, y, MKFP(FSEG(pmp), FOFF(pmp) + 4), 0, 0, 0x70);
     for (i = 0; i <= 0xF0; i++) {
         fptr u = UNIT(i);
