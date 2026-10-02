@@ -290,10 +290,15 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   (key_clear, key_wait, box_key, after_map not reached): it spins
   inside that pass. At the pass 30304 the original (there after 2132 s
   of its time) and the port are the same in memory and video memory
-  but for the kinds of differences above. Not known yet: whether the
-  original reaches the pass 30305 (that run was stopped by the machine
-  running short of memory), so whether the game itself hangs there or
-  the port goes wrong within the pass.
+  but for the kinds of differences above. The original does not reach
+  the pass 30305 either: run on to 5000 s of its time the loop's start
+  still had its 30304 hits. So the game itself hangs there in a game of
+  two computers and the port does as it does. Where it spins is not
+  looked into; between the pass 30304 and the stop the original's
+  memory has a unit's reach in `marks`, `path_count` 0 and
+  `computer_state`+17h 1 (memcmp.py on the two dumps), the timers go
+  on. Not known: whether a game of a human against the computer on
+  that map can come to the same place.
 - The setup screen, in the headless build with scripted keys (`DK_KEYS`,
   the picture through `DK_DUMP`, looked at): the page as the kit draws
   it; down twice, right, up twice and Enter start the game with `/m`

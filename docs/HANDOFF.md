@@ -1745,6 +1745,20 @@ For the port (behaviour):
    what happens with BIGUNIT's missing MAA and with MOON's BIGUNIT
    without a .DAT (its PART and UNIT are taken in the library's order:
    seen).
+8a. The computer player on map 30 (NEVER), both players the computer:
+   the original and the port both stop for ever inside the map loop's
+   pass 30304 (round 10; the original run on from 2132 s to 5000 s of
+   its time with LT0708_135C still at 30304 hits, the port not at
+   30305 within 45 s where 30304 passes take it about 20 s). The same
+   in both at the pass 30304, so the game's own, not the port's. Where
+   it spins is not looked into: the original's memory when stopped has
+   a unit's reach in `marks`, `path_count` 0, `computer_state`+17h 1
+   (against the pass 30304's dump). To find it: a break in the port at
+   that pass and the routines the computer's tasks call from there, or
+   the runner's -log on their entries. Not known: whether a human
+   against the computer on that map can come to it, and whether the
+   port should leave it (a matter for the user).
+   The scratch stall.py MAP LO HI finds such a last pass by halving.
 
 9. The maps (mapfiles.py): the .SHP's kind 3 (F27EE:0B64), its bytes
    +3, +4 and its 27 bits; the .COM's records and why the loader swaps
