@@ -1726,7 +1726,24 @@ compared):
       changed and the game started from the screen, in a window.
    c. MOON: what MOON.EXE does otherwise than BATTLE.EXE, read routine
       by routine, and the port doing both. The large part; its size is
-      not known before the reading.
+      not known before the reading. A first measure (2026-10-02, the
+      scratch moonsurvey.py: xfer.py's alignment of BATTLE.hints' code
+      with MOON.EXE's, per BATTLE module; instruction shapes only, so an
+      unmatched instruction is a difference or a mere change of
+      encoding or order, not yet known which): 48452 of 58980
+      instructions matched. The library modules T2354 and the 2400 to
+      2728 ones (drawing, files, the sound's) are 100%, which says only
+      that they look the same, not that they behave so. The game's
+      modules between 63% and 98%: T0708 (the map's loop) 63%, T0CEB
+      71%, T169E 75%, T122D 78%, T0D36 84%, T178C..T1C04 85 to 91%,
+      T0408 91%, the others 91 to 98%; T25A6 (the credits) 0.3%, CODE
+      (the run time library) 48%, of no interest. So the work is the
+      unmatched stretches of about twenty modules, T0708 first. The
+      port needs per-title addresses then: bi.h's A_name and S_name are
+      enums of BATTLE's (a few dozen uses outside bi.h), symmap.py takes
+      one KEY=HINTS pair a program, so MOON=src/MOON.hints joins the
+      header and A_/S_ become tables chosen at load. Not begun: reading
+      the stretches decides what the C must branch on.
    d. The intro: only the one of 256 colours, INTEGA's (mode 13h, the
       one GOG's start runs). INTVGA's (16 colours, mode 0Dh) is left
       out: the user wants VGA only.
