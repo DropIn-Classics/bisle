@@ -1,6 +1,7 @@
 # Handoff
 
-State of 2026-10-01: stage 1 for the launcher, the main program, the
+State of 2026-10-02 (the port's: "Start here" below; the rest of this
+paragraph is 2026-10-01's): stage 1 for the launcher, the main program, the
 two data disks' games and the two intros; BATTLE.EXE's and BI.EXE's
 code reached to 97% and 96%, DESERT.EX2's as BATTLE.EXE's, MOON.EXE's
 to 98%, the intros' to 92%.
@@ -22,6 +23,47 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- Where the session of 2026-10-02 stopped (the port; port/README.md has
+  what was checked and how):
+  - All of BATTLE.EXE the game calls is translated. The games of two
+    computers on the maps 16 to 31 are the original's at their ends,
+    but map 30: there the original hangs in find_path (open question
+    8a) and the port, at the user's wish, does not (reach.c counts the
+    search's steps). Such a game ends in key_wait, not at after_map:
+    the scratch `cvcmap.py N key_wait` gives the last pass,
+    `cvcn.sh N NAME LT0708_135C#P map_pass#P` compares there (P the
+    pass printed plus 1), `stall.py` finds a last pass by halving.
+  - DESERT is in the port (`-title desert`, the setup screen's item
+    "Title"); compared only at the first map's 200th pass. Next for
+    it: a game of two computers (DESERT's codes: `datfiles.py
+    --codes`, its maps against the computer are 8..32; cvcmap.py takes
+    the first table's code, ISLE's, and wants a way to name the
+    title; pp.py and pcmp.py take TITLE=desert, pcmp.py also
+    OEXE=DESERT/DESERT.EX2 and HINTS=src/DESERT.hints), a save, a
+    map's end, the key for QUIT. Then the order in Next, point 0: MOON,
+    the 256-colour intro, later the mouse.
+  - The user played the window build: full screen and the keys are
+    right, the speed is a fast 386's, the music seems right, the
+    percussion perhaps too quiet (to be heard against the original);
+    a controller not tried. In DESERT the user found no unit to move
+    (units in a depot, presumably; a building's screen opens with
+    fire and left on it, fire and up on a unit there takes it out:
+    as the comparisons did in ISLE, not tried in DESERT).
+  - The kit: another session of the user's is writing a mouse driver
+    (INT 33h) for the runner in `doskit/` and was told to pause; its
+    changes are not committed (the submodule shows as modified:
+    tools/run, run.py, the tests, the docs), and build/dosrun.exe was
+    built from them at 07:59. With that runner the original finds a
+    mouse and switches it on by itself (mouse_on and DATA:040E..044A
+    differ from the port's in every comparison; cvcn.sh's filter
+    hides them). Do not commit or revert anything in doskit from
+    here; ask the user for its state first. `src/DESERT.hints.tmp`
+    (untracked) is not this session's either: left as it was.
+  - Nothing is pushed: the commits 029ee49 to 502496d and this one.
+  - Long runs: a game of 30000 passes takes the runner about 9
+    minutes and the headless port 20 s; the machine has 14 GB and a
+    background run was stopped once when memory ran short (the
+    browser), not by the runs themselves.
 - AGENTS.md and PROVENANCE.md have the rules: read them first.
 - `game/` holds the installed GOG folder as it is (no CD image: GOG
   ships the three games as folders for DOSBox); it is not in the
