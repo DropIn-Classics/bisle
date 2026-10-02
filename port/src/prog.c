@@ -1,5 +1,5 @@
 /* prog.c - where the hints' names are in the program that is loaded: the
- * game (BATTLE.EXE, DESERT.EX2) or the intro (INTEGA/INTRO.EXE).  The
+ * game (BATTLE.EXE, DESERT.EX2, MOON.EXE) or the intro (INTEGA/INTRO.EXE).  The
  * tables come from gen/names.h (symmap.py), one column a program. */
 #include "bi.h"
 
@@ -29,5 +29,5 @@ void bi_program(int prog)
 
 uint16_t bi_data_seg(int prog)
 {
-    return (uint16_t)((prog == BI_INTRO ? INTEGA_DATA : BATTLE_DATA) + LOAD_SEG);
+    return (uint16_t)((prog == BI_INTRO ? INTEGA_DATA : prog == BI_MOON ? MOON_DATA : BATTLE_DATA) + LOAD_SEG);
 }

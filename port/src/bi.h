@@ -22,7 +22,7 @@
  * intro (INTEGA/INTRO.EXE).  The hints' names are in other places in each
  * (prog.c): A_name is the offset and S_name the segment as loaded of the
  * program chosen by bi_program. */
-enum { BI_GAME, BI_INTRO };
+enum { BI_GAME, BI_INTRO, BI_MOON };
 extern int bi_prog;
 void bi_program(int prog);
 /* the segment the program's DS holds (DATA) */
