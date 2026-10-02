@@ -50,7 +50,22 @@ static void off_map(int col, int row)
  * square of an odd column lies half a row lower) */
 void neighbours64(int col, int row)
 {
-    int at = col + (row << 6);
+    int at;
+
+    if (bi_prog == BI_MOON) {
+        /* MOON.EXE puts a column and a row outside the map on its edge first */
+        int w = (int16_t)GW(map_width), h = (int16_t)GW(map_height);
+
+        if (w <= col)
+            col = w - 1;
+        if (col < 0)
+            col = 0;
+        if (h <= row)
+            row = h - 1;
+        if (row < 0)
+            row = 0;
+    }
+    at = col + (row << 6);
 
     SWO(around, 0, at - 0x40);
     SWO(around, 6, at + 0x40);
@@ -341,6 +356,8 @@ int find_path(fptr list, int unit, int from, int to, int side, fptr map)
     spw(NODE(1), 4, 0);
     spw(NODE(1), 6, 0);
     spw(NODE(1), 8, 2);
+    if (bi_prog == BI_MOON)
+        spb(NODE(2), 0, 0), spb(NODE(2), 1, 0);
     spw(NODE(2), 4, 0x7530);
     spw(NODE(2), 6, 1);
     spw(NODE(2), 8, 0);
@@ -362,6 +379,8 @@ int find_path(fptr list, int unit, int from, int to, int side, fptr map)
             clear_marks((int)taken);
             return 0;
         }
+        if (bi_prog == BI_MOON && at == 2)
+            break;                      /* MOON.EXE: the end node is no square */
         neighbours64((int8_t)pb(NODE(at), 0), (int8_t)pb(NODE(at), 1));
         for (k = 0; k < 6; k++) {
             int n = (int16_t)GWO(around, 2 * k), nx, ny, distance, key, cost, steps = 0;
