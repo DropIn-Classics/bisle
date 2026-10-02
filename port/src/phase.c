@@ -722,9 +722,28 @@ int change_phase(fptr buffer, fptr libs, fptr pmp, fptr palette)
         /* the map's own files again where the scene's or the film's were */
         work = buffer;
         p = libs;
-        name = t26ea_000f((int16_t)GW(map_number), FP(save_name), 2, 4);
-        if (!load_file(pmp, make_path(1, 1, name, 1), work))
-            return 0xFF;
+        if (bi_prog == BI_MOON) {
+            /* MOON.EXE has no .PMP: MAPINFO.DAT and MAP02.DAT or MAP04.DAT
+             * are read one behind the other into `libs`, which goes on
+             * behind them (the overview's scale is left as it is) */
+            long size = t2624_0006(p, make_path(1, -1, FP(name_mapinfo), -1), work, NULL);
+
+            if (size == -1)
+                return 0xFF;
+            SFP(mapinfo_data, p);
+            p = hadd(p, size);
+            name = (int16_t)GW(map_width) > 0x20 || (int16_t)GW(map_height) > 0x28
+                       ? FP(name_map02) : FP(name_map04);
+            size = t2624_0006(p, make_path(1, -1, name, -1), work, NULL);
+            if (size == -1)
+                return 0xFF;
+            SFP(overview_data, p);
+            p = hadd(p, size);
+        } else {
+            name = t26ea_000f((int16_t)GW(map_number), FP(save_name), 2, 4);
+            if (!load_file(pmp, make_path(1, 1, name, 1), work))
+                return 0xFF;
+        }
         name = t26ea_000f((int8_t)GBO(menu_items, 11 * 0x2E + 0x2B), FP(save_name), 2, 4);
         if (!load_file(palette, make_path(1, -1, name, 4), work))
             fatal_error(2);

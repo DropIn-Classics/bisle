@@ -252,7 +252,9 @@ static fptr unit_script(fptr unit, fptr ground)
     static const uint16_t by_ground[7] = {0x72, 0xA6, 0xA6, 0xC8, 0x0E, 0xFE, 0xFE};
     unsigned off, k = pb(ground, 5);
 
-    if (pw(unit, 6) & 0x24)
+    /* MOON.EXE: its table of scripts begins 10 bytes earlier and a type
+     * with 8 in its +0Eh has the longest script too */
+    if (pw(unit, 6) & 0x24 || (bi_prog == BI_MOON && (pw(TYPE(pb(unit, 8)), 0x0E) & 8)))
         off = 0x128;
     else if (pw(unit, 4) & 0x10)
         off = 0x0E;
@@ -260,10 +262,17 @@ static fptr unit_script(fptr unit, fptr ground)
         off = 0x40;
     else
         off = k >= 1 && k <= 7 ? by_ground[k - 1] : 0x0E;
-    return MKFP(S_scene_scripts, A_scene_scripts + off);
+    return MKFP(S_scene_scripts, A_scene_scripts + off - (bi_prog == BI_MOON ? 10 : 0));
 }
 
 static unsigned clamp_count(unsigned n) { return n == 0 ? 1 : n > 6 ? 6 : n; }
+
+/* the script's pointer a byte on: MOON.EXE keeps it normalized (a huge
+ * pointer's add, L1E36) where BATTLE.EXE only counts the offset up */
+static fptr next_byte(fptr s)
+{
+    return bi_prog == BI_MOON ? hadd(s, 1) : MKFP(FSEG(s), FOFF(s) + 1);
+}
 
 /* T1F5A:0001: both sides' counts within 1..6, each unit at its FEh of
  * the script */
@@ -277,18 +286,18 @@ static void place_units(void)
     s = unit_script(pfp(rec, 0), pfp(rec, 0x12));
     for (i = 0; i < GB(scene_count_a); i++) {
         while (pb(s, 0) != 0xFE)
-            s = MKFP(FSEG(s), FOFF(s) + 1);
+            s = next_byte(s);
         spfp(SCENE_A(i), 2, s);
-        s = MKFP(FSEG(s), FOFF(s) + 1);
+        s = next_byte(s);
         spw(SCENE_A(i), 6, 0);
         spb(SCENE_A(i), 1, 0);
     }
     s = unit_script(pfp(rec, 4), pfp(rec, 0x16));
     for (i = 0; i < GB(scene_count_b); i++) {
         while (pb(s, 0) != 0xFE)
-            s = MKFP(FSEG(s), FOFF(s) + 1);
+            s = next_byte(s);
         spfp(SCENE_B(i), 2, s);
-        s = MKFP(FSEG(s), FOFF(s) + 1);
+        s = next_byte(s);
         spw(SCENE_B(i), 6, 0);
         spb(SCENE_B(i), 1, 0);
     }

@@ -356,7 +356,8 @@ name DATA:04A0 picture_palette
 ; apart from the port's comparison): the counts of before and after, the
 ; colour bases, the frame's bits, 1 when the target does not answer, the
 ; numbers of shots, then the shots of the target's side (1Ch each), the
-; attacker's, the units of the target's side (10h each), the attacker's
+; attacker's, the units of the target's side (10h each, the first byte
+; before the one that T2084:0008 clears), the attacker's
 name F2E5B:005F scene_b_after
 name F2E5B:0060 scene_a_after
 name F2E5B:0061 scene_count_b
@@ -369,8 +370,11 @@ name F2E5B:0069 scene_shots_b_count
 name F2E5B:006A scene_shots_a_count
 name F2E5B:006B scene_shots_b
 name F2E5B:0113 scene_shots_a
-name F2E5B:01BC scene_units_b
-name F2E5B:021C scene_units_a
+name F2E5B:01BB scene_units_b
+name F2E5B:021B scene_units_a
+; the units' scripts (T237F:0007 unit_script): the first, for a unit that
+; is none of the others, is at 0004 here, 10 bytes before BATTLE.EXE's
+name F2E8A:0000 scene_scripts
 
 ; ==== carried over from BATTLE.hints by tools/xfer.py; check, then keep or edit
 ; the library's assembly modules: the byte form of AND/OR, XCHG AX,reg in

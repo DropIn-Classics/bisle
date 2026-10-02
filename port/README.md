@@ -82,8 +82,14 @@ original's in video memory and all of memory at passes 700 and 730 of the
 first map (scale 2) and, for scale 1 (a width above 20h or a height above
 28h: map 13 only, started by a poke of map_number), both pages at pass 110
 of map 13 (the rest of that map differs: handoff); keys given by pass,
-`map_pass@LT070B_13DD=N:KEY+,..`: by seconds they were a pass off. Not in the port for MOON: the
-fights, the statistics, the end of a map; MOON.hints' carried names are
+`map_pass@LT070B_13DD=N:KEY+,..`: by seconds they were a pass off. MOON's fights run now (the fight scene with MOON's own places for its
+values and scripts, `unit_script` and `place_units` as MOON.EXE has them, the
+overview's files read again after a scene as MOON.EXE does, in phase.c): a
+game of two computers on map 0 is the original's in all of memory at passes
+957, 958, 1000, 1300, 2000, 2250, 2375, 2440 and 2470, then the computer's
+planning differs (handoff); video memory differs from pass 958 on (the
+marks' rings, the scene's page: not looked at). Not in the port for MOON: the
+statistics, the end of a map; MOON.hints' carried names are
 unchecked beyond what the setup uses (see the handoff). The names MOON.hints lacked for
 the port are its own lines now (`name` lines above the carried block:
 make_path's tables, the menus' texts, the statistics' and the logo's
