@@ -141,23 +141,6 @@ relocorder original
 asm imm8_alu=add,adc,sbb,sub,cmp,xor xchg_ax_short=0 test_form=rm_reg
 
 ; ==== carried over from BATTLE.hints by tools/xfer.py; check, then keep or edit
-; BATTLE.EXE: the game (Battle Isle), Borland C++ 1991, large model;
-; started by BI.EXE after the intro.
-; Hints for doskit/tools/disasm.py; numbers are hex.
-; the segments, from the relocations and the header (SS:SP = 2F32:0080);
-; DS holds DGROUP (DATA, 2D8D: the startup code loads it). A module's code
-; segment T.... begins where the one before ends (start=, first guessed
-; from the lowest offset a far CALL/JMP enters it by; T2248's from the end
-; of T223C's switch table at T223C:00B6, 7 words to 2248:0004; T1F5A's,
-; T25A6's and T2354's from runs: the last routine before them ends with a
-; RETF in their frame, T2354:0000 POP SI, POP BP, RETF, zeros to 0010)
-; zeros after the stack (SP = 0080h, the file goes on for 220h bytes; what
-; they are is not known yet)
-; the header as TLINK writes it, its relocations in its order
-; how the compiler encoded what has two encodings: AND and OR with a
-; small constant in the word form (81h), XCHG AX,reg as 87h /r, TEST r,r
-; with the first register in r/m (counted over the reached code; the
-; library's assembly modules differ, their instructions are raw below)
 ; the library's assembly modules: the byte form of AND/OR, XCHG AX,reg in
 ; one byte, XOR r,r in the r/m,reg form (see asm above)
 raw CODE:004F ; and bx, 0xfff0
@@ -1905,7 +1888,6 @@ name DATA:040A mouse_on
 ; their segments
 name DATA:044E blocks_count
 name DATA:0450 blocks
-; the palette load_picture takes from a picture (768 bytes)
 ; (not mapped) name DATA:04A0 picture_palette
 ; the CRTC's ports (from the BIOS's 40:63), a file error (int24 sets 2,
 ; T2619:0004 1), timer_keys' count of four, the keys' bitmap (int09: a bit
@@ -1954,18 +1936,14 @@ name F27EE:2498 key_set
 name F27EE:0B1B key_set_keyboard
 ; (not mapped) name F27EE:0B3E key_set_other
 name F27EE:4126 key_set_copy
-; title's names: BB, TITEL
 ; (not mapped) name F2C09:000C name_bb
 ; (not mapped) name F2C09:0006 name_titel
-; make_path's directories (6 bytes each), extensions (5 bytes each), the
-; path it makes, and the disks' names (8 bytes each; T164D:0482)
 ; (not mapped) name F27E6:000B disk_names
 ; (not mapped) name F27E6:0023 path_dirs
 ; (not mapped) name F27E6:003B path_exts
 ; (not mapped) name F27E6:0077 path_made
 ; timer 0's handler (above)
 name T2354:063C old_timer
-; fatal_error's messages (14h bytes each, the first for number 1)
 ; (not mapped) name F273B:0008 fatal_messages
 ; the two players' records (17h bytes each: +0 a word of flags, bit 2 the
 ; computer plays; +2..+4 the status screen's counts; the orders' list at
@@ -2021,18 +1999,6 @@ name DATA:16C6 fx_freq
 name DATA:16CE fx_asked
 name DATA:16D6 fx_voice
 name DATA:16EC adlib_found
-; the driver's and the player's variables, behind the stack (DS:1AD0 on:
-; the segment ZEROS, which answers what its zeros are for): 13 words for
-; an operator's values, register 8's bit, each voice's key bit, volume,
-; the number of voices (9, or 11 in the percussion mode), the card's
-; port, register 1's bit (the wave forms), each voice's note, the pitch
-; bend's range, each voice's register B0 and bend, the two depths of
-; register BDh and the drums' keys, the 18 operators' values (14 bytes
-; each), the percussion mode; the tracks' places (16 far pointers), times
-; (longs) and statuses, the song (a far pointer), 1 when all tracks have
-; ended, a far pointer to the current track's status, the song's volume
-; of each voice (words), a far pointer to the current track's place, the
-; song's division, 1 while it plays
 ; (not mapped) name ZEROS:0000 op_scratch
 ; (not mapped) name ZEROS:001C opl_note_sel
 ; (not mapped) name ZEROS:001D voice_key
@@ -2072,10 +2038,6 @@ name CODE:1986 timbre_silent
 ; the effects asked for: four records of 6 bytes (the effect, the volume,
 ; a count; effects_start), and before them a far pointer to them
 name F2D8A:0010 effects_asked
-; the menus' data (T1090; port/src/menu.c): the names MENU and CODES, the
-; name of a score nobody has, the texts SELECT POSITION 0 TO 9, PLEASE
-; INSERT DISK and TYPE NAME FOR TOP FOUR, the menus (6 bytes each) and
-; their items (2Eh bytes each)
 ; (not mapped) name F2740:0000 name_menu
 ; (not mapped) name F2740:000A name_codes
 name F2740:0010 score_empty
@@ -2090,8 +2052,6 @@ name F2740:004D text_insert
 ; (not mapped) name F2740:006F text_four
 name F2740:0079 menus
 name F2740:00A3 menu_items
-; the statistics after a map (after_map): the picture's and the library's
-; name, the two songs' names
 ; (not mapped) name F27E3:0008 name_stats
 ; (not mapped) name F27E3:000E name_winner
 ; (not mapped) name F27E3:0015 name_looser
@@ -2121,8 +2081,6 @@ name F2D37:01D9 scene_count_b
 name F2D37:01DA scene_a_after
 name F2D37:01DC scene_shots_b
 ; (not mapped) name F2D37:0284 scene_b_silent
-; the grounds' lists of pieces, the two signed bytes a ground's scene adds
-; to attack and defence, the units' scripts
 ; (not mapped) name F2D5F:0000 scene_pieces
 name F2D65:000E scene_ground_bonus
 ; (not mapped) name F2D66:0000 scene_scripts
@@ -2203,16 +2161,10 @@ name F27EE:000E flank_bonus
 name F27EE:0013 ordinals
 name F27EE:001F unit_types
 name F27EE:0751 ground
-; the squares around a square by column and row, for even and for odd
-; columns: ten (a building site's; ten x offsets, then ten y offsets) and
-; four (a building's squares; four and four)
 ; (not mapped) name F27EE:09E5 around10_even
 ; (not mapped) name F27EE:09F9 around10_odd
 ; (not mapped) name F27EE:0A0D around4_even
 ; (not mapped) name F27EE:0A15 around4_odd
-; the libraries' records (14h bytes each, as lib_char24): unit, part,
-; cursor, patt, shop, bigunit, rand, bum, fight, char24, exp; then the
-; names CHAR6, AMOK, GAME, FIGHT, UNIT, GROUND
 ; (not mapped) name F27EE:0A1D lib_unit
 name F27EE:0A31 lib_part
 name F27EE:0A45 lib_cursor
@@ -2295,10 +2247,6 @@ name F27EE:4156 map1
 name F27EE:415A cursor_kept
 name F27EE:4192 window_y_odd
 name F27EE:41A2 around
-; reach's arguments kept (9 words), the messages of the line below a
-; window (18h bytes each), the library's rand's seed, BIDISK.VGA's name,
-; the far pointer to effects_asked, the routine that gives a number
-; without its sign
 ; (not mapped) name F273A:0006 reach_args
 ; (not mapped) name F2789:0008 messages
 name DATA:1938 rand_seed

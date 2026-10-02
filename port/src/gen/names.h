@@ -666,19 +666,19 @@
     X(F2D37, scene_calls_units, 0x005F, 0xFFFF, 0x0057) \
     X(F2D37, scene_calls_shots, 0x0063, 0xFFFF, 0x005B) \
     X(F2D37, scene_b_after, 0x0067, 0xFFFF, 0x005F) \
-    X(F2D37, scene_units_a, 0x0068, 0xFFFF, 0xFFFF) \
+    X(F2D37, scene_units_a, 0x0068, 0xFFFF, 0x021C) \
     X(F2D37, scene_base_a, 0x00C8, 0xFFFF, 0x0065) \
     X(F2D37, scene_shots_a_count, 0x00CA, 0xFFFF, 0x006A) \
     X(F2D37, scene_frame_bits, 0x00CB, 0xFFFF, 0x0067) \
-    X(F2D37, scene_count_a, 0x00CC, 0xFFFF, 0xFFFF) \
-    X(F2D37, scene_units_b, 0x00CE, 0xFFFF, 0x0064) \
-    X(F2D37, scene_shots_a, 0x012E, 0xFFFF, 0xFFFF) \
+    X(F2D37, scene_count_a, 0x00CC, 0xFFFF, 0x0062) \
+    X(F2D37, scene_units_b, 0x00CE, 0xFFFF, 0x01BC) \
+    X(F2D37, scene_shots_a, 0x012E, 0xFFFF, 0x0113) \
     X(F2D37, scene_base_b, 0x01D6, 0xFFFF, 0x0063) \
     X(F2D37, scene_shots_b_count, 0x01D8, 0xFFFF, 0x0069) \
     X(F2D37, scene_count_b, 0x01D9, 0xFFFF, 0x0061) \
-    X(F2D37, scene_a_after, 0x01DA, 0xFFFF, 0xFFFF) \
-    X(F2D37, scene_shots_b, 0x01DC, 0xFFFF, 0xFFFF) \
-    X(F2D37, scene_b_silent, 0x0284, 0xFFFF, 0xFFFF) \
+    X(F2D37, scene_a_after, 0x01DA, 0xFFFF, 0x0060) \
+    X(F2D37, scene_shots_b, 0x01DC, 0xFFFF, 0x006B) \
+    X(F2D37, scene_b_silent, 0x0284, 0xFFFF, 0x0068) \
     X(F2D5F, scene_pieces, 0x0000, 0xFFFF, 0x0006) \
     X(F2D65, scene_ground_bonus, 0x000E, 0xFFFF, 0x0004) \
     X(F2D66, scene_scripts, 0x0000, 0xFFFF, 0xFFFF) \
@@ -1244,19 +1244,19 @@
     X(F2D37, scene_calls_units, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
     X(F2D37, scene_calls_shots, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
     X(F2D37, scene_b_after, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
-    X(F2D37, scene_units_a, BATTLE_F2D37, 0xFFFF, 0xFFFF) \
+    X(F2D37, scene_units_a, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
     X(F2D37, scene_base_a, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
     X(F2D37, scene_shots_a_count, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
     X(F2D37, scene_frame_bits, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
-    X(F2D37, scene_count_a, BATTLE_F2D37, 0xFFFF, 0xFFFF) \
+    X(F2D37, scene_count_a, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
     X(F2D37, scene_units_b, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
-    X(F2D37, scene_shots_a, BATTLE_F2D37, 0xFFFF, 0xFFFF) \
+    X(F2D37, scene_shots_a, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
     X(F2D37, scene_base_b, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
     X(F2D37, scene_shots_b_count, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
     X(F2D37, scene_count_b, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
-    X(F2D37, scene_a_after, BATTLE_F2D37, 0xFFFF, 0xFFFF) \
-    X(F2D37, scene_shots_b, BATTLE_F2D37, 0xFFFF, 0xFFFF) \
-    X(F2D37, scene_b_silent, BATTLE_F2D37, 0xFFFF, 0xFFFF) \
+    X(F2D37, scene_a_after, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
+    X(F2D37, scene_shots_b, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
+    X(F2D37, scene_b_silent, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
     X(F2D5F, scene_pieces, BATTLE_F2D5F, 0xFFFF, MOON_F2E82) \
     X(F2D65, scene_ground_bonus, BATTLE_F2D65, 0xFFFF, MOON_F2E89) \
     X(F2D66, scene_scripts, BATTLE_F2D66, 0xFFFF, 0xFFFF) \

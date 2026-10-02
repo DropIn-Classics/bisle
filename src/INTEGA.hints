@@ -197,23 +197,6 @@ name DATA:1161 slots_perc
 name DATA:06F0 input1_counts
 
 ; ==== carried over from BATTLE.hints by tools/xfer.py; check, then keep or edit
-; BATTLE.EXE: the game (Battle Isle), Borland C++ 1991, large model;
-; started by BI.EXE after the intro.
-; Hints for doskit/tools/disasm.py; numbers are hex.
-; the segments, from the relocations and the header (SS:SP = 2F32:0080);
-; DS holds DGROUP (DATA, 2D8D: the startup code loads it). A module's code
-; segment T.... begins where the one before ends (start=, first guessed
-; from the lowest offset a far CALL/JMP enters it by; T2248's from the end
-; of T223C's switch table at T223C:00B6, 7 words to 2248:0004; T1F5A's,
-; T25A6's and T2354's from runs: the last routine before them ends with a
-; RETF in their frame, T2354:0000 POP SI, POP BP, RETF, zeros to 0010)
-; zeros after the stack (SP = 0080h, the file goes on for 220h bytes; what
-; they are is not known yet)
-; the header as TLINK writes it, its relocations in its order
-; how the compiler encoded what has two encodings: AND and OR with a
-; small constant in the word form (81h), XCHG AX,reg as 87h /r, TEST r,r
-; with the first register in r/m (counted over the reached code; the
-; library's assembly modules differ, their instructions are raw below)
 ; the library's assembly modules: the byte form of AND/OR, XCHG AX,reg in
 ; one byte, XOR r,r in the r/m,reg form (see asm above)
 raw CODE:004F ; and bx, 0xfff0
@@ -276,8 +259,6 @@ raw T060D:02E3 ; or word ptr [0x368], 0
 ; (not mapped) raw T26D2:0035   ; and cx, 0xf
 ; (not mapped) raw T26DE:0017   ; and cx, 0xf
 ; (not mapped) raw T2701:0036   ; xchg dx, ax
-; jumps at the edge of the short range, which the compiler sized otherwise
-; than TASM's estimate from its previous pass
 ; (not mapped) raw T0408:2E94   ; jmp 0x2f11
 ; (not mapped) raw T0D36:06A1   ; jmp 0x721
 ; (not mapped) raw T1F5A:029B   ; jmp 0x31b
@@ -327,28 +308,6 @@ words CODE:1140 7 CODE ; from CODE:106E
 ; (not mapped) words T2112:05E6 7 T2112        ; from T2112:005A
 ; (not mapped) words T223C:00B6 7 T223C        ; from T223C:0074
 ; (not mapped) words T2248:1043 5 T2248        ; from T2248:100B
-; T2354:0713 stores DX:AX as a far handler and CX:BX beside it in tables
-; at DATA:0D9E and DATA:0CBE: a timer callback and its period, a long of
-; the PIT's counts (1193182 a second; CX 1, BX 0 is 10000h, 18.2 a
-; second). Read in full: up to 16 timers, the number of the last (twice)
-; in DATA:0CBC; a timer has its period (0CBE, 0CDE), the counts left
-; (0CFE, 0D1E), a flag "due" (0D3E), its handler (0D9E) and a handle
-; (0D5E, 0D7E: timer_add gives the handle back, timer_remove and
-; timer_period take it). The PIT runs at the shortest period of all
-; (DATA:0DE6, 0DE8; set by the three routines and written to the PIT by
-; int08 when it changed). int08 takes the period that has just run
-; (DATA:0DDE, 0DE0) from each timer's counts left; a timer at or below 0
-; is due and gets its period added; then the handlers of the due timers
-; are called (far, DS = DATA), the last added first, timer 0 last: that
-; is T2354:063C, the INT 08h handler that was there before, with the
-; period 10000h. A timer is so called at the first interrupt at or
-; after its time, and loses nothing over the long run; interrupts held
-; off for longer than the PIT's period are lost for all timers (runs:
-; tools/sndfiles.py --run, the song's steps).
-; timer_remove (handle in AX) moves the last timer into the freed place;
-; timer_period (handle in AX, CX:BX) sets a period, which counts from the
-; timer's next time on. T2354:0858, 086D and 0879 are the three with
-; their arguments on the stack (nothing calls them; read from the bytes).
 ; (not mapped: T0559:05AC would be timer_add and timer_add) name T2354:0713 timer_add
 name T0559:0611 timer_remove
 name T0559:06AB timer_period
@@ -377,643 +336,78 @@ name T0559:037E int09
 ; handler (sets DATA:0AD4 to 2, AL = 0; read from the code, not run)
 ptr T0559:004E T0559
 ; (not mapped: T0559:03DA would be int24 and int24) name T2354:0520 int24
-; the timer callback T2354:0021 sets: a key from INT 16h (AH=01h, 00h)
-; into DATA:0404 (scancode), 0406 (character), 0408 = FFFFh (a key is
-; there), the key before into 0405 and 0407; T1090's menu reads them
-; (seen with -rwatch in a run)
 ; (not mapped: T0559:0090 would be timer_keys and timer_keys) name T2354:008A timer_keys
-; the key set F27EE:2498 points to (F27EE:0B1B when the credits were left
-; with space, scancode 39h, else F27EE:0B3E; what 0B3E is for is not
-; looked into), by index as dumped in a run: 00 Esc, 01 space, 02
-; backspace, 03 Del, 04 Ctrl, 05 Tab, 06/07 enter, 08..0B up, down,
-; right, left, 0C..15 F1..F10, 16 S, 17 E, 18 Y, 19 N, 1A D, 1B X ...
-; In a map T0708 reads the key from DATA:0404 (through the far pointer
-; DATA:00BE) and compares it with these: Esc (00) shows message 0Ch
-; "QUIT THE GAME ? (Y)", Y (18) then sets F27EE:250C bit 0; D (1A) at
-; T0708:3F0A calls save_game when both players' cursor records (F27EE:26B4
-; and 26E5, 31h bytes each) have state 5 at +17h. T0D36:141F sets state 5
-; when the function chosen at +1Bh is 9: fire held over an empty square,
-; left held while fire is let go (the change of phase; seen with -watch
-; on F27EE:26CF, the function goes back to 1 when left is let go first).
-; The other directions there (T0D36:147A, the direction's bits 1, 2, 4, 8
-; against the cursor's +1Ch): 8, right, is function 3 and gives state 3
-; with 4 at +18h, on which T0708:21F5 calls draw_overview; 2, down, is
-; function 2, which showed the status screen (runs of the first map: the
-; save run's keys with right or down for left; shots at 55 s); 1, up,
-; showed nothing on an empty square (function 4 or 0 by +1Ch, not read).
-; T11FD:0004 (number, player) shows a message of the table at F2789:0008
-; (records of 18h bytes: 0Ch QUIT THE GAME, 28h SAVE ABORTED, 29h GAME
-; SAVED, 2Ah GAME NOT SAVED, 2Bh GAME NOT LOADED) on the line below the
-; player's window: x0 + 5 .. x0 + 94h, y BDh .. C4h filled with AMOK's
-; +0Fh (x0 0 or A0h), the text by draw_chars centred on x0 + 4Ch in colour
-; 3 for player 0, 12h for player 1, and the player's bit 4 or 8 of
-; F27EE:250C set; the number -1 only clears the line. The callers set bit
-; 8 or 10h of F27EE:2510 with a message: the map's loop (T0708:42A0) then
-; starts timer 1 or 2 of T0D36:0165 with 19h, and T0D36:0241 clears the
-; line and the bit of 250C when it has run. Seen in runs (the buildings'
-; screens below): message 1Eh on the line with bit 8 of 250C 0.5 s after
-; it was asked for, the line clear and the bit off 1.5 s after.
-; T11FD:0103 (unit, player), the line of a unit, called by T1479:030A
-; after the numbers of a unit of the viewer's: the line cleared, then in
-; the player's colour from x = x0 + 5: the unit's +2 (its +3 when the
-; type's word +0Eh has bit 4) at x + 6, EXP.LIB's entry of the unit's +1
-; less 1 (F27EE:0AF3; none for 0, the sixth above 6) at x + 0Eh, unless
-; the unit's word +4 has bit 2 its +9 ending before x + 26h and st, nd, rd
-; or th (F27EE:0013) there, the type's second name (+2Bh) at x + 34h.
-; Drawn by tools/screens.py with the unit's and the buildings' screens:
-; all pixels of the line in the video memory (units with 0 at +1 and 1,
-; 3 or 11 at +9; an entry of EXP.LIB was not seen).
 ; (not mapped) name T11FD:0004 show_message
 ; (not mapped) name T11FD:0103 unit_line
-; T164D:0363 (?, dir, name far, ext) writes a path into F27E6:0077: a
-; directory of F27E6:0023 (6 bytes each: LIB\, MAP\, FX\, ANIM\; -1 none),
-; the name, an extension of F27E6:003B (5 bytes each: .FIN .PMP .SHP .LIB
-; .PAL .DAT .TXT .SND .FXX .COM .IFF .HI); what the first argument is
-; for is not looked into.
 ; (not mapped) name T164D:0363 make_path
-; a map's files, loaded by T0708 when a map starts (seen with -dos: .FIN,
-; .SHP, .COM only with F27EE:250C bit 400h, then .PMP into a buffer nothing
-; else read in a run; the name from F27EE:2523 in two digits). The .FIN
-; (width, height, two bytes a square: GROUND.DAT index and unit) and the
-; .SHP (27 bytes of UNIT.DAT bits, then the buildings' records of 12 bytes
-; with seven unit types each) as read from these two; tools/mapfiles.py
-; has the formats.
 ; (not mapped) name T0E9B:02B6 load_fin
 ; (not mapped) name T0E9B:007B load_shp
-; the tables of unit types and ground: T0708 loads UNIT.DAT to F27EE:001F
-; (27 records of 44h bytes) and GROUND.DAT to F27EE:0751 (records of 6
-; bytes) with load_file when a map starts, over the same bytes in the
-; program's own data (ISLE's files, checked); AMOK.DAT goes to F27EE:24E8
-; the same way (24h bytes: the buildings' ground values by owner, colours,
-; the overview's dots). tools/datfiles.py has the fields, as
-; read from the routines below and seen with -rwatch over both tables in
-; a battle against the computer (HANDOFF.md).
-; T169E:000E (number, type, player, square): fills a unit's record
-; (F27EE:2898, 1Ah bytes each): +0, +2, +3 the type's, +1 0, +4 the
-; type's class (+0Ch) OR the player, +6 the type's +10h, +8 the type, +9
-; the type's serial for the player (then 2 more), +0Ah a cargo record of
-; F27EE:0B64 (1Ch bytes; T169E:04A0 fills it) for a type of class 1000h,
-; 2 for a type with 4000h in +10h, else FFh, +0Bh and +0Dh the square.
 ; (not mapped) name T169E:000E make_unit
-; T0BA0, where a unit can move and fire. The squares' marks are 1104h
-; bytes at F27EE:1339, 68 rows of 64 (a square at column + 40h * row,
-; whatever the map's width): bits 1 and 2 in reach of the unit player 0
-; or 1 moves, 4 and 8 a target of the unit that fires, 40h and 80h used by
-; find_path and by T0408:000B. The buffers the routines fill are laid out
-; the same way.
-; T0BA0:0003 (mask): clears the mask's bits in all marks, FFh all bits.
 ; (not mapped) name T0BA0:0003 clear_marks
-; T0BA0:0053 (column, row): the six squares around one into F27EE:41A2 as
-; offsets in a buffer: up, right up, right down, down, left down, left up
-; (a square of an odd column lies half a row lower); off_map then puts
-; FFFFh for those off the map. T0BA0:0116 (offset) does the same for the
-; map's squares (two bytes a square, the row 2 * width).
 ; (not mapped) name T0BA0:0053 neighbours64
 ; (not mapped) name T0BA0:0116 neighbours
 ; (not mapped) name T0BA0:020A off_map
-; T0BA0:098F (buffer far, unit, side, ground flags, squares far): the cost
-; of entering each square for that unit, negated, B0h for never; 9Ah or
-; 9Bh on the squares around a unit of the other side. tools/moves.py has
-; the rules in full.
 ; (not mapped) name T0BA0:098F cost_map
-; T0BA0:0323 (square, buffer far, unit, points, side, ground flags, squares
-; far): keeps its arguments at F273A:0006 (T0D36:0927 calls it again with
-; them), cost_map, then spreads the points from the unit's square: each
-; square reached keeps what is left after its cost, a square beside an
-; enemy (9Ah, 9Bh) is reached with 0 left. Marks the squares with 0 or
-; more left with 1 (2 for side 1) and returns their number. The points
-; are the unit's +0 (T0D36:0F51, the player's choice of a unit to move).
-; tools/moves.py does it again from a run's memory: in two runs (a unit
-; taken out of a depot on map 03; a unit chosen with fire and up on the
-; first map) every byte of the buffer and every mark was the game's.
 ; (not mapped) name T0BA0:0323 reach
-; T0BA0:05C8 (buffer far, square, range, side, unit, targets, squares far)
-; -> the number of targets: the squares less than `range` squares away
-; (the range is one more than the distance: the unit's screen shows it
-; less 1), without the six around the unit when the targets word has 40h;
-; of those the ones holding a unit of the other side (not one with 2 in
-; its +4) whose class (+4 AND 3Ch) the targets name, or with 2 in its +6
-; when the targets have 2, are marked 4 (8 for side 1). tools/moves.py
-; --fire does it again: buffer and marks the game's in six calls of the
-; computer's units (all of range 2; none with 40h or a range above 2).
 ; (not mapped) name T0BA0:05C8 fire_reach
-; T0BA0:0E2E (list far, unit, from, to, side, squares far) -> 0, or FFFFh
-; when there is none: a path over the squares marked in reach. The list
-; holds nodes of 10 bytes (column, row, +2 the node it was reached from,
-; +4 a key, +6 and +8 the nodes before and after in the key's order), node
-; 0 the list's head, 1 the start (key 0), 2 the end (key 7530h). The
-; routine goes along the list from the start; each node's neighbours in
-; reach and not yet taken (mark 40h, 80h for side 1) become nodes, put in
-; after the current node before the first node of a greater key; the key
-; is the distance to the aim (square_distance) times the type's +14h plus
-; the ground's cost (+3, or +4 for a unit with 10h in its +4) times the
-; type's +15h, 0 on the aim. At the aim's node the path is written at the
-; list's +1F40h as words, the squares' offsets from the aim back to the
-; start, their number in F27EE:0B62. More than 316h nodes or squares: no
-; path. tools/moves.py --path does it again from a run's memory at the
-; routine's end: the same squares in six calls of a battle against the
-; computer (paths of 2 to 14 squares, all of side 1 and found; none that
-; failed was seen).
 ; (not mapped) name T0BA0:0E2E find_path
-; T0BA0:1391 (list far, side, unit): the squares in reach on which
-; stop_check lets the unit (kept at F27EE:1326) stop, as words into the
-; list, their number in F27EE:0B62 (the computer player's callers).
 ; (not mapped) name T0BA0:1391 list_reach
-; T122D:0F50 (square, side, squares far) -> 0, or the number of the
-; message that says why not: what the unit F27EE:1326 would do by
-; stopping on the square, into the record there: +1 the unit on the
-; square, +4 a slot, +5 far a cargo or building record, +9 its number,
-; +0Ah the square, +0Ch the kind. Read, not run:
-;   a unit u on the square (the first half's record for a second half):
-;     the mover takes u in, kind 1, when u's +6 has 20h and the mover's
-;     1000h, or u's 4 and the mover's 2000h: the first free slot of the
-;     mover's cargo record (its +0Ah; 7 slots a side), if the sizes (the
-;     types' +40h) of what is inside (T1479:12B5) and u's are no more
-;     than the mover's type's room (+3Fh); else message 9.
-;     Else message 5 for a unit not of the side (same_side), 7 for one
-;     that does not hold others (1000h in its +4), 8 when the mover's +6
-;     AND the cargo record's +19h has none of 0FC0h or u has 200h in its
-;     +4; else the mover goes into u, kind 2: a free slot, the mover's
-;     size plus what it holds itself plus what u holds within u's room,
-;     and for a mover that holds others more free slots in u than the
-;     mover has units; else message 9.
-;   an empty square of a building (the ground's flags 400h: the record of
-;     F27EE:2780 that names the square, T0E9B:1587; 100h: of F27EE:259C;
-;     40h: F27EE:24B0, the second with the ground's flag 1): kind 4 when
-;     the building's +19h is not of the side or has 2 (taken over,
-;     presumably), else kind 5 with a free slot (for a mover that holds
-;     others more free slots than it has units), else message 9.
-;   any other empty square: kind 3; message 0Eh when the type's +4 AND
-;     the ground's +2 is 0, or for an air unit (10h in its +4) on ground
-;     of flag 4000h.
 ; (not mapped) name T122D:0F50 stop_check
-; T1479:12B5 (cargo far, side) -> the sizes (types' +40h) of the units in
-; a record's seven slots; T122D:18A9 (side, cargo far, used) -> how many
-; of the slots are used (free with used 0); T0E9B:1587 (square, table
-; far) -> which of ten records of 1Ch bytes has the square among its
-; four at +0Eh, FFFFh none.
 ; (not mapped) name T1479:12B5 cargo_size
 ; (not mapped) name T122D:18A9 count_slots
 ; (not mapped) name T0E9B:1587 find_building
-; T0E9B:1E90 (x1, y1, x2, y2): the distance of two squares in squares on
-; the map of hexagons: the upper one first; the columns' difference plus
-; what the rows differ beyond what the columns give (each row less half
-; its column, rounded down when the lower square is right of the upper
-; one, else up and with the columns exchanged). Read; tools/moves.py has
-; it, and find_path's keys made with it gave the game's paths.
 ; (not mapped) name T0E9B:1E90 square_distance
-; The fights. T0408:000B, called when the phase changes, goes through the
-; attack orders of a player (a far list of unit numbers at F27EE:244F +
-; 17h * player, their number at +2453h; the target is the unit on the
-; square the attacker's +11h names) and fills the fight record
-; F27EE:2716 for each (tools/fight.py has its fields), then calls
-; T1F3C:000A in every pass until it returns not 0: the fight scene
-; (fight_step, below), which reckons the outcome once, at its first
-; call. After it (T0408:09F7 on): a unit left with a count of 0 is taken
-; off the map (T0408:2415); what a unit that holds others (1000h in its
-; +4) lost, each unit inside loses too (T0408:28EA: one with no more than
-; that is taken out of its slot and gets 4 in its +14h); then the units'
-; +1, the experience, at most 6: one more for a unit whose enemy lost
-; something (unless the enemy has 20h in its +6), one more when the enemy
-; is gone. Read; the +1 was seen to go from 0 to 1 between two fights of
-; a unit. What the other player's half shows meanwhile (the scene has the
-; attacker's; M below): before the fight (T0408:0680..08D0) the attacker's
-; square gets the mark 40h (M 1: 80h) and the target's 1 (2), each with
-; the other half of a unit of two squares; T0E9B:15DD (player, square)
-; puts M's window around a square (its first column and row even, the
-; square 5 columns and 4 rows in where the map allows) and the cursor on
-; it: the attacker's in the run; draw_window and draw_marks with every unit's two
-; directions (+0Fh, +10h) exchanged for the call. The squares' animation
-; (T0408:0C04 on, when a unit is gone) by the four records F27EE:2472 of
-; 7 bytes that unit_explode fills (+0 the square, +2 the step, AMOK's +8
-; at first, one more for the second square of a unit of two; +3 and +5,
-; words, the two bytes the square gets when it has run; FFh in +2: none):
-; 15h retraces' wait, a sound (with F27EE:250C bit 80h: four records at
-; the far pointer F2D8A:000C, then CODE:16F8), then passes of 4 ticks
-; (F27EE:251B): for each record with a step T0408:25C8 (record, map far,
-; the window's first square, player) draws the ground's hexagon and
-; BUM.LIB's entry of the step (the list at F27EE:0AB7, base 0) on a
-; square in the window, when the step is below AMOK's +8; the step goes
-; down by one, and below 0 the square gets its two bytes and is drawn
-; again by redraw_square (with the two maps' pointers F27EE:4152 and 4156
-; exchanged for the call and the cursor's +17h 0), so that entry 0 is
-; never on the page shown. T0408:2D57 (0 or 1: which unit), called with
-; unit_explode, is a sound (the type's +41h, +43h; CODE:16F8). Runs: an
-; attack with the target's count poked to 1 at the change, stopped at
-; each of the six calls of T0408:25C8 and after the loop: tools/screens.py
-; --field --explosions had M's half pixel for pixel (the two marks, the
-; entries 5 to 1, then the bare ground).
-;
-; The whole routine, `change_phase` (keys, far ?, far ?, far ?: buffers):
-; D is the player whose cursor record's +16h is 2 (attack), M the other.
-; Each player has a map of his own (the far pointers F27EE:4152 and 4156)
-; and a unit a square (+0Bh, +0Dh: the offset plus 1, the offset alone
-; inside a building) and a direction (+0Fh, +10h) in each. After the
-; fights of D's orders:
-;   every unit with 4 in its +14h (unit_explode, cargo_loses): move_undo
-;     when it has 1 there, then unit_remove; the units in its cargo too;
-;   every unit by its +13h (the table T0408:23FB): 1 the unit it took in
-;     (+16h) becomes M's (the +4's bits 1, 2, the serial +9 from the type's
-;     +3Ch + player, the counts); 4 the building (by +17h, +15h: 4 a
-;     headquarters, 8 a factory, else a depot) is taken: play_anim 1 (M is
-;     player 0) or 0 in M's half of the screen (ANIM\br seen), D's view of
-;     its slots copied to M's, the units inside become M's, the counts of
-;     the players' factories (+3) or depots (+4), the square's ground from
-;     AMOK.DAT (+0, +3, +6 plus the player), the record's +19h and +18h (5),
-;     the taker into a free slot (none: the unit of slot 0 is removed), and
-;     for a headquarters the routine returns M; 5 for a unit that holds
-;     others: each unit in the building with 4 in its +6 is removed and
-;     gives its count * 8 of energy (the record's +16h + player, FAh at
-;     most); 0Bh the four squares of four_squares(+11h), when all have
-;     ground flag 8000h and no unit, get AMOK's +18h..; 0Dh a depot record
-;     is made (T169E:0324) on them (0Bh, 0Dh read, not run);
-;   the libraries and the palette the fight scene and the animation took
-;     the place of are loaded again (F27EE:250C bit 1000h);
-;   sync_slots for the cargo records, depots, factories, headquarters;
-;   D's map: no units, M's units get their squares and directions of M's
-;     view in D's, drop_empty, every unit not inside (4000h) on its square;
-;     T0E9B:19AB copies it to M's;
-;   both cursors +17h, +18h, +19h 0 and +1Bh 5, the modes exchanged, the
-;     orders' counts 0, messages 3 and 4, F27EE:251D (the round) + 1 when
-;     player 0 is to move;
-;   every unit: +4 AND F0FFh; with 1 in +14h, flag 1 in the type's +0Eh
-;     and not inside: unit_flag 200h again (ISLE's types 0 and 7, the
-;     artillery: moved, so not firing in the next phase, presumably); with
-;     8000h in +6 the count + 1 up to the type's, for its cargo too; +11h,
-;     +13h..+16h 0;
-;   the units without 20h or 4 in +6 counted: none of player 0: the
-;     results (the cursors' +22h) 12h and 11h, none of player 1: 11h and
-;     12h, none at all: 15h both; then both cursors' +17h 7;
-;   F27EE:2597 = score().
-; The caller (T0708:3D01, when both cursors have state 5 and F1 is pressed
-; or both players are the computer) sets state 7 and the results 0Fh for
-; the player returned and 10h for the other, and calls history_add with the
-; two players' counts of units.
-; tools/turn.py --change does all of it again from a run's memory at the
-; routine's entry and compares with the memory at its end: the same bytes
-; in the units, both maps, the records, the counts, marks, modes, results,
-; round and score (HANDOFF.md has the runs: after a plain move, a move
-; into the own headquarters, the other's headquarters taken, and eight
-; changes of a battle against the computer with 10 fights and three units
-; dead).
 ; (not mapped) name T0408:000B change_phase
-; T0408:2415 (unit, byte, byte, n, player, map far): a dead unit off the
-; map: animation record n (n + 1 for its second half) gets the square and
-; AMOK's +8 steps, the square's unit byte is the first byte (FFh), the
-; unit's +14h gets 4.
 ; (not mapped) name T0408:2415 unit_explode
-; T0408:28EA (player, unit, loss): each unit in the unit's cargo record
-; (the player's view) loses that much of its +2; one with no more gets 4
-; in its +14h and leaves its slot.
 ; (not mapped) name T0408:28EA cargo_loses
-; T0408:2730 (records far, to, from, n): for each of n records not 8000h
-; or 2 in +19h: of `from`'s side, the seven slots and the energy (+16h) of
-; from's view into to's (a dead unit's slot FFh first); else to's into
-; from's.
 ; (not mapped) name T0408:2730 sync_slots
-; T0408:2E5C -> the score: the armour (the type's +1) of every unit alive
-; that is no second half and has not 4 in its +6, both players', + 100
-; with F27EE:250E bit 8, times 4, 3, 2 for a limit (F27EE:2454) of 4, 8,
-; 16, at most 7EF4h. tools/turn.py: as the game's in those runs (1210,
-; 495 .. 380; no limit, no bit 8 seen).
 ; (not mapped) name T0408:2E5C score
-; T0408:2FAF: every unit with 0 in its +2 gets 8000h in its +4.
 ; (not mapped) name T0408:2FAF drop_empty
-; T169E:0585 (unit, player): the unit is dead: +4 = 8000h (both halves),
-; the counts F27EE:2514 and the owner's +2 less 1 (2 for two halves); one
-; that holds others: T169E:06D7 removes those of the player's view and
-; ends the cargo record (+19h = 8000h; the counts of F27EE:2515..2517 and
-; the owner's by its flags 8, 10h, 20h).
 ; (not mapped) name T169E:0585 unit_remove
-; T169E:07EA (unit, player): the units in its cargo record and the
-; record's +0Eh get the unit's square.
 ; (not mapped) name T169E:07EA cargo_follow
-; T0E9B:19ED (unit, flag, player, on): sets or clears 100h or 200h in the
-; unit's +4 and the mark 40h or 10h (80h, 20h for player 1) on its square,
-; draws the square; for both halves.
 ; (not mapped) name T0E9B:19ED unit_flag
-; T0E9B:19AB (from far, to far): copies a map (F27EE:246C bytes).
-; Not named: xfer.py carries a name here to MOON.EXE's T0DA1:04D0, another
-; routine.
-; T0E9B:18EF (square): four squares into F27EE:41A2 by the tables
-; F27EE:0A0D (even column) and 0A15 (odd): four columns', four rows'
-; differences.
 ; (not mapped) name T0E9B:18EF four_squares
-; A move, carried out in the mover's map at once (tools/turn.py --step).
-; T0D36:0642, the cursor in state 0 with +18h 16h (a unit is chosen: fire
-; with up on it, or taken out of a building): fire calls move_aim; with
-; its result's bit 10h clear +18h is 3 and the next fire calls T122D:05B8,
-; then unit_release; with bit 10h timer 7 runs 4 passes and unit_release
-; (flags 10h) gives the choice up.
-; What fire on a square offers (T0D36:0D82, the cursor's +1Ch): 0Eh
-; always (down the status or unit's screen, left the change of phase,
-; right the overview), 200h when no move runs; on a unit of the own side
-; that is no one's (2) and has not moved (200h): 10h in the move phase
-; (the cursor's +16h 1; not while a move runs), 1 in the attack phase; on
-; a unit that holds others and on a building's square 400h (with HIDE
-; SHOP, F27EE:250E bit 8, only one's own). The cursor's entry (+1Bh,
-; CURSOR.LIB's) says what is chosen. While fire is held (state 1, +18h 2;
-; T0D36:147A, the keys' bits 1 up, 2 down, 4 left, 8 right against +1Ch):
-; up 4 with 10h, else 0 with 1, else as it was, and when the player's
-; counts' +15h has reached its +16h (TURN and LIMIT of the status screen)
-; and F27EE:243E's bit 2 is clear, 5 and message 21h; down 2 with 4; left
-; 0Ah with 400h, else 9 with 200h, else as it was; right 3 with 8;
-; otherwise 1. When fire is let go (T0D36:0F44): 4 and 0 as below; 2 gives
-; state 4; 0Ah state 6; 9 state 5; 3 state 3 with +18h 4 and the entry 6
-; (the overview's frame); any other state 0 and the entry 5, the cursor
-; at rest. Runs (map 03, dumps with fire held; tools/screens.py --field
-; had all pixels): 1 with fire alone, 2, 3 and 9 with down, right and
-; left on an empty square, 1 kept with up there, 0 with up on a unit of
-; one's own in the attack phase, 4 in the move phase (a unit poked in:
-; all pixels but that unit's in the other player's window, not drawn
-; again since the poke). Not seen: 0Ah, the message 21h. Fire with up
-; then (T0D36:0F51,
-; the cursor's +1Bh 4): reach with the unit's +0 as points and the ground
-; flags FFFFh for a unit with 1 in its +6, else 6 for player 1's and 3
-; for player 0's; more than one square in reach: unit_flag 100h, +18h
-; 16h, the unit in +1Eh; else message 22h. In the attack phase (+1Bh 0,
-; T0D36:1106): fire_reach for the type's two ranges (those above 1); no
-; target: message 1Bh; else unit_flag 100h and +18h 13h. A unit with
-; 4000h in its +6 (the pioneers): with nothing left to build (+0Ah)
-; message 1Ah, else T0E9B:1704 gives the squares to build on, marked as
-; targets (none: message 19h).
-; T0B70:000E (cursor far, map far, player) -> 1 when an order is given:
-; fire on a square with +18h 13h. Not a marked target: message 13h, 0
-; (timer 7, then order_release). A unit on it: unit_flag 200h, the unit's
-; +11h the square, +13h 9, +14h 2, the unit into the player's orders,
-; message 17h. The pioneers: +13h 0Bh (a site), or 0Dh on a square whose
-; ground is AMOK's +18h (a depot; message 15h when there are 10 depots),
-; +11h the square, message 14h; not into the orders. Seen in a run: an
-; order of player 0 by keys, fought at the next change as turn.py reckons
-; it (HANDOFF.md).
 ; (not mapped) name T0B70:000E give_order
-; T0B70:0289 (cursor far, player): the targets' marks cleared, the unit's
-; 100h off.
 ; (not mapped) name T0B70:0289 order_release
-; T122D:02D8 (cursor far, map far, player) -> 1 (9 for a unit of two
-; squares), or 12h: no move there. 12h when the cursor's square (the
-; record's +0) has not the player's mark of reach, is the unit's own, or
-; for an air unit has ground flag 4000h; when stop_check gives a message
-; (shown); when find_path finds none (message 16h). Else the reach's
-; marks are cleared and drawn away (T0E9B:1047), the path's squares
-; marked, the unit's +11h is the aim.
 ; (not mapped) name T122D:02D8 move_aim
-; T122D:05B8 (cursor far, player) -> 1 or 9, or 12h when the cursor is no
-; longer on the aim: the unit into the player's orders (the list at the
-; player's +11h, the count +15h), its +11h the square it stands on,
-; F27EE:0B62 (the path's length) less 2, F27EE:1328 and 1329 FFh (1328
-; the building record's +1Bh for a unit out of a building: what the
-; square shows under it), F27EE:2510 bits 80h (a move runs) and 100h
-; with F27EE:2512 2 (a sound, presumably), timer 4 at once.
-; Not named: xfer.py carries a name here to MOON.EXE's T154F:0C9E, which
-; is another routine (it draws a type's big picture: the one BATTLE.EXE
-; has at T1479:0C93, presumably); MOON.EXE's routine for this is
-; T12F0:05C4 by its place (not read).
-; T122D:0713, called by the map's loop (T0708:42FA) when timer 4 ran out
-; (F27EE:2510 bit 40h): the unit F27EE:1326 one square on, to the path's
-; [0B62] (the path at the player's list + 1F40h, from the aim back): its
-; old square gets the byte of 1328, 1328 the new square's, the unit's
-; direction is direction(old, new); a unit of two squares drags the next
-; record onto its old square (1329 for that one's); cargo_follow; then
-; 0B62 less 1 and timer 4 again after the type's +16h passes, or at the
-; aim (stop_check was called before the square was entered) move_arrive,
-; its message shown, bit 80h and the unit's 100h off. On the screen the
-; unit goes a whole square at a time: move_step draws the old and the new
-; square again by redraw_square, nothing between them. move_aim marks the
-; path with the bit of the reach (1, player 1's 2), so it shows as the
-; reach does. Runs (map 03, unit 00 three squares down, its type's +16h
-; 1; dumps every 0.2 s): the reach (78 squares marked), the path (4
-; marked, the cursor's +18h 3), the unit two squares on with F27EE:2510
-; C0h and no marks left, the unit at the aim with message 6 on the line:
-; tools/screens.py --field had every pixel of the page shown in each
-; (the message's number given to it).
 ; (not mapped) name T122D:0713 move_step
-; T122D:0ABD (player, map far) -> the message 6, or 11h/12h for kind 1:
-; the end of a move by the record's kind (stop_check). tools/turn.py has
-; what each kind does; the unit's +13h is the kind, +14h bit 1, +15h the
-; record's number, +16h the other unit, +17h (a word) the other unit's
-; old +4 or the building's +19h, +19h the slot.
 ; (not mapped) name T122D:0ABD move_arrive
-; T122D:0002 (cursor far, map far, player, flags): the choice of a unit
-; ends: the marks cleared; with flag 10h the unit's 100h off and the
-; cursor back to state 0 (+18h 19h); for a unit out of a building (the
-; cursor's +19h 3) with 10h the unit goes back into its slot, and the
-; cursor goes back to the building's screen (state 2, +18h 9).
 ; (not mapped) name T122D:0002 unit_release
-; T122D:1516 (from, to; squares' offsets) -> 0 up, 1 right up, 2 right
-; down, 3 down, 4 left down, 5 left up.
 ; (not mapped) name T122D:1516 direction
-; T122D:15DF (unit, map far, player): the end of the unit's move taken
-; back, by its +13h (the table T122D:189F): 2 and 5 its slot FFh; 3 and 4
-; its square's unit byte FFh; 1 the unit it took in back on the square
-; with its old +4.
 ; (not mapped) name T122D:15DF move_undo
-; T122D:1910 (player, from far, to far): the units in one record's slots
-; into the free slots of another, their squares the other's +0Eh.
 ; (not mapped) name T122D:1910 cargo_move
-; T0D36:0165 (kind, passes, value): a timer in the first free of 15 slots
-; (F27EE:2525 the kinds, 2534 when: the passes' count F27EE:251F plus
-; `passes`, 2570 the values); the map's loop calls T0D36:0241 (kind,
-; slot) for each that is due: 1, 2 clear a player's message line, 3 and 4
-; set F27EE:2510 bits 20h and 40h (4: move_step), 6 and 7 clear bits 200h
-; and 400h.
 ; (not mapped) name T0D36:0165 timer_set
 ; (not mapped) name T0D36:0241 timer_due
-; T15AC:069D (units of player 0, of player 1): the two counts into the
-; two buffers of the record F27EE:248E (+1 and +5 far, +9 the index, 3Fh
-; at most, then +0 is 1): the curves of the statistics after the map.
 ; (not mapped) name T15AC:069D history_add
-; T2190:000D: the fight's outcome from the record at the far pointer
-; F2D37:000A: the two units' counts are written back. The formula, the
-; random part (srand with the units' addresses XOR the count of the map
-; loop's passes, two numbers of random) and the rule for a target that
-; cannot answer are in tools/fight.py, which does the reckoning again
-; from a run's memory at the routine's entry and compares the counts at
-; its end: the same in the fights of a battle against the computer
-; (HANDOFF.md says how many). A divisor of 0 (an armour of 0, or the
-; target's of 1 with the attacker's +1 at 6) would end the program with a
-; divide error; not seen.
 ; (not mapped) name T2190:000D fight_reckon
 ; (not mapped) name T1F3C:000A fight_step
-; The fight scene (T1F3C, T2112, T1F5A, T223C), read in full:
-; tools/scene.py has every rule in its docstring and does a call of
-; fight_step again from a run's memory, the scene's values and the
-; picture, and both were the game's in the runs HANDOFF.md names.
-; change_phase loads FIGHT.LIB, BUM.LIB, RAND.LIB and FIGHT.FXX before
-; the first fight (a run with -dos) and puts their lists into the fight
-; record: +32h UNIT.LIB's entries (set by T0708 when the map begins),
-; +3Ah BUM.LIB's, +3Eh RAND.LIB's, +42h FIGHT.LIB's, +46h a buffer for a
-; packed entry, +4Ah the sounds' records (the far pointer F2D8A:000C).
-; fight_step counts its calls in the record's +26h. The first call
-; reckons (fight_reckon), keeping the two counts of before and after in
-; F2D37:00CC, 01D9 (attacker, target; held within 1..6 for the scene)
-; and 01DA, 0067; the first two calls draw the ground and the frame, a
-; page each, into the attacker's half of the screen (x 0 or A0h by bit 1
-; of his +4). Then, a call a pass, T1F5A:093C until it returns 1
-; (F2D37:0008), then scene_shots until it returns 1 (F2D37:0009), then
-; the four sounds are stopped, the count cleared and fight_step returns 1.
-; The scene's values (F2D37): 000E a byte a type, the pace of a unit
-; coming in; 0029 two bytes a type, the kind of its shot (BUM.LIB's
-; entries 6 + 8 * kind ..) and the shot's pace; 005F and 0063 the calls
-; of T1F5A:093C and scene_shots (longs); 0068 and 00CE the units of the
-; two sides, 10h bytes each; 00C8 and 01D6 their colour bases; 00CA and
-; 01D8 the numbers of shots; 00CB the frame's pieces touched in a call;
-; 012E and 01DC the shots, 1Ch bytes each; 0284 1 when the target does
-; not answer.
-; T2112:000B (second player, not next to each other): the ground: by the
-; kind (+5 of the two ground records, 1..7) a list of pieces at
-; F2D5F:0006.. (a count, then entry, x, y each; the target's ground
-; above, the attacker's 5Ah lower), drawn by draw_packed in colour base
-; 5Fh; for a target not next to the attacker srand(the attacker's
-; record's offset) and black columns of random height between the two;
-; else pieces where the two kinds differ (2 or 5 against others, 7
-; against others).
 ; (not mapped) name T2112:000B scene_ground
-; the frame's four pieces (RAND.LIB's entries 0, 2, 3, 1; colour base
-; 40h): above, below, left, right
 ; (not mapped) name T2112:05F4 frame_above
 ; (not mapped) name T2112:0670 frame_below
 ; (not mapped) name T2112:06EE frame_left
 ; (not mapped) name T2112:076B frame_right
-; T1F5A:0001: the counts held within 1..6, and each unit of a side its
-; place in the side's script (the nth FEh on). Not named: xfer.py carries
-; a name here to MOON.EXE's T1BCB:0001, another routine; MOON.EXE's is
-; T2084:0008 (read there: the same).
-; T1F5A:0176 (x, y) -> the frame's pieces a sprite there reaches into
-; (1 above y 0Ch, 2 below 90h, 4 left of x0 + 8, 8 right of x0 + 78h);
-; the callers OR it into F2D37:00CB and those pieces are drawn again.
 ; (not mapped) name T1F5A:0176 frame_touched
-; T1F5A:01E4 (x1, y1, x2, y2) -> which of a shot's eight pictures: 0 up,
-; then clockwise; upright or level when the other width is less than
-; half.
 ; (not mapped) name T1F5A:01E4 shot_way
-; T1F5A:0322 (unit of the scene far, target's side): draws it unless its
-; +1 is set: UNIT.LIB's entry type * 6 + direction (the target's turned
-; by 3) at x0 + x, 9Ch - y, the target's at x0 + 80h - x, y; for a type
-; with 40h in its +0Ch the next type's entry beside it, for a unit with
-; 10h in its +4 the entry once more in colour base 50h, 3 left and 2
-; lower (a shadow); its place into the unit's +0Ch, +0Eh.
 ; (not mapped) name T1F5A:0322 scene_draw_unit
-; T1F5A:0736 (unit far, side) -> 1 at its script's end: a step of the
-; script (FEh, x, y, direction: its place; FFh the end; else a direction
-; and a length, gone at the type's pace), then scene_draw_unit.
 ; (not mapped) name T1F5A:0736 scene_step_unit
-; T1F5A:093C -> 1 when all units have arrived. Its first call starts a
-; sound for each side (the type's +41h, FFh none; the sound's record,
-; 6 bytes, number 0 or 2 by the attacker's player: the sound, 40h + 0Ah *
-; the count, C8h) and places the units; when the side has arrived the
-; record is set again (the sound, 0, FFFFh), unless the type's +43h has
-; 1. The record's words are the effect, the volume and a count, FFFFh
-; to silence the channel (effects_start, below). Not
-; named: xfer.py puts a name here 5 bytes before MOON.EXE's routine
-; (T2084:09CF; it gives T2084:09CA, inside the table before it).
-; T1F5A:0C58 and T1F5A:101C: the attacker's and the target's shots made:
-; from a unit to one of the other side, hitting (flag 10h) as many as
-; the other side lost, the others' aim random(-20h, 20h) lower; a wait
-; of random(0, 2710h) AND 0Ch calls; when the losses are more than the
-; shots, shots that are not drawn (flag 20h) for the units left. The
-; target's are not made (F2D37:0284) when it cannot answer by
-; fight_reckon's rules or the squares are further apart than its range.
 ; (not mapped) name T1F5A:0C58 make_shots
 ; (not mapped) name T1F5A:101C make_answer
-; T1F5A:1548 (shot far) -> 1 when it is over: it waits, flies (drawn,
-; then moved by the type's pace along its line; a sound when it starts,
-; the type's +42h, with 5Fh for a type with 2 in its +43h, else 7Fh),
-; explodes at its last step (sound 3, with 7Fh for a hit, else 5Ah; the
-; unit it hits gets 1 in its +1) and
-; shows BUM.LIB's entries 5 down to 0 (colour base 30h for a hit, else
-; 20h).
 ; (not mapped) name T1F5A:1548 step_shot
-; T1F5A:1A21 -> 1 when all shots are over: its first call makes them; a
-; call draws the target's units, the attacker's, and steps each shot.
 ; (not mapped) name T1F5A:1A21 scene_shots
-; T223C:0001 (unit far, ground far) -> the script of the unit's side, in
-; F2D66: 128h for a unit with 4 or 20h in its +6, 0Eh for one with 10h
-; in its +4, 40h for one with 8, else by the ground's kind 72h, A6h,
-; A6h, C8h, 0Eh, FEh, FEh.
 ; (not mapped) name T223C:0001 unit_script
-; T24D8:0008 (x, y, entry far, long, base, buffer far): draw_entry, of
-; the buffer when T2701:000E unpacked the entry into it (an entry that
-; begins with TPWM, as MOON's), else of the entry.
 ; (not mapped) name T24D8:0008 draw_packed
-; T0408:29C6 (attacker, target, squares far, window): the record's two
-; percentages, +24h on the attacker's hit value for the attacker's side's
-; units around the target (the bytes F27EE:000E.. by where they stand
-; from the attacker), +25h on the target's armour for the target's side's
-; units on the two squares beside both; tools/fight.py reckons them again
-; (the same in those fights). T0408:2BBD (unit, other, squares far,
-; window) -> the direction of `unit` from `other`, and in F27EE:41A2 a 1
-; for each square around `other` with a unit of `unit`'s side that can
-; fire at `other`. T0408:2B8C (n) -> n mod 6.
 ; (not mapped) name T0408:29C6 fight_bonus
 ; (not mapped) name T0408:2BBD flankers
 ; (not mapped) name T0408:2B8C mod6
-; T0D36:00F5 (a, b; two units' +4) -> whether b is of a's side: b has bit
-; 1 when a has it, else bit 2 when a has that, else b has not bit 1 (so
-; for a unit of player 0 one of neither player counts as its side).
 ; (not mapped) name T0D36:00F5 same_side
-; T0D36:05FF (lo, hi) -> rand() mod (hi - lo + 1) + lo, hi at most 7FFFh.
-; CODE:2627 (seed) and CODE:263F are the library's srand and rand (the
-; long DATA:1938 times 15A4E35h plus 1, bits 16..30).
 ; (not mapped) name T0D36:05FF random
 name CODE:26A3 srand
 name CODE:26BB rand
-; The computer player. The map's loop calls T178C:000D (player) once a
-; pass for a player whose record's +0 has bit 2 (T0708:1554; with
-; F27EE:250E bit 80h, set when the human asked for the change of phase
-; while the computer is in its stages 20h or 40h, it calls it in a loop
-; of its own with message 32h up, until a key or the stages are through).
-; Its state is in the frame F2C0A: the map's .COM file at 0000 (27
-; records of 6 bytes, a type each: +0 a signed byte, the type's worth,
-; +2 a word of flags); the player's record at 00A2 + 0Ch * player; a
-; record of 9 bytes a unit at 00BA (the move phase) and at 0934 (the
-; attack phase): +0 an aim (a square or a unit), +2, +4 a score, +6 the
-; unit's threat, +8 its task; the keys' script at 11AE + 20h * player
-; (bytes played one a pass by T1938:000F into the word 11EE + 4 * player,
-; which the map's loop takes as the player's directions and fire: a byte
-; below 80h a direction of the table F2D33:0006, 80h + n the three bytes
-; of F2D33:0010 + 3 * n, FFh the end; +1Eh, +1Fh where it is); the word
-; 11F0 + 4 * player a message's number for the player's line; the
-; commands at 11FE + 49h * player (ten of 7 bytes: the kind, three words;
-; +46h the one that runs, +47h, +48h its steps). The list of aims is at
-; the far pointer of the player's record +9 (F27EE:2447), 6 bytes each.
-; T178C:000D does a step of the stage in the player's record's +0:
-;   20h T17C0:0A0D (message 2Fh), until it returns 1: then 40h
-;   40h T1C04:000D (messages 30h, 31h in turn), then 8
-;   8   T17C0:0004 (message 2Eh), then 2
-;   2   T1938:012F: a step of the command that runs; when it returns not
-;       0 (no command left) the stage is 8 again, else 1 and the
-;       script's place (+1Eh) 0
-;   1   T1938:000F: the next byte of the keys' script; at its end 2
-; (message 1Ch else, 1Dh in the stages 2 and 1). The tests follow one
-; another in a call: a stage that is through hands on to the next in the
-; same pass (a command handed out is begun, and its first key played). T178C:01B6 (player), at
-; a map's start: the stage 20h, the records cleared.
-; T17C0:0A0D, the first stage, by the record's +5 (the table
-; T17C0:1783): the strengths, the threats, the aims; tools/computer.py
-; --assess has the rules and does a call again from a run's memory:
-; the same bytes in the records and the aims (HANDOFF.md has the runs).
 ; (not mapped) name T178C:000D computer_step
 ; (not mapped) name T178C:01B6 computer_start
 ; (not mapped) name T17C0:0A0D computer_assess
-; T1C04:000D, the stage 40h, by the record's +4 and +7 (the tables at
-; T1C04:2C5F..2CCB): a task for every unit; its own values are at
-; F2D36:0006..0015. T1ED2:0005 (player, unit, score, task, square), by
-; the record's +8: a unit that needs another (to be carried, or to wait
-; beside). tools/computer.py --plan has the rules and does whole visits
-; of the stage again, call by call: the same number of calls and the
-; same bytes as the game.
 ; (not mapped) name T1C04:000D computer_plan
 ; (not mapped) name T1ED2:0005 task_helper
-; T17C0:0004, the stage 8, by the record's +3 (the table T17C0:09FB):
-; the tasks become commands (T1938:0388 puts one at the queue's end: 1 a
-; unit to a square, 2 a unit fires at a unit, 3 the change of phase, 4 a
-; unit out of its building, 6 a repair, 7 a type made in a factory); it
-; returns 1 after each, and command_step carries it out before the next.
-; tools/computer.py --handout does it again; T1B01:0712 (unit, player) a
-; unit towards its aim, T1B01:0007 (unit, player) a unit to a square
-; beside a unit, T1B01:0C27 (square, player) -> 1 for a square with more
-; than three enemies around or two opposite.
 ; (not mapped) name T17C0:0004 computer_hand_out
 ; (not mapped) name T1B01:0712 task_move
 ; (not mapped) name T1B01:0007 task_approach
@@ -1021,178 +415,24 @@ name CODE:26BB rand
 ; (not mapped) name T1938:0388 command_add
 ; (not mapped) name T1938:012F command_step
 ; (not mapped) name T1938:000F script_step
-; How the commands are carried out (T1938; tools/computer.py --carry and
-; --script do a call again from a run's memory: the same bytes as the
-; game's, HANDOFF.md has the runs): command_step calls the command's
-; routine (the table
-; T1938:037A: 1 T1938:0480, 2 06D3, 3 08D8, 4 0A08, 5 1245, 6 0D59, 7
-; 0F7A), each a row of steps (the command record's +47h) that wait for a
-; running move to end (F27EE:2510 bit 80h), take the cursor to a square
-; and put fire into the script: the script's byte 5 is fire, 1
-; and 2 up and down (the slots of a building's screen), 3 and 4 left and
-; right, 80h..83h fire
-; with up, down, left, right (as a player chooses a unit, opens a
-; building, asks for the change) for a pass and a pass of nothing, by the
-; two tables F2D33:0006 and 0010. The map's loop takes the word as the
-; keys T0D36:04D8 gives it for a player (T0708:155C).
-; T1938:157E (player, the cursor's square, a square) -> 1 when the cursor
-; is there (or the square is none of the map, or in its last column or
-; row), else left or right and up or down into the script. T1938:1245
-; (player, the cursor's square, a square, the commands far), by +48h: in
-; a building's screen (the cursor's +18h) or less than 5 columns and rows
-; away 157E alone; else fire with right (the overview), T1938:140D
-; (player, column, row: the overview's window, the cursor's +0Ch, +0Eh,
-; steered to column - 5, row - 4, held within the map, made even), fire,
-; then 157E.
-; Command 1: to the unit, fire with up, to the aim's square, then fire,
-; a pass, fire; when the square has not the mark of reach or stop_check
-; has a message, bit 8 of the player's record's +0 before the first (the
-; choice is given up, as
-; T0D36:0731 reads it). 2: to the unit, fire with up, the target's
-; square, fire; if it is not marked a target, bit 8 and fire once more.
-; 3: the cursor to
-; the own headquarters' square and one row on, fire with left when no
-; move runs, then it waits for the stage record's bit 4 (set by the
-; map's loop at the change). 4, 6: T1938:16C1 finds the building that
-; holds the unit; the cursor there, fire with left, up or down to the
-; unit's slot, then for 4 fire with up, a square it can stop on
-; (list_reach; none: bit 8), fire twice, fire with right; for 6 fire
-; with down, fire with right. 7: the cursor to the factory, fire with
-; left, to the last free slot, fire with left, down the list to the type,
-; fire with left, fire with right. T1938:17A6 (player, unit, records far,
-; how many) -> the record with the unit in one of the player's slots,
-; FFFFh none.
-; Not named: T1938:08D8, 0D59, 0F7A, 1245 and 140D (the commands 3, 6, 7,
-; the cursor to a square, the overview's window): xfer.py carries a name
-; there to MOON.EXE 8 to 10h bytes before its routine (T1A3E:08EC, 0D87,
-; 0FB7, 128D, 1463 by MOON.ASM's routine starts, in the same order).
 ; (not mapped) name T1938:0480 command_move
 ; (not mapped) name T1938:06D3 command_fire
 ; (not mapped) name T1938:0A08 command_out
 ; (not mapped) name T1938:157E cursor_steer
 ; (not mapped) name T1938:16C1 find_holder
 ; (not mapped) name T1938:17A6 find_in_slots
-; T1ABC:0008 (unit, far three words): the unit's strength against land,
-; sea and air: the type's hit value (+0Ah, +0Bh, +9) * (count / 2 + 1) *
-; (the unit's +1 + 1) * (armour / 8) / 32.
 ; (not mapped) name T1ABC:0008 unit_strength
-; T1ABC:01D2 (flags, side) -> the first unit of the side alive whose
-; type's .COM record has one of the flags in +2, FFh none.
 ; (not mapped) name T1ABC:01D2 find_kind
-; T1ABC:027D (square, unit, player, flags) -> 1 when find_path finds a
-; way for the unit to the square with every square of the map marked
-; whose ground the type can be on (the masks), but those with a unit of
-; the other side (flag 1), and those with a unit of the own side that
-; holds others; the path stays in the player's list.
 ; (not mapped) name T1ABC:027D can_go
-; T1B01:0B4F (records far, player, n): the squares (+0Eh) of the side's
-; records with more than 2 of energy onto the list of aims, counted in
-; F27EE:0B62. T1B01:0E4B (player, unit): the unit's task 0Ah, score 190h,
-; its aim the nearest own factory can_go reaches (the distance reckoned
-; with the squares' offsets not halved) or the own headquarters.
 ; (not mapped) name T1B01:0B4F list_buildings
 ; (not mapped) name T1B01:0E4B task_home
-; T1479:11B4 (energy): the types that can be made, into F27EE:4136 and
-; their count into F27EE:1338: cost (+3Eh) no more than the argument,
-; flag 2 of +0Eh clear (a map's .SHP sets it), and for a type that holds
-; others a free cargo record.
 ; (not mapped) name T1479:11B4 list_makeable
-; T1479:0C93 (x, y, type, ?, player): the type's big picture (number +19h
-; of the list at F27EE:0A8F, +18h added to y, base 20h or 30h by the
-; player) and its name (+1Ah) centred under it. Not named: xfer.py
-; carries a name here to MOON.EXE's T1724:000E, which is another routine
-; (it draws a text; MOON.EXE's routine for this is not found yet).
-; T164D:04C7 loads BIDISK.VGA (F27E6:0000) with load_file, the far
-; values at F27EE:2447 and F27EE:245E the other arguments; when nothing
-; comes back: fatal_error(2), "ERROR: cannot load file." (F273B's table,
-; "ERROR: %s" at F273B:0044), the handlers put back and exit(-1). It is
-; called in T0708 after LT0708_44E2 and LT0708_4570 (by bits 10h and 20h
-; of F27EE:250C; when those are set is not looked into) before the
-; animations of ANIM\ (make_path dir 3), and after LT0408_0F95: a check
-; that the disk with BIDISK.VGA is in the drive, presumably (BI.EXE asks
-; for <VGA> and <EGA> disks). Reached in runs with a map's end poked in
-; (below), before play_anim; not in the menus, a map, saving or a lost
-; battle against the computer.
-; BATTLE.EXE starts the same with /v, /e or no argument (mode 13h, the
-; same files; runs of 6 s): it reads no switch there, as far as seen.
 ; (not mapped) name T164D:04C7 check_vga_disk
-; the end of a map, T0708:4095: when a cursor record (+17h) has state 7,
-; the players' results at F27EE:26D6 and 2707 (the records' +22h) are
-; messages of show_message's table: 0Fh VICTORY !!, 10h YOU LOST ALL UNITS,
-; 11h MINE DISABLED; 0Fh becomes 0Ah VICTORY !! HQ IS YOURS / 0Bh YOU LOST
-; YOUR HQ !! and sets F27EE:250C bit 4000h, 11h becomes 0Fh / 10h and sets
-; bit 2000h (so 0Fh is the HQ taken, 11h all units lost, as the messages
-; read). Bit 10h is set when F27EE:250E bit 2 is set, or bit 1 and the
-; result of the player whose record is chosen by F27EE:243E bit 2 is 0Fh
-; or 11h; it stays only with 4000h or 2000h. At LT0708_44CE bit 10h plays
-; animation 2 (3 with 2000h), bit 20h animation 4 after T15AC:0007. Runs
-; against the computer (the CONRA key script of HANDOFF.md) with
-; -poke LT0708_4088#401 F27EE:26CB 07 and F27EE:26D6 0F00 (player 1 took
-; the HQ): check_vga_disk, then play_anim(2) opens ANIM\anim.fx, qa.a00,
-; qa.pal (the HQ blown up); with 1100 (all units) play_anim(3) opens
-; hs.a00, hs.pal. What 250E's bits mean is not looked into (bit 1 set
-; against the computer, presumably).
-; T2248:0F28 (n, far ?, 0, 0, 1, path far): plays animation n of ANIM\
-; (seen: 2 qa, 3 hs, 4 es in five parts es.a00..a04 with es0..es4.pal;
-; the names from anim.fx, presumably, not checked).
 ; (not mapped) name T2248:0F28 play_anim
-; bit 20h, poked in as well (-poke LT0708_4551 F27EE:250C FD24, the value
-; there 24DDh in the run with result 11h): check_vga_disk, play_anim(4)
-; (the ending, "SELF DESTRUCTION SEQUENCE" on a screen in the shots), after
-; 300 ticks check_vga_disk again and T25A6:0655 (far ?, path far), which
-; opens ANIM\ab.fx and types the staff credits on a black screen (shots at
-; 124 s to 240 s); the name is a presumption from the shots.
 ; (not mapped) name T25A6:0655 end_credits
-; CODES.DAT (tools/datfiles.py): records of 10 bytes, a map each. T1090
-; loads it (the length / 10 the number of maps) and compares the code
-; typed with each record's first 5 bytes (T1090:0B2F; letters less 30h):
-; the record's number becomes the map, F27EE:2523. T1090:110F (number,
-; table far) puts the record's code into the menu's text and clears bit
-; 400h of F27EE:250C when the record's +6 is 2, else sets it: a map
-; against the computer (the .COM is loaded with that bit).
-; T15AC:0007: the statistics after a map; nothing at all when no round
-; was played (F27EE:251D 0: the poked ends of map 16 were so, and their
-; name went to MAP\04.HI, F27EE:251B still the loop's 4). Else STATS.IFF,
-; the palette, WINNER.SND with F27EE:250C bit 10h (the map is won), else
-; LOOSER.SND, STATS.LIB, CODES.DAT; the two players' curves of
-; history_add (below); F27EE:251B = the map; 500 on
-; the score with bit 2000h. Won: the map's number + the +7 of its record
-; in CODES.DAT, and text 12h with the new map's code, or text 18h and
-; bit 20h when the old record's +8 has bit 0 (the last map; not reached
-; without a poke); not won: text 11h and the score 0. Then text 1Ch with
-; the score, 13h with the round, 14h with text 15h, 16h or 17h by
-; F27EE:2497 (below 10h, below 20h, more; what T15AC:071F returns), a
-; key, fade_out. Seen in a run of ISLE's map 03 with the other player's
-; headquarters taken by keys after one round (HANDOFF.md): the two
-; curves, RATING : 1210 ROUNDS : 1 SCALE : 1 - 1, HEADQUARTER REPORTS A
-; NEW KEYWORD : EAGLE (map 04's code), then the name went to MAP\03.HI.
-; The curves: T15AC:071F (player, far row) puts the player's history in
-; order (after 64 points the oldest first) and returns the number of
-; points, F27EE:2497. T15AC:07EC (x, y, far row, far entry, colour, the
-; maximum as a long) draws one: a point every 16 pixels for fewer than 16
-; points, every 8 for fewer than 32, else every 4 (the SCALE's texts
-; 15h, 16h, 17h); a point's height is its count * (400000h / the
-; maximum) >> 16 (the maximum the larger of the two players' highest
-; counts, T15AC:0650; 40h for 0), up from y; from point to point a line
-; in the colour (draw_line) and STATS.LIB's entry (1 pixel wide, 3 or 4
-; high) drawn at every x along it (T15AC:095B, its y by a slope of
-; 16.16). The curves start at x 1Dh, y 48h and A8h, colours 3 and 12h.
-; tools/screens.py --stats draws the screen from a run's memory: all
-; 64000 pixels in the video memory in two runs (a map won after one
-; round, level curves of 3 points; the battle against the computer lost,
-; 22 points, SCALE 1 - 2). Not seen: 32 points and more, 64 and more, the
-; last map's text.
 ; (not mapped) name T15AC:0007 after_map
 ; (not mapped) name T15AC:071F history_rows
 ; (not mapped) name T15AC:07EC draw_curve
-; T2541:0004: a line between the drawing record's two points (+2, +4 and
-; +6, +8) in its colour (+0), to the page drawn to: draw_column or
-; draw_row for an upright or level one; else from the left point a pixel
-; a column (wider than high) or a row, the other coordinate one on
-; whenever a 16-bit sum of the smaller width * 10000h / the larger
-; (T26FE:000A, a long division) overflows; the right point is not drawn,
-; but for a line as wide as high one pixel more is. tools/screens.py has
-; it (the curves above).
 ; (not mapped) name T2541:0004 draw_line
 ; the file routines (assembly, read from the code; the opens, reads and
 ; closes are seen in -dos traces of runs):
@@ -1202,13 +442,7 @@ name CODE:26BB rand
 name T0608:0002 file_open
 ; T2628:0004 (handle): closes it; DX:AX 0, or -1 on an error.
 name T05CB:0002 file_close
-; T2653:0000 (name far): the size a load gives: opens, reads 8 bytes; a
-; packed file (TPWM) gives the size in its header (+4, a long), another
-; its length (a seek to the end); -1 when the open fails.
 ; (not mapped) name T2653:0000 file_size
-; T26D2:000A (name far, buffer far, length long): creates the file and
-; writes the buffer in pieces below 8000h; 0 when all went (MAP\NN.HI
-; was written from here in a run; where save_game writes is not checked).
 ; (not mapped) name T26D2:000A save_file
 ; T2695:0004 (buffer far, name far, work far): opens the file and reads 8
 ; bytes. A packed file ("TPWM", then the unpacked length as a long) is
@@ -1226,41 +460,13 @@ name T05CB:0002 file_close
 ; files of ISLE\ come out at their header's length and end at the file's
 ; end (the .PAL files 768 bytes).
 name T060D:0002 load_file
-; T251F:000E (level, palette far): all 256 DAC entries from a palette of
-; 8-bit values, each (value * level) >> 10 (level a byte), waiting for the
-; vertical retrace before each blue. The map's 00.PAL was set at level 252
-; (the DAC in a run matched that level only; tools/palfiles.py).
 ; (not mapped) name T251F:000E set_palette
 ; T253E:000A (index, r, g, b): one DAC entry, the values as they are.
 name T0725:0006 set_dac_entry
-; T2550:0006 (buffer far, name far, work far): loads an IFF picture with
-; load_file and draws it: T2550:00DA finds "PBM " (CS:03D8 = FFFFh) or
-; "ILBM" (0), then BMHD, CMAP and BODY by searching the words;
-; T2550:0160 takes width, height, compression and planes from BMHD;
-; T2550:018C copies CMAP to DATA:04A0 (set_palette's palette in runs).
-; Up to 360x240 a PBM is drawn by T2550:01A8, an ILBM by T2550:022E, into
-; the segment at DATA:0350 with DATA:02EC bytes a row, a pixel to each
-; plane in turn (unchained 256 colours); larger ones go to T2550:02E5
-; (not read). Only compression 1: a byte n, 0..127 n+1 bytes as they
-; are, else the next byte 257-n times, no run over a row's end. Gives
-; width and height in BX, CX. tools/ifffiles.py reads the files so; the
-; map's frame (GAME.IFF) was in video memory as the tool decodes it, all
-; pixels but colour 64 (where the maps are drawn; a run, -vram at 60 s).
 ; (not mapped) name T2550:0006 load_picture
 ; (not mapped) name T2550:00DA iff_find_chunks
 ; (not mapped) name T2550:01A8 draw_pbm
 ; (not mapped) name T2550:022E draw_ilbm
-; the graphics libraries (LIB\*.LIB; tools/libfiles.py has the format):
-; F27EE:0A1D holds records of 14h bytes, a name (0Ah bytes: unit, part,
-; cursor, patt, shop, bigunit, rand, bum, fight, char24, exp), +0Ah the
-; length loaded (a long), +0Eh a far pointer to the list of far pointers
-; to the entries, +12h their count (as T0CEB:0008 fills them).
-; T0CEB:0008 (path far, buffer far, work far, record far, flag): loads the
-; file with T2624:0006 (its length back), sorts the directory by NAME.DAT
-; when flag is 1 (unit, part, bigunit; T0CEB:0368 loads the .DAT and
-; copies the directory's records in its order), puts 12 zero bytes after
-; the file and replaces the directory with far pointers to the entries up
-; to a record of offset 0. -1 when the load fails (then fatal_error(2)).
 ; (not mapped) name T0CEB:0008 load_lib
 ; (not mapped) name T0CEB:0368 sort_lib
 ; T2470:0008 (x, y, entry far, far ?, base): draws an entry: kind 'P' (+9)
@@ -1285,167 +491,15 @@ name T0695:0002 draw_entry_u
 name T06CA:000E plane_widths
 ; (not mapped) name T2506:000A draw_unit24
 ; (not mapped) name T24B5:000E store_part
-; the map in a window, T0E9B:0A9B (the map's offset, window 0 or 1): the
-; window's squares column by column, x from 0 or A0h and 16 further a
-; column, y from 0 or 12 (the odd columns) and 24 further a square: the
-; ground's entry (the map's first byte into the list at F27EE:0A3F, part)
-; by T24DF:0002, then the unit's (type * 6 + the unit's +0Fh or +10h by
-; the window, into the list at F27EE:0A2B) by draw_unit24 with base 30h
-; for a unit of player 1 (bit 0 of its +4), else 20h. A unit with flag 2
-; in its +6 is drawn only when T0D36:00F5 (the unit's +4, the window)
-; says it is that window's player's. tools/mapfiles.py draws the maps so:
-; the first map's two windows in video memory were its picture pixel for
-; pixel but under the cursor (a run, -vram; MOON.EXE's the same with
-; MOON's files).
 ; (not mapped) name T0E9B:0A9B draw_window
-; The marks and single squares of a window, all with the window's place
-; and bases as draw_window. The marks are F27EE:1339 (64 bytes a row of
-; the map; the bits 55h player 0's, AAh player 1's). T0E9B:0C65 (the
-; window's first square, window): for each of the window's 9 by 7 squares
-; with a mark of the player's, by draw_unit24: the entry +4 of the list at
-; F27EE:0A67 (PATT.LIB's entry 1) for a bit of C0h, else its +8 (entry 2)
-; for one of 30h, both with base 0; then its +0 (entry 0) with base 20h
-; (window 1: 30h) for a bit of 0Fh. T0E9B:0DD8 (cursor record far,
-; window): the cursor's square (the record's +0) at the record's +10h,
-; +12h: the ground's hexagon, the unit (as draw_window, a unit with 2 in
-; its +6 only for its side) and the square's marks. T0E9B:1047 (the
-; window's first square, window, bits): the window's squares with one of
-; these marks drawn again without them (hexagon and unit), then
-; clear_marks (bits). T0E9B:125C (player, square): when the player's
-; cursor has state 0, 1, 7 or 8 and the square is in his window: the
-; square drawn again (hexagon, unit, marks).
-; tools/screens.py --field draws the map's whole screen so (GAME.IFF, the
-; windows with their marks, the screens over them, the lines, the
-; cursors): 44 dumps of runs had all 64000 pixels on the page shown but
-; one (15 pixels of row 179 below a building's screen, which that screen
-; leaves as they were). Seen there: the marks 01h (a unit's reach), 04h
-; (its targets), 40h and 10h, all player 0's; not seen: player 1's, a
-; unit with 2 in its +6.
 ; (not mapped) name T0E9B:0C65 draw_marks
 ; (not mapped) name T0E9B:0DD8 redraw_cursor_square
 ; (not mapped) name T0E9B:1047 undraw_marks
 ; (not mapped) name T0E9B:125C redraw_square
-; The line below a window in the map's loop (T0708:1607..1829), in a pass
-; in which the player's keys (T0D36:04D8) give no direction and no fire
-; and the cursor has state 0: when the cursor's square (its +0) in the
-; player's map holds a unit, and that unit has not 4 in its +6, is not
-; one with 2 there of the other player, and no message is up (the
-; player's bit 4 or 8 of F27EE:250C): unit_line for it (for a unit with
-; 40h and not 80h in its +4, the second square of two, the unit before
-; it). In the attack phase (the cursor's +16h bit 2), for a unit of the
-; player's side with an aim (+11h not 0): timer_set (5, 1, the aim) and
-; redraw_square for the aim with the player's mark 4 or 8 set for the
-; call only (PATT.LIB's entry 0 over the target). Then timer_set (1 or 2
-; by the player, 5, 0): the line's timer. Runs: the line of the unit under
-; each player's cursor (a unit of the other player's too) and the aim's
-; mark were on the page shown as screens.py --field draws them; the page
-; drawn to did not have the aim's mark in that dump (not looked into, as
-; what timer 5 does when it has run).
-; T24DF:0002 (x, y, entry far): a stored 24x24 entry (store_part's copy in
-; video memory) to the screen in the shape of a hexagon: write mode 1,
-; rows of 2, 4 and 6 bytes through the latches, then 32 bytes at the
-; edges with the planes chosen by the map mask (384 pixels in all).
 ; (not mapped) name T24DF:0002 draw_hexagon
-; the map's overview, T0E9B:0931 (player, x, y, entry far): the entry is
-; the map's .PMP from its fifth byte on, a library's 'U' entry of 2 pixels
-; a square and 2 around, drawn by draw_entry with base 70h; then for each
-; unit record without 8000h, 4000h or 2 in its +4 and without 2 in its +6
-; T0E9B:087A (x, y, colour) at x + 2 * column + 2, y + 2 * row + 2 (the
-; unit's square by the window, +0Bh or +0Dh): four pixels by put_pixel,
-; the colour, +1 right and below, +2 at the fourth. The colour is AMOK's
-; +22h by the player (bit 0 of the unit's +4), or +20h for a unit with
-; 200h in its +4 when T0D36:00F5 says it is the window's player's. A run
-; (right with fire on an empty square) had the picture and nine dots in
-; video memory at x 59, y 78 as tools/mapfiles.py --overview draws them.
-; The map's loop around it (T0708:21E8..250B, the cursor's state 3). With
-; 4 in the record's +18h (T0708:2202): the record's +4 = x0 + 77 - (the
-; map's width + 2), +6 = 96 - (its height + 2), the picture's place; the
-; cursor's column and row in the window (+0Ch, +0Eh) kept in +8, +0Ah, and
-; +0Ch, +0Eh = twice the +14h, +15h, the window's first column and row;
-; the cursor (+10h, +12h) at the picture's place + twice these;
-; draw_shop_window, draw_overview, bit 4 of the player's F27EE:243E,
-; F27EE:2510 bit 100h, 2 into F27EE:2512, +18h = 5. With 5: a direction
-; (the keys' bits 1 up, 2 down, 4 left, 8 right) moves +0Ch or +0Eh by 2
-; and the cursor by 4, +0Ch within 0 and the width - 10, +0Eh within 0
-; and the height - 8, then T24D3:0000 with the player's far pointer
-; F27EE:2443 (a stored block copied to the page drawn to, write mode 1:
-; what was under the cursor, presumably; not read). Fire (10h,
-; T0708:233D): state 0, +18h 19h, +1Bh 5, +14h, +15h = half of +0Ch,
-; +0Eh, the window's first square +2 = 2 * +0Ch + 2 * width * +0Eh,
-; draw_window, draw_marks, +0Ch, +0Eh back from +8, +0Ah and T0D36:0044
-; (cursor record far, player: the cursor's +10h, +12h from its column and
-; row by the tables F27EE:4112 and 130C, for an odd column 4192, and its
-; square +0).
-; The frame seen around a part of the picture is the cursor, CURSOR.LIB's
-; entry 6 (24 by 20). Runs (map 03; fire with right for either player,
-; then directions, then fire): tools/screens.py --field had every pixel
-; of both pages with the overview up, its frame moved, both players' up
-; and after it was ended. The direction still held when fire is let go
-; moves the frame at once (it came up 4 steps to the right in the runs).
-; Not seen: a dot of +20h's colour.
-; T2503:0006: the pixel DATA:00D8, 00DA (x, y) in the colour DATA:00D6
-; (the callers set them through the far pointer DATA:0092); T23DC:000A
-; gives the address and the plane's mask in CH (not read).
 ; (not mapped) name T0E9B:0931 draw_overview
 ; (not mapped) name T0E9B:087A overview_dot
 ; (not mapped) name T2503:0006 put_pixel
-; T1479:0DC5 (player): the status screen (ROUND, LEVEL, MODE, HIGH,
-; ACTUAL; UNIT, FACTORY, DEPOT for ONE, TWO and MAP; TURN, LIMIT: a run,
-; down with fire on an empty square). The three counts of a player are
-; F27EE:243E +2, +3, +4 (17h bytes a player), drawn at y 5Ah, 66h, 72h in
-; AMOK's colours +9 and +0Ah; +3 counts the buildings of ground flag 400h
-; and +4 those of 100h (load_fin, and T0408:16B3 when one changes its
-; owner): factories and depots by the screen's rows. On ISLE's first map
-; UNIT was 6, 6 and 12 though the .FIN has 5 units a player (not looked
-; into). The whole screen is read (tools/screens.py has every place and
-; colour): T1479:0004 (player) draws the window, SHOP.LIB's entries 0, 3,
-; 1, 2 (the list at F27EE:0A7B) with base 40h and a rectangle filled with
-; AMOK's +0Eh; then three boxes by T1479:0130 with the texts 0Ah, 0Bh,
-; 0Fh, the numbers by draw_number (the words F27EE:250C +11h, +17h, +87h,
-; +8Bh; the counts; the bytes +15h, +16h of the player's counts for TURN
-; and LIMIT, text 10h for a limit of FFh), text 0Dh (MOVE) when the
-; player's record (F27EE:26B4) has bit 1 in +16h, else 0Ch (ATTACK), and
-; SHOP.LIB's entry 5 at x0 + 74h, 8Ah. A run with both players' status
-; screens up (-ram, -vram): all 24160 pixels screens.py draws for each
-; player were in video memory, on both pages.
-; T1479:0130 (x, y, w, h, window, colour): a rectangle filled with the
-; colour (not when negative; A0h added to x when window is not 0), the
-; row above and the column left of it in AMOK's +11h, the column right
-; and the row below in AMOK's +12h.
-; T2482:0004: the rectangle DATA:00D8..00DE (x1, y1, x2, y2, both corners
-; in it) in the colour DATA:00D6, row by row with T24BA:0008, which draws
-; the row y1 from x1 to x2; T2536:0004 the column x1 from y1 to y2. None
-; of the three clips.
-; draw_entry_u clips when the record's +0Eh (DATA:00E4) is not 0
-; (T23FD:0111): columns from +12h up to but not +16h, rows from +14h up
-; to but not +18h. In the run the rectangle was 0, 0, 320, 179: the last
-; row of SHOP.LIB's entry 2 (row 179) was not drawn. draw_entry_p's
-; clipping is not read.
-; T1479:05AF (player, position, unit, far pointer to the map's squares;
-; called at T0708:25FF in the map's loop when the cursor record's +17h is 4
-; and +18h is 0): the screen of a unit. A run (first map of ISLE, the cursor
-; one up from the start onto a unit, `-key 48 up -key 49 up -key 50 space+
-; -key 50.6 down+ -key 51.5 space- -key 52 down-`) reached it once (-log);
-; draw_status did not run (down with fire on an empty square gives that).
-; Read from the code and drawn by tools/screens.py --unit: all 24160 pixels
-; of the window as the video memory had them (player 0's T-3 SCORPION and
-; player 1's SC-T PROVIDER, both on both pages, -ram and -vram at 55 s).
-; draw_shop_window, two boxes (T1479:0130: 30, 20, 96, 96 for the picture,
-; 43, 124, 70, 40 for the numbers), the numbers by T1479:030A (SHOP.LIB's
-; entry 6, text 0 and the type's hit values against land, air and sea, the
-; unit's +0 halved (the move), the armour, the ranges less 1, in AMOK's
-; +0Dh), the type's big picture and name by T1479:0C93 (BIGUNIT.LIB's
-; entry of the type's +19h, base 20h or 30h by the unit's +4; a packed
-; entry is unpacked first, T2701:000E, as in MOON), SHOP.LIB's entry 5 at
-; 116, 134 and 15, 134, in the second the square's ground (the map's byte
-; at the cursor's position, the far pointer at F27EE:1334; PART.LIB's
-; hexagon) and the unit over it (UNIT.LIB type * 6 + the unit's +0Fh + the
-; player), and the cursor at 117, 135. Not run: a unit of the other player
-; (T1479:030A shows text 1 instead of the numbers), a unit that holds
-; others (the word +4 with bit 40h: T1479:070B and on), the message line
-; at the bottom (T11FD:0103). That fire and down on a unit set state 4
-; (the cursor image +1Bh 2, T0D36:1484..158B and 10D4) is read, not
-; checked beyond the run.
 ; (not mapped) name T1479:05AF draw_unit_info
 ; (not mapped) name T1479:0DC5 draw_status
 ; (not mapped) name T1479:0004 draw_shop_window
@@ -1555,82 +609,9 @@ name CODE:381B draw_building
 ; (not mapped) name T164D:028D draw_bar
 ; (not mapped) name T1479:0B9B draw_type_list
 ; (not mapped) name T1479:030A draw_unit_numbers
-; The menus (T1090, tools/screens.py --menu): F2740:0079 holds the menus'
-; records (6 bytes: item numbers, +5 their count), F2740:00A3 the items
-; (2Eh bytes: a flags word, bit 20h not drawn; texts of 10 bytes from +2,
-; the one chosen by +2Bh). A text is CHAR24.LIB's entries by byte less 3
-; (1 a gap, A is 17, 0..9 are 2..11). T1090:0EDE (menu): draws a menu's
-; texts by draw_text24 at x 100, y 50 + 34 an item. T1090:0F82 (x, y, size,
-; far pointer to a record): the text typed in a field: the record's text from
-; +2 (+2Ah its length, +2Ch the key), a key from DATA:00BE adds a letter (a
-; to z made capitals) up to size, the key set's backspace takes one off, 0Dh
-; ends (returns 2); the text drawn by draw_text24 and CHAR24.LIB's entry 40
-; (F27EE:0ADF + 0A0h) after it. Seen in a run for the code typed in OPTIONS
-; (tools/screens.py --menu --id 0 --sel 0: all pixels) and for the high
-; score's name (--message name --typed: all pixels, nothing typed and
-; three letters).
 ; (not mapped) name T1090:0EDE draw_menu
 ; (not mapped) name T1090:0F82 edit_text
-; T1090:000E (buffer far): the menus, from the title's end to a map's start
-; (read from the code; runs showed six menus' screens, a code typed and
-; LOAD's two messages, tools/screens.py --menu). It loads MENU.IFF (load_picture; the
-; picture's upper left 320 by 200 is the screen), char24, CODES.DAT (its
-; length / 10 the number of maps) and MENU.FXX (CODE:169E; the sounds,
-; presumably), calls T1090:110F with the map F27EE:2523 and fades in.
-; With a score (the long F27EE:2597 above 0) it loads the .HI file numbered
-; F27EE:251B and, when the score is above the lowest of its four, shows
-; the texts F2740:005B, 0065, 006F ("TYPE NAME FOR TOP FOUR"), takes a name
-; of 5 letters by edit_text at (102, 164), puts name and score in the
-; lowest's place, saves the file (28h bytes) and shows the four
-; (T1090:12B7). Then the map's own .HI is loaded and the loop begins with
-; menu 3, item 0. A pass: the keys (the record at the far pointer
-; DATA:00A6: +2 up, +3 down, +4 fire, each also set by the key at
-; DATA:00BE when it is the key set's +8, +9, +6), restore_sprites,
-; draw_menu, the cursor (CHAR24.LIB's entry 40, a sphere, by draw_entry at
-; x 66, y 50 + 34 * the item), a sound when something happened (the
-; record at the far pointer F2D8A:000C: +12h 0 moved, 1 chosen, 2
-; refused, +14h 6Eh, +16h 1, then CODE:16F8), flip_page, T268A:0006 with
-; 32h, 0Ah or 3 by item 20's choice (SLOW, MEDIUM, ..: the mouse's speed,
-; presumably; not read). Up and down move within the menu's items. Fire
-; acts by the item's flags word: bit 10h goes to the menu in the item's
-; +2Dh; bit 2 takes the item's next text (+2Bh, of +2Ah; items 3 and 4,
-; the players, stay at 0 without F27EE:250C bit 400h); bit 8 makes the
-; item a field (flag 20h, edit_text at the item's place, 5 letters): at
-; enter the text is looked up among CODES.DAT's codes, a code found is
-; the new map (T1090:110F, F27EE:2523, its .HI loaded), else the old code
-; comes back; bit 1 acts by the item's +2Ch: 2 asks for a position
-; (T1090:11AC: the texts F2740:002B, 0034, 003D, a digit into
-; F27EE:2512, the key set's first key gives up), shows the texts
-; F2740:0046, 004D, 0054, waits for a key and, when the saved game's file
-; opens, sets F27EE:250C bit 200h and ends the loop; 4 sets bit 100h,
-; clears bits 1 and 2 and ends the loop (EXIT, presumably); 10h shows
-; the four scores (T1090:12B7); every other value ends the loop (START).
-; After the loop: item 3's choice above 0 sets F27EE:243E bit 2 and item
-; 4's F27EE:2455 bit 2 (that player is the computer), F27EE:250E gets
-; bit 1 when one of them is, bit 4 when both, bit 2 when neither; item
-; 12's choice (the limit) 1, 2, 3 gives 4, 8, 10h, else FFh, in
-; F27EE:2454 and 246B (the status screen's LIMIT, FFh none); item 13's
-; choice sets F27EE:250E bit 8 (HIDE SHOP); the highest of the four
-; scores goes to the long F27EE:2593 (the status screen's HIGH; 2597 is
-; its ACTUAL); item 19's choice (SIDE ONE, TWO) gives T2683:000A the word
-; DATA:00B6 or DATA:00A6 (not read); then fade_out and both pages cleared.
-; T1090:110F (map, CODES far): the map's code into item 2's text
-; (F2740:0101), the players' items by the record's +6 (HANDOFF.md).
-; T1090:15F3 (table far, buffer far, n): the table cleared (four scores 0,
-; four names from F2740:0010) and MAP\<n>.HI loaded over it (load_file):
-; four longs, the scores, then from +10h four names of 6 bytes.
-; T1090:12B7 (table far, map, CODES far): the scores held within 0 and
-; 7EF4h, the map's code at (110, 22) and the four from the highest down,
-; the score in 5 digits at x 18 and the name at x 174, y 66 + 34 each
-; (draw_text24), until a key. Runs (the poked end of map 16, a name typed;
-; RATING with a file put in): the file's scores and names on the screen,
-; all pixels (tools/screens.py --scores --hi); after the map the code was
-; EAGLE, record 4 of CODES.DAT, F27EE:251B being 4 there (the loop's
-; ticks, not the map 16: the poke's doing, presumably), from RATING the
-; chosen map's.
 ; (not mapped) name T1090:000E menu
-; T1090:110F has no name here: xfer.py carried it to another routine of
-; MOON.EXE (T0C0E:005C), as T1479:0C93 before.
 ; (not mapped) name T1090:11AC ask_position
 ; (not mapped) name T1090:12B7 show_scores
 ; (not mapped) name T1090:15F3 load_scores
@@ -1654,31 +635,7 @@ name T0723:000A wait_retrace
 name T06E3:0004 fill_rect
 name T06F3:0006 draw_row
 name T071E:000C draw_column
-; the end of a pass of the map's loop, T0708:4385: each player's cursor,
-; CURSOR.LIB's entry of the cursor record's +1Bh (the list at F27EE:0A53)
-; at the record's +10h, +12h by draw_entry with base 0 (the far argument
-; the far pointer at +5 of the player's counts when F27EE:243E's or
-; 2455's bit 4 is set, else 0); before draw_status T0708 sets +10h, +12h
-; to 75h (+A0h for player 1), 8Bh, and in the run entry 1 was there.
-; Then L16F8, T259F:0004 (not read) and T2479:000A, which copies
-; DATA:02EE bytes of all planes from the segment DATA:0352 to DATA:0350
-; through the latches. Then the long F27EE:251F (the state's +13h)
-; counts the pass, and the loop waits until DATA:0304 (the record's
-; +22Eh) reaches F27EE:251B. DATA:0304 is counted up by timer_keys, which
-; T2354:0004 adds with timer_add and CX:BX = 0:4000h (72.8 times a second
-; if that is the PIT's count, presumably), and set to 0 just before
-; T0708:137F, the loop over the two players (each pass, by the dumps: it
-; was 1 in both). F27EE:251B is
-; 4 in a map (set at T0708:3CF4 and 3D01; 2 at T0408:09A1, 0 at one place
-; in T0708): a pass every 4 ticks, 18.2 a second. Two memory dumps of a
-; run 4 s apart had 397 and 470 passes: 18.25 a second.
-; F27EE:251B is also what T15AC (after_map) sets to the map's number
-; (F27EE:2523) and what names the .HI file: in the poked end of map 16
-; it was 4, the loop's value, so MAP\04.HI was written (presumably the
-; poke's doing; a real end of a map not run).
 ; (not mapped) name T2479:000A copy_page
-; T247D:0004: set_palette with the palette DATA:04A0 at the levels 0, 4,
-; .. 252; T247D:002B at 255, 251, .. 3 (read, not run).
 ; (not mapped) name T247D:0004 fade_in
 ; (not mapped) name T247D:002B fade_out
 ; the texts (tools/txtfiles.py has the formats). DATA:0092 is a far
@@ -1701,27 +658,9 @@ name T071E:000C draw_column
 name T070E:0002 draw_chars
 ; (not mapped) name T164D:0140 draw_text
 ; (not mapped) name T164D:01DB draw_number
-; T164D:000C (x, y, text far, far, ?): a text of CHAR24.LIB's characters
-; (the list at F27EE:0ADF): each byte less 3 an entry drawn by draw_entry
-; (base 0, the far argument passed on), 1 nothing, 24 pixels on a
-; character, 0 ends; x after the text comes back. T1090 (the menus) and
-; T1727 call it. T164D:00A2 (text far, first far): the text after the
-; next 0, or the first when that begins with 2. T164D:0100, which nothing
-; calls, does that a number of times (bytes, not decoded as code).
-; T1727:0004 (buffer far): the title: BB.IFF, TITEL.IFF, char24, then
-; TITEL.TXT's lines run up the screen, three at a time, each centred (160
-; less 12 a character), one row up a step from y 200 (234 and 268 for the
-; second and third at first), the next line when one reaches 98, drawn
-; inside y 132..199 (the record's +14h, +18h), until a key (space sets
-; the key set F27EE:0B1B). Read from the code; a shot at 25 s showed the
-; lines of TITEL.TXT there (KNOP half above the edge, SOUND below), not
-; compared pixel for pixel.
 ; (not mapped) name T164D:000C draw_text24
 ; (not mapped) name T164D:00A2 next_line
 ; (not mapped) name T1727:0004 title
-; T0D36:1592 (n): puts back the interrupt handlers (T2354:056F, 005E),
-; prints message n of F273B (1 not enough memory, 2 cannot load file,
-; 3 internal) and exits with -1 (read from the code, not run)
 ; (not mapped) name T0D36:1592 fatal_error
 ; sound: CODE:1588 (mode) calls CODE:0215 with port 388h, which probes
 ; with CODE:0AC2: OPL timers reset, status AND E0h must be 0; timer 1
@@ -1854,21 +793,12 @@ name CODE:188A effects_tick
 name CODE:1964 effect_silence
 name CODE:19C0 speaker_timer
 name CODE:1A67 speaker_note
-; saving and loading a game: the file is <name>.DAT in the game's folder,
-; the name at F27EE:249C ("00" in the runs), made by make_path with no
-; directory. save_game ran at D (a run, 00.DAT created and written),
-; load_game at the start of a map when F27EE:250C bit 200h is set, after
-; DISK, LOAD, a position and a key at "PLEASE INSERT DISK" (T1090:0867
-; opens the file first to see that it is there).
 ; (not mapped) name T13CA:000F save_game
 ; (not mapped) name T13CA:0462 load_game
 ; CODE:2296 passes CODE:2460 (a near routine) to CODE:3312 with a far
 ; pointer into DATA and the address of its own further arguments (an
 ; output routine for a formatter, presumably; not checked)
 ptr CODE:231B CODE
-; T0708 fills the fight record's fields 4Eh..68h (F27EE:2716) with far
-; pointers to routines: the sounds' start, restore_sprites, draw_entry,
-; draw_packed, srand, random and CODE:2D44 (the absolute value)
 ; (not mapped) ptr T0708:10FC CODE     ; +4E CODE:16F8
 ; (not mapped) ptr T0708:110B T2467    ; +52 T2467:0006
 ; (not mapped) ptr T0708:111A T2470    ; +56 T2470:0008
@@ -1899,13 +829,6 @@ name DATA:03EE clip_x2
 name DATA:03F0 clip_y2
 name DATA:03F4 one_page
 name DATA:03F6 row_offsets
-; the font draw_chars draws with (a far pointer), the mode's numbers
-; (T2485:0055 sets them: 140h by 0C8h, 50h bytes a row of a plane, 3E80h a
-; page), the count of timer_keys' calls, the lists of what the sprites
-; covered (a far pointer to the list's end and one to its start, for the
-; page drawn to and for the other: flip_page exchanges them), the video
-; mode found at the start, the segments of the page drawn to and of the
-; page shown, where store_part puts the next part of the ground
 ; (not mapped) name DATA:02DC font_ptr
 name DATA:05E2 screen_width
 name DATA:05E4 screen_height
@@ -1961,12 +884,7 @@ name DATA:070C mouse_on
 ; their segments
 name DATA:0744 blocks_count
 name DATA:0746 blocks
-; the palette load_picture takes from a picture (768 bytes)
 ; (not mapped) name DATA:04A0 picture_palette
-; the CRTC's ports (from the BIOS's 40:63), a file error (int24 sets 2,
-; T2619:0004 1), timer_keys' count of four, the keys' bitmap (int09: a bit
-; set while the key is up), the last scancode, the two players' tables of
-; keys (near pointers)
 ; (not mapped) name DATA:0AB6 crtc_port
 ; (not mapped) name DATA:0AB8 crtc_data_port
 ; (not mapped) name DATA:0ABA status_port
@@ -1992,50 +910,27 @@ name DATA:10BC old_int08
 name DATA:10C0 pit_period_low
 name DATA:10C2 pit_period_high
 ; (not mapped: DATA:10C4 would be voice_scale and pit_period_set and voice_scale) name DATA:0DEA pit_period_set
-; the Blue Byte logo's steps (HANDOFF.md at libfiles.py): 43h records of
-; x, y and the entry's offset in BB.DAT
 ; (not mapped) name T2433:01A7 logo_steps
-; the game's flags (HANDOFF.md, open question 1) and the menu's (250E)
 ; (not mapped) name F27EE:250C game_flags
 ; (not mapped) name F27EE:250E menu_flags
-; the names of files: CHAR6 (the font), CHAR24's library record (a name
-; of 0Ah bytes, +0Ah the file's length, +0Eh a far pointer to the table of
-; far pointers to its entries that load_lib makes of its directory, +12h
-; their number)
 ; (not mapped) name F27EE:0AF9 name_char6
 ; (not mapped) name F27EE:0AD1 lib_char24
-; the key set in use (a far pointer; title sets it by the key that ended
-; it) and twelve of its keys copied
 ; (not mapped) name F27EE:2498 key_set
 ; (not mapped) name F27EE:0B1B key_set_keyboard
 ; (not mapped) name F27EE:0B3E key_set_other
 ; (not mapped) name F27EE:4126 key_set_copy
-; title's names: BB, TITEL
 ; (not mapped) name F2C09:000C name_bb
 ; (not mapped) name F2C09:0006 name_titel
-; make_path's directories (6 bytes each), extensions (5 bytes each), the
-; path it makes, and the disks' names (8 bytes each; T164D:0482)
 ; (not mapped) name F27E6:000B disk_names
 ; (not mapped) name F27E6:0023 path_dirs
 ; (not mapped) name F27E6:003B path_exts
 ; (not mapped) name F27E6:0077 path_made
 ; timer 0's handler (above)
 name T0559:04F6 old_timer
-; fatal_error's messages (14h bytes each, the first for number 1)
 ; (not mapped) name F273B:0008 fatal_messages
-; the two players' records (17h bytes each: +0 a word of flags, bit 2 the
-; computer plays; +2..+4 the status screen's counts; the orders' list at
-; +11h), the score (the status screen's ACTUAL, a long), the map chosen
 ; (not mapped) name F27EE:243E players
 ; (not mapped) name F27EE:2597 score_now
 ; (not mapped) name F27EE:2523 map_number
-; the sound's data (CODE:0215..1B79; tools/sndfiles.py has the rules). The
-; driver's tables: the most a voice's volume can be (words, 7Fh at
-; first; effects_volume sets it), the drums' bits of register BDh, the
-; values of a modulator, a carrier and the six drum operators (14 bytes
-; each), the operators of each voice (two bytes a voice: nine voices, and
-; the percussion mode's eleven), each operator's register offset, whether
-; it is a carrier, its voice and its voice in the percussion mode
 ; (not mapped: DATA:10C4 would be voice_scale and pit_period_set and voice_scale) name DATA:1336 voice_scale
 name DATA:10DA perc_bits
 name DATA:10DF op_modulator
@@ -2077,18 +972,6 @@ name DATA:1454 fx_freq
 name DATA:145C fx_asked
 name DATA:1464 fx_voice
 name DATA:147A adlib_found
-; the driver's and the player's variables, behind the stack (DS:1AD0 on:
-; the segment ZEROS, which answers what its zeros are for): 13 words for
-; an operator's values, register 8's bit, each voice's key bit, volume,
-; the number of voices (9, or 11 in the percussion mode), the card's
-; port, register 1's bit (the wave forms), each voice's note, the pitch
-; bend's range, each voice's register B0 and bend, the two depths of
-; register BDh and the drums' keys, the 18 operators' values (14 bytes
-; each), the percussion mode; the tracks' places (16 far pointers), times
-; (longs) and statuses, the song (a far pointer), 1 when all tracks have
-; ended, a far pointer to the current track's status, the song's volume
-; of each voice (words), a far pointer to the current track's place, the
-; song's division, 1 while it plays
 ; (not mapped) name ZEROS:0000 op_scratch
 ; (not mapped) name ZEROS:001C opl_note_sel
 ; (not mapped) name ZEROS:001D voice_key
@@ -2128,10 +1011,6 @@ name CODE:1986 timbre_silent
 ; the effects asked for: four records of 6 bytes (the effect, the volume,
 ; a count; effects_start), and before them a far pointer to them
 name F07D4:0006 effects_asked
-; the menus' data (T1090; port/src/menu.c): the names MENU and CODES, the
-; name of a score nobody has, the texts SELECT POSITION 0 TO 9, PLEASE
-; INSERT DISK and TYPE NAME FOR TOP FOUR, the menus (6 bytes each) and
-; their items (2Eh bytes each)
 ; (not mapped) name F2740:0000 name_menu
 ; (not mapped) name F2740:000A name_codes
 ; (not mapped) name F2740:0010 score_empty
@@ -2146,16 +1025,10 @@ name F07D4:0006 effects_asked
 ; (not mapped) name F2740:006F text_four
 ; (not mapped) name F2740:0079 menus
 ; (not mapped) name F2740:00A3 menu_items
-; the statistics after a map (after_map): the picture's and the library's
-; name, the two songs' names
 ; (not mapped) name F27E3:0008 name_stats
 ; (not mapped) name F27E3:000E name_winner
 ; (not mapped) name F27E3:0015 name_looser
 ; (not mapped) name F27E3:001C lib_stats
-; the fight scene's values (fight_step; tools/scene.py has them in full):
-; the two flags of its parts, the far pointer to the fight record, a
-; type's pace, a type's kind of shot and its speed, the calls of the two
-; parts, the counts, the units (10h bytes each), the shots (1Ch each)
 ; (not mapped) name F2D37:0008 scene_arrived
 ; (not mapped) name F2D37:0009 scene_shot
 ; (not mapped) name F2D37:000A scene_record
@@ -2177,14 +1050,9 @@ name F07D4:0006 effects_asked
 ; (not mapped) name F2D37:01DA scene_a_after
 ; (not mapped) name F2D37:01DC scene_shots_b
 ; (not mapped) name F2D37:0284 scene_b_silent
-; the grounds' lists of pieces, the two signed bytes a ground's scene adds
-; to attack and defence, the units' scripts
 ; (not mapped) name F2D5F:0000 scene_pieces
 ; (not mapped) name F2D65:000E scene_ground_bonus
 ; (not mapped) name F2D66:0000 scene_scripts
-; the films' values (play_anim): where on the screen, the buffers, the
-; frame to come, the folder, whether the files are loaded, the path made,
-; the files' names
 ; (not mapped: F0728:020E would be anim_y and anim_names) name F2D7A:0006 anim_y
 ; (not mapped: F0728:0210 would be intro_text_x and anim_work) name F2D7A:0008 anim_work
 name F0728:0214 anim_count
@@ -2196,9 +1064,6 @@ name F0728:0652 anim_palette
 name F0728:0656 anim_data
 ; (not mapped: F0728:020C would be intro_pal and anim_x) name F2D7A:0052 anim_x
 ; (not mapped: F0728:020E would be anim_y and anim_names) name F2D7A:0054 anim_names
-; the credits' values (end_credits): the cursor's blinking, where the next
-; letter goes, the page kept, where the cursor is, the sounds' file, the
-; text
 ; (not mapped) name F2D88:0000 credits_blink
 ; (not mapped) name F2D88:0002 credits_count
 ; (not mapped) name F2D88:0004 credits_x
@@ -2208,19 +1073,10 @@ name F0728:0656 anim_data
 ; (not mapped) name F2D88:0024 credits_cursor_y
 ; (not mapped) name F2D88:0026 credits_name
 name DATA:10C6 credits_text
-; the computer player's state that a saved game holds besides computer_state:
-; a record of 9 bytes a unit for the move phase and for the attack phase,
-; the keys' scripts (20h a player), the commands' queues (49h a player)
 ; (not mapped) name F2C0A:00BA computer_move_units
 ; (not mapped) name F2C0A:0934 computer_attack_units
 ; (not mapped) name F2C0A:11AE computer_scripts
 ; (not mapped) name F2C0A:11FE computer_queues
-; the computer player's other values (computer.c, plan.c, command.c of the
-; port; tools/computer.py): the command being made, a unit's three
-; strengths, the order of the squares around the headquarters, the keys of
-; a script's bytes and of the bytes 80h..83h, what a command keeps between
-; its steps, the turns tried around a unit, the length of a path kept, the
-; plan's own values (they run on into F2D37), the helper's unit
 ; (not mapped) name F2C0A:11F6 computer_command
 ; (not mapped) name F27EE:418C strength_values
 ; (not mapped) name F2D33:0000 computer_hq_order
@@ -2242,33 +1098,19 @@ name DATA:10C6 credits_text
 ; (not mapped) name F2D37:0002 plan_got
 ; (not mapped) name F2D37:0004 plan_other
 ; (not mapped) name F2D37:0006 helper_unit
-; the ticks a pass of the map's loop takes (4; also the number of the
-; scores' file after a map), the position LOAD was given, the name made
-; of a number (T26EA:000F writes it: a saved game, a map's files), the
-; highest of the map's four scores
 ; (not mapped) name F27EE:251B pass_ticks
 ; (not mapped) name F27EE:2512 number_asked
 ; (not mapped) name F27EE:249C save_name
 ; (not mapped) name F27EE:2593 score_best
-; the map's data (port/src/map.c, cursor.c, units.c, reach.c, battle.c).
-; F27EE begins with the program's version (two bytes, shown by a key of
-; the key set), the ordinals st, nd, rd, th (3 bytes each), the tables of
-; unit types and ground (UNIT.DAT, GROUND.DAT loaded over them).
 ; (not mapped) name F27EE:000C version
 ; (not mapped) name F27EE:000E flank_bonus
 ; (not mapped) name F27EE:0013 ordinals
 ; (not mapped) name F27EE:001F unit_types
 ; (not mapped) name F27EE:0751 ground
-; the squares around a square by column and row, for even and for odd
-; columns: ten (a building site's; ten x offsets, then ten y offsets) and
-; four (a building's squares; four and four)
 ; (not mapped) name F27EE:09E5 around10_even
 ; (not mapped) name F27EE:09F9 around10_odd
 ; (not mapped) name F27EE:0A0D around4_even
 ; (not mapped) name F27EE:0A15 around4_odd
-; the libraries' records (14h bytes each, as lib_char24): unit, part,
-; cursor, patt, shop, bigunit, rand, bum, fight, char24, exp; then the
-; names CHAR6, AMOK, GAME, FIGHT, UNIT, GROUND
 ; (not mapped) name F27EE:0A1D lib_unit
 ; (not mapped) name F27EE:0A31 lib_part
 ; (not mapped) name F27EE:0A45 lib_cursor
@@ -2284,11 +1126,6 @@ name DATA:10C6 credits_text
 ; (not mapped) name F27EE:0B09 name_fight
 ; (not mapped) name F27EE:0B0F name_unit
 ; (not mapped) name F27EE:0B14 name_ground
-; a path's length (find_path, list_reach), the records of the units that
-; hold others (46h of 1Ch bytes), the windows' rows on the screen (even
-; columns), the record of a move (stop_check; its first byte the unit),
-; the map of the player whose pass it is (a far pointer), the number of
-; types list_makeable found, the marks
 ; (not mapped) name F27EE:0B62 path_count
 ; (not mapped) name F27EE:0B64 cargo
 ; (not mapped) name F27EE:130C window_y_even
@@ -2296,9 +1133,6 @@ name DATA:10C6 credits_text
 ; (not mapped) name F27EE:1334 loop_map
 ; (not mapped) name F27EE:1338 types_listed
 ; (not mapped) name F27EE:1339 marks
-; the map's size (bytes, width, height), the squares' explosions (4 of 7
-; bytes), two bytes and two buffers of the change of phase (not read
-; yet), the headquarters' records, AMOK.DAT
 ; (not mapped) name F27EE:246C map_bytes
 ; (not mapped) name F27EE:246E map_width
 ; (not mapped) name F27EE:2470 map_height
@@ -2309,14 +1143,6 @@ name DATA:10C6 credits_text
 ; (not mapped) name F27EE:2497 state_2497
 ; (not mapped) name F27EE:24B0 hqs
 ; (not mapped) name F27EE:24E8 amok
-; the game's state after game_flags and menu_flags: more flags (2 a
-; window scrolled, 8 and 10h a player's message is up, 20h, 40h a move's
-; step is due, 80h, 100h a sound is asked for, 200h a key's message is
-; up, 400h a path is shown), a number (the sound asked for; LOAD's
-; position), the numbers of units, factories, depots and holders made,
-; the player of the loop's pass, the windows' last first column and row
-; by two, the round, the loop's passes (a long), the loop's timers (15:
-; a kind each, when due, an argument), a byte
 ; (not mapped) name F27EE:2510 game_flags2
 ; (not mapped) name F27EE:2514 units_made
 ; (not mapped) name F27EE:2515 factories_made
@@ -2331,17 +1157,11 @@ name DATA:10C6 credits_text
 ; (not mapped) name F27EE:2534 timer_dues
 ; (not mapped) name F27EE:2570 timer_args
 ; (not mapped) name F27EE:2592 state_2592
-; the depots' records, the two cursors' (31h bytes each), the fight's
-; record, the factories', the units' (F1h of 1Ah bytes)
 ; (not mapped) name F27EE:259C depots
 ; (not mapped) name F27EE:26B4 cursors
 ; (not mapped) name F27EE:2716 fight_record
 ; (not mapped) name F27EE:2780 factories
 ; (not mapped) name F27EE:2898 units
-; the windows' columns on the screen, GAME.TXT (a far pointer), the list
-; of types list_makeable made, how deep unit_remove is, the two players'
-; maps (far pointers), a cursor's record kept, the windows' rows for odd
-; columns, the squares around one
 ; (not mapped) name F27EE:4112 window_x
 ; (not mapped) name F27EE:4132 game_txt
 ; (not mapped) name F27EE:4136 types_list
@@ -2351,19 +1171,12 @@ name DATA:10C6 credits_text
 ; (not mapped) name F27EE:415A cursor_kept
 ; (not mapped) name F27EE:4192 window_y_odd
 ; (not mapped) name F27EE:41A2 around
-; reach's arguments kept (9 words), the messages of the line below a
-; window (18h bytes each), the library's rand's seed, BIDISK.VGA's name,
-; the far pointer to effects_asked, the routine that gives a number
-; without its sign
 ; (not mapped) name F273A:0006 reach_args
 ; (not mapped) name F2789:0008 messages
 name DATA:16CA rand_seed
 ; (not mapped) name F27E6:0000 name_bidisk
 ; (not mapped) name F2D8A:000C effects_ptr
 ; (not mapped) name CODE:2D44 abs_value
-; the computer player's data: the map's .COM (27 records of 6 bytes), its
-; state for each player (0Ch bytes each, a word of stages first), the
-; keys it presses and the message it shows (two words a player)
 ; (not mapped) name F2C0A:0000 computer_types
 ; (not mapped) name F2C0A:00A2 computer_state
 ; (not mapped) name F2C0A:11EE computer_keys
