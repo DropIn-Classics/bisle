@@ -52,8 +52,24 @@ menu's entry (port/README.md; "The port" below).
   `rand`/`random`, `timer_set`/`timer_due`/`square_distance`/`off_map`.
   Still unmapped data names the port uses: scene_count_a, scene_a_after,
   scene_b_silent (the scene's, F2E5B in MOON), credits_*, credits_text.
-  Next: why the port is slow past pass 900 (first look at what it does per
-  pass), then compare further passes, then T178C..T1ED2 (computer_plan 386 of
+  The port's stop past pass 957 (not slowness; found with temporary traces,
+  since removed): in pass 957 the second computer presses fire on the
+  change of phase (cursor mode 5), `change_phase` runs a fight and the loop
+  in `fight` (phase.c) calls `fight_step` over 120 times, each in
+  milliseconds, and then one call never returns (the run stops there, not
+  looked at which loop of the scene). The likely cause, not proven: of the
+  scene's values (names.h) six have no address for MOON, so the port reads
+  and writes 0FFFFh: scene_units_a, scene_shots_a, scene_shots_b,
+  scene_count_a, scene_a_after, scene_b_silent; MOON's own are F2E5B:0060
+  (a_after, set from the attacker's +2 after fight_reckon), 0062 (count_a),
+  0061 (count_b), 005F (b_after), but where its unit and shot arrays are
+  (the hints' 0064 for units_b is a guess carried over from the others) is
+  not read. So the fight scene (T2084 and T2250 in MOON) comes next, with
+  fight_reckon, before any pass past 957 can be compared. The comparison
+  of the port with the original to pass 957 is the same (mcvc.sh 957).
+  Next: map the scene's data in MOON.ASM (T2084:1B5C scene_shots, the
+  units' arrays) and carry the fight scene over, then compare further
+  passes, then T178C..T1ED2 (computer_plan 386 of
   4118 instructions unmatched, computer_assess 224 of 1214, command_out 159,
   stop_check 248, change_phase 255, make_unit 169), then fights
   (fight_reckon's differences read so far are register changes only), the
