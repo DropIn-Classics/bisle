@@ -64,10 +64,13 @@ MOON's `map_setup` follows MOON.EXE's setup where it differs (the handoff
 lists how: no `.PMP`, only the ground parts the map has stored behind the
 pages, the files of its own overview read, the song and effects last).
 START shows the first map, the original's at its 200th pass (`pcmp.py`
-with MOON's names): the data segment and video memory the same but for the
-right cursor's animation state and 980 bytes of video memory (not looked
-into), the computer's tables 517 bytes (`computer_start` differs in MOON,
-not read). Not in the port for MOON: its overview (the keys, the dots), the
+with MOON's names): the computer's tables and the far data segments the
+same, video memory the same (MOON's loop draws the two cursors with the
+colour base 40h, which map_loop does for MOON), the code segments the
+same but for the library's 75 bytes of scratch, DATA below 2000h 149
+bytes (the library's variables as in ISLE's comparisons, not looked at one
+by one: the sound's pointer tables at DATA:1216..14FE are the original's
+only; not read). Not in the port for MOON: its overview (the keys, the dots), the
 fights, the statistics, the end of a map; MOON.hints' carried names are
 unchecked beyond what the setup uses (see the handoff). The names MOON.hints lacked for
 the port are its own lines now (`name` lines above the carried block:

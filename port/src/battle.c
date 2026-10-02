@@ -1285,7 +1285,8 @@ static void map_loop(fptr orders, fptr cursor_lib, fptr pmp, fptr palette)
             fptr keep = (pw(player_rec(i), 0) & 4) ? pfp(player_rec(i), 5) : 0;
 
             draw_entry((int16_t)pw(CURSOR(i), 0x10), (int16_t)pw(CURSOR(i), 0x12),
-                       pfp(cursors_lib, 4 * pb(CURSOR(i), 0x1B)), FOFF(keep), FSEG(keep), 0);
+                       pfp(cursors_lib, 4 * pb(CURSOR(i), 0x1B)), FOFF(keep), FSEG(keep),
+                       bi_prog == BI_MOON ? 0x40 : 0); /* MOON.EXE adds the colour base 40h */
         }
         effects_start();
         flip_page();

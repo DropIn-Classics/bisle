@@ -41,9 +41,15 @@ menu's entry (port/README.md; "The port" below).
   and F2E5x differ in 0 bytes at that pass. Names still unmapped that the
   port uses as data: the scene's (scene_count_a, scene_b_silent,
   scene_a_after), credits_*, cursor_kept, and others (compare names.h's
-  MOON column). Not checked
-  whether the remaining DATA bytes (149, DATA:004C.. and the input's
-  counts) are the same cause.
+  MOON column). The 1336 bytes of video memory were the two cursors, each
+  pixel 64 less in the port: MOON's loop (T070B:445F..) passes the colour
+  base 40h to draw_entry for them, BATTLE's 0 (map_loop in battle.c now
+  does the same for MOON). After it both pages, the lists and the parts
+  are the original's at that pass. What remains of the comparison: DATA
+  bytes below 2000h (149: the C library's, the mouse's, the timers', the
+  key counts and the sound's; the ISLE scripts filter that range out as
+  known, not looked at one by one for MOON; in 1216..14FE the original
+  has pointer tables the port has not) and the library segments' 75 bytes.
 
 - MOON's first map (2026-10-02, later): `map_setup` follows MOON.EXE's setup
   (T070B:0000.., read in MOON.ASM) where it differs, and the first map is
