@@ -350,5 +350,7 @@ void computer_unit_new(int unit);
 
 /* ---- battle.c: T0708, the program ---- */
 void battle_main(int argc, char **argv);
+/* intro.c: INTEGA/INTRO.EXE's main (bi_program(BI_INTRO) first) */
+void intro_main(void);
 
 #endif

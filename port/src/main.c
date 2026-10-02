@@ -280,6 +280,32 @@ static int load_program(const char *game, int title)
     return 1;
 }
 
+/* The intro of 256 colours, INTEGA/INTRO.EXE, which GOG's start runs
+ * before the game (BI.EXE, there the branch for the EGA): loaded as the
+ * game is, its own files in its folder, played to its end or to Esc.  The
+ * game's program is loaded after it.  A folder without the intro starts
+ * the game.  Only Battle Isle itself has it. */
+static void run_intro(const char *game)
+{
+    char isle[SYS_PATH], dir[SYS_PATH], exe[SYS_PATH], data[SYS_PATH], save[SYS_PATH], err[256];
+
+    if (!sys_find(game, titles[0].folder, isle, sizeof isle) || !sys_find(isle, "INTEGA", dir, sizeof dir) ||
+        !sys_find(dir, "INTRO.EXE", exe, sizeof exe))
+        return;
+    /* what the program keeps of its memory (the startup's INT 21h AH=4Ah, seen in the runner: 0A65h, then 0A80h and 0AC0h) */
+    if (rm_load_exe(exe, INTEGA_SIZE, INTEGA_SHA256, RM_LOAD_PSP, 0x0AC0, err, sizeof err) != 0) {
+        plat_message(err);
+        return;
+    }
+    bi_program(BI_INTRO);
+    rm_ds = bi_data_seg(BI_INTRO);
+    sys_data_dir(data, sizeof data);
+    sys_join(save, sizeof save, data, titles[0].save);
+    sys_mkdir(save);
+    dos_set_dirs(dir, save);
+    intro_main();
+}
+
 int main(int argc, char **argv)
 {
     const char *given = NULL, *gog = NULL;
@@ -335,6 +361,16 @@ int main(int argc, char **argv)
         bi_skip_intro = 1;
     if (getenv("BI_QUIT_YZ"))
         bi_quit_yz = 1;
+    /* The intro in a window, unless skipped.  Headless it is for the
+     * comparisons with the original only: BI_INTRO=only is the intro alone,
+     * BI_INTRO=1 the intro and the game (the game's comparisons stay as
+     * they were without it). */
+    if (title == 0 && (getenv("BI_INTRO") || (plat_has_window() && !bi_skip_intro)))
+        run_intro(game);
+    if (getenv("BI_INTRO") && !strcmp(getenv("BI_INTRO"), "only")) {
+        plat_shutdown();
+        return 0;
+    }
     if (!load_program(game, title)) {
         plat_shutdown();
         return 1;

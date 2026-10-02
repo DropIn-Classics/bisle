@@ -135,6 +135,13 @@ void int08(void)
             SWO(timers_due, si, 0);
             call_handler(MKFP(GWO(timers_handler, 2 * si + 2), GWO(timers_handler, 2 * si)));
         }
+    /* the game's handler writes the PIT only when the period changed
+     * (pit_period_set), the intro's (T0559:0590) every time: the same to
+     * clock_set_period */
+    if (bi_prog == BI_INTRO) {
+        clock_set_period(GW(pit_period_low));
+        return;
+    }
     if (GW(pit_period_set) != GW(pit_period_low))
         clock_set_period(GW(pit_period_low));
     SW(pit_period_set, GW(pit_period_low));

@@ -23,6 +23,36 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- Later on 2026-10-02: the intro of 256 colours (INTEGA/INTRO.EXE) is in
+  the port (port/README.md: what was checked, what not), the names'
+  addresses are chosen per program (`prog.c`, `bi_program`; names.h has a
+  column for INTEGA, MOON joins it the same way), and MOON is next (Next
+  0c; the measure of how far its code is BATTLE.EXE's is there). What the
+  intro taught, for MOON:
+  - A sibling's carried hints (xfer.py) name data by votes of matched
+    instructions: right where the modules are the same (the timer's
+    variables, the files', the library's), wrong where they are not (the
+    intro's own screen module T0529 has none of BATTLE's gfx names, and the
+    carry named e.g. page_drawn and the block list at other addresses).
+    The first sign was bytes written into the wrong place: a name that a
+    program lacks is 0xFFFF in both columns, and a write through it lands
+    at 0x1075F (S = 0076h, A = FFFFh) or, via DP(), 828Fh into DATA; a
+    comparison of the memory with the runner finds it (the scratch
+    icmp.py for the intro's segments, heapcmp.py). Names the C of a
+    shared module uses that a sibling lacks are named by hand in the
+    sibling's own lines (INTEGA.hints, "names of data, for the port"): the
+    sound's variables are at ZEROS as in BATTLE.EXE (DATA:1860 + offset in
+    INTEGA), its tables were found in the data by their bytes. The kit
+    (doskit 1118d90) keeps such own names against the carried block.
+  - Where a program's module differs the C branches on `bi_prog`: the
+    intro's INT 08 writes the PIT every time, the game's only when its
+    period changed (timer.c, int08).
+  - `SFP(name, p)` evaluates p twice (a function call as p runs twice: the
+    intro's frame decoder drew garbage until it was taken into a variable
+    first; bi.h says so already).
+  - DOS blocks: what a program's startup leaves of its memory (the INT 21h
+    AH=4Ah calls before main: 0A65h, 0A80h, 0AC0h for INTEGA) decides where
+    the first block is; `rm_load_exe`'s paragraph count is the last.
 - Where the session of 2026-10-02 stopped (the port; port/README.md has
   what was checked and how):
   - All of BATTLE.EXE the game calls is translated. The games of two
@@ -1746,7 +1776,13 @@ compared):
       the stretches decides what the C must branch on.
    d. The intro: only the one of 256 colours, INTEGA's (mode 13h, the
       one GOG's start runs). INTVGA's (16 colours, mode 0Dh) is left
-      out: the user wants VGA only.
+      out: the user wants VGA only. Done (2026-10-02, port/README.md):
+      T0529 (the screen) and T03FA (the show: pictures of VDIF frames,
+      two fonts, texts justified with a mouth that moves for each vowel,
+      fades by palette levels, the song and three effects) in intro.c,
+      identical to the original in video memory at four points of its
+      200 s; its texts are read from the program's own data (FPD(offset)).
+      Not looked at in a window by a person.
    e. Later: the mouse. The original has it (DISK's item MOUSE, its
       speed, a key on the map that switches it, INT 33h; T2683, T263D,
       T268A, T267C: not read, mouse_on is the only name) and the port

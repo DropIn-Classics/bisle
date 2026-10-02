@@ -28,9 +28,10 @@ still end the program with a message that names them (`bi_todo`: a
 picture larger than a page, a block of the second page in
 restore_sprites, the question for another disk, a timer's handler that
 is not one of the program's). Not in the port: the game's other
-programs (the starter BI.EXE, the intros, MOON.EXE of the second
-scenario disk), the PC speaker's sound (not wanted), joystick
-and mouse (the port answers as a PC without them).
+programs (the starter BI.EXE, INTVGA's intro of 16 colours (not wanted),
+MOON.EXE of the second scenario disk), the PC speaker's sound (not
+wanted), joystick and mouse (the port answers as a PC without them).
+The intro of 256 colours, INTEGA/INTRO.EXE, is in (below).
 
 The first scenario disk (2026-10-02): its game program
 `DESERT/DESERT.EX2` is BATTLE.EXE's code and data but for three bytes
@@ -43,6 +44,28 @@ and the scores `MAP\NN.HI` there; the port has the data folder's
 `save-desert` for what DESERT writes instead. The title is chosen on
 the setup screen (the item "Title", offered for each title whose folder
 is in the game's files) or by `-title isle|desert`.
+
+The intro (2026-10-02): `ISLE/INTEGA/INTRO.EXE`, the intro of 256
+colours that GOG's start runs before the game (BI.EXE's branch for the
+EGA; the folder names are the wrong way round, docs/HANDOFF.md), runs
+before the game in a window unless "Skip logo, intro, and title" is on
+(headless only with BI_INTRO=1, or BI_INTRO=only for the intro alone, so
+that the comparisons of the game are as they were). Esc ends it. It
+is loaded as the game is (kept paragraphs 0AC0h, what its startup leaves:
+the first block DOS gives is then where the runner's is), `intro_main`
+(T03FA:122D) runs the show over the memory image with the game's timer,
+sound and file modules. Checked against the original in the runner, the
+video memory of both pages, the program's own data (F0728, F07D4, DATA
+but for the library's startup values and the timer's counts) and the
+blocks of memory (a block's header of 16 bytes keeps what its name field
+held in the port, zeros in the runner: no matter): at the 20th, 150th,
+1200th and last (2460th, at 200 s) call of its wait (T03FA:0288, `bi_at
+"intro_wait"`); 0 bytes of video memory differ at each, the data as
+said. Not checked: the window build looked at and listened to by a person
+(the song and its fade, the effects), the OPL's writes against the
+original's (oplcmp.py is for the game), `/s` (the PC speaker: not
+wanted), the Ctrl-Break handler and the texts before the mode is set
+(left out).
 
 The port runs more than one program now (2026-10-02, begun for the
 intro INTEGA/INTRO.EXE, later MOON.EXE): `gen/names.h` holds a column a
@@ -58,6 +81,8 @@ comparisons were not run again. The intro itself is not in yet.
 |---|---|---|
 | `main.c` | - | finds the game's files, the setup screen's page, loads BATTLE.EXE or DESERT.EX2, starts it |
 | `bi.h` | - | the names, far pointers, what the modules share |
+| `prog.c` | - | the names' addresses in the program loaded (the game or the intro) |
+| `intro.c` | INTEGA/INTRO.EXE: T0529, T03FA | the intro of 256 colours: the screen (mode 13h unchained) and the show |
 | `dos.c` | DOS, BIOS, PIT | files, the keyboard, the clock (timer interrupt, retrace) |
 | `timer.c` | T2354 | the timers, the keys, the players' input |
 | `files.c` | T2619..T2728, T164D | memory blocks, files, TPWM unpacking, paths |
