@@ -33,14 +33,15 @@ menu's entry (port/README.md; "The port" below).
   (`ORIG=0` keeps the original's dump; 8 s in all) after: CODE 1587 -> 11
   bytes, F2D2D 517 -> 6, F2902 4 -> 0, DATA 170 -> 149, video memory 1960
   -> 1336 bytes; the library segments' T238E..T2768 diffs (75 bytes) are
-  the same as before and not looked into. Left in F2D2D: scripts+1Eh of
-  player 1 (original 3, port 0), queues+3Bh and +3Eh of player 1 (original
-  1 and 5, port 0), computer_state+10h (original 3, port 0): the original's
-  computer has run by then and the port's has not, presumably because
-  names it needs are still unmapped (computer_holder, computer_factory,
-  computer_out_square, computer_repair_holder, helper_unit, the plan_*
-  values, command_out: 79 names the port uses have no MOON address, listed
-  by comparing names.h's MOON column with the port's sources). Not checked
+  the same as before and not looked into. Then the computer's own data,
+  named by hand from MOON.ASM's DS-relative labels (T1C22, T1D2C, T1ED2):
+  computer_command is F2D2D:11DE (the carry had 1297), the holders and
+  the factory F2E56:0027.. , the plan's values F2E59:000C.., helper_unit
+  F2E5A:000E (the layout is BATTLE's shifted by 8 bytes). With them F2D2D
+  and F2E5x differ in 0 bytes at that pass. Names still unmapped that the
+  port uses as data: the scene's (scene_count_a, scene_b_silent,
+  scene_a_after), credits_*, cursor_kept, and others (compare names.h's
+  MOON column). Not checked
   whether the remaining DATA bytes (149, DATA:004C.. and the input's
   counts) are the same cause.
 

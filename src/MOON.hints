@@ -323,6 +323,23 @@ name F2825:0050 parts_table
 name F2D2D:1277 computer_state
 name F2D2D:0925 computer_move_units
 name F2D2D:119E computer_scripts
+; the command being made follows the scripts (T1C22 addresses it at F2D2D:11DE; the carry had 1297); the module's own data, read from the DS-relative labels of MOON.ASM: the holders and the factory in F2E56 from 0027 (they run on into F2E59), the plan's values from F2E59:000C (they run on into F2E5A), the helper's unit at F2E5A:000E
+name F2D2D:11DE computer_command
+name F2E56:0027 computer_holder
+name F2E56:002B computer_out_square
+name F2E56:002D computer_repair_holder
+name F2E56:0031 computer_factory
+name F2E59:000C task_path_count
+name F2E59:000E plan_foe
+name F2E59:000F plan_unit
+name F2E59:0010 plan_kind
+name F2E59:0012 plan_aim
+name F2E59:0014 plan_count
+name F2E59:0016 plan_score
+name F2E59:0018 plan_square
+name F2E59:001A plan_got
+name F2E59:001C plan_other
+name F2E5A:000E helper_unit
 ; DATA: the sound's tables and the second player's counts, the picture's palette (the first two by their bytes, the others by votes of matched code)
 name DATA:0DEC voice_scale
 name DATA:0E77 slots

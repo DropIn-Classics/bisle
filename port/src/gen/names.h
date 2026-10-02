@@ -637,27 +637,27 @@
     X(F2C0A, computer_attack_units, 0x0934, 0xFFFF, 0x00AC) \
     X(F2C0A, computer_scripts, 0x11AE, 0xFFFF, 0x119E) \
     X(F2C0A, computer_keys, 0x11EE, 0xFFFF, 0x128F) \
-    X(F2C0A, computer_command, 0x11F6, 0xFFFF, 0x1297) \
+    X(F2C0A, computer_command, 0x11F6, 0xFFFF, 0x11DE) \
     X(F2C0A, computer_queues, 0x11FE, 0xFFFF, 0x11E5) \
     X(F2D33, computer_hq_order, 0x0000, 0xFFFF, 0x0008) \
     X(F2D33, computer_key_bits, 0x0006, 0xFFFF, 0x000E) \
     X(F2D33, computer_key_sequences, 0x0010, 0xFFFF, 0x0018) \
-    X(F2D33, computer_holder, 0x001F, 0xFFFF, 0xFFFF) \
-    X(F2D35, computer_out_square, 0x0003, 0xFFFF, 0xFFFF) \
-    X(F2D35, computer_repair_holder, 0x0005, 0xFFFF, 0xFFFF) \
-    X(F2D35, computer_factory, 0x0009, 0xFFFF, 0xFFFF) \
+    X(F2D33, computer_holder, 0x001F, 0xFFFF, 0x0027) \
+    X(F2D35, computer_out_square, 0x0003, 0xFFFF, 0x002B) \
+    X(F2D35, computer_repair_holder, 0x0005, 0xFFFF, 0x002D) \
+    X(F2D35, computer_factory, 0x0009, 0xFFFF, 0x0031) \
     X(F2D35, approach_turns, 0x000E, 0xFFFF, 0x0006) \
-    X(F2D36, task_path_count, 0x0004, 0xFFFF, 0xFFFF) \
-    X(F2D36, plan_foe, 0x0006, 0xFFFF, 0xFFFF) \
-    X(F2D36, plan_unit, 0x0007, 0xFFFF, 0xFFFF) \
-    X(F2D36, plan_kind, 0x0008, 0xFFFF, 0xFFFF) \
-    X(F2D36, plan_aim, 0x000A, 0xFFFF, 0xFFFF) \
-    X(F2D36, plan_count, 0x000C, 0xFFFF, 0xFFFF) \
-    X(F2D36, plan_score, 0x000E, 0xFFFF, 0xFFFF) \
-    X(F2D37, plan_square, 0x0000, 0xFFFF, 0xFFFF) \
-    X(F2D37, plan_got, 0x0002, 0xFFFF, 0xFFFF) \
-    X(F2D37, plan_other, 0x0004, 0xFFFF, 0xFFFF) \
-    X(F2D37, helper_unit, 0x0006, 0xFFFF, 0xFFFF) \
+    X(F2D36, task_path_count, 0x0004, 0xFFFF, 0x000C) \
+    X(F2D36, plan_foe, 0x0006, 0xFFFF, 0x000E) \
+    X(F2D36, plan_unit, 0x0007, 0xFFFF, 0x000F) \
+    X(F2D36, plan_kind, 0x0008, 0xFFFF, 0x0010) \
+    X(F2D36, plan_aim, 0x000A, 0xFFFF, 0x0012) \
+    X(F2D36, plan_count, 0x000C, 0xFFFF, 0x0014) \
+    X(F2D36, plan_score, 0x000E, 0xFFFF, 0x0016) \
+    X(F2D37, plan_square, 0x0000, 0xFFFF, 0x0018) \
+    X(F2D37, plan_got, 0x0002, 0xFFFF, 0x001A) \
+    X(F2D37, plan_other, 0x0004, 0xFFFF, 0x001C) \
+    X(F2D37, helper_unit, 0x0006, 0xFFFF, 0x000E) \
     X(F2D37, scene_arrived, 0x0008, 0xFFFF, 0x0000) \
     X(F2D37, scene_shot, 0x0009, 0xFFFF, 0x0001) \
     X(F2D37, scene_record, 0x000A, 0xFFFF, 0x0002) \
@@ -1220,22 +1220,22 @@
     X(F2D33, computer_hq_order, BATTLE_F2D33, 0xFFFF, MOON_F2E56) \
     X(F2D33, computer_key_bits, BATTLE_F2D33, 0xFFFF, MOON_F2E56) \
     X(F2D33, computer_key_sequences, BATTLE_F2D33, 0xFFFF, MOON_F2E56) \
-    X(F2D33, computer_holder, BATTLE_F2D33, 0xFFFF, 0xFFFF) \
-    X(F2D35, computer_out_square, BATTLE_F2D35, 0xFFFF, 0xFFFF) \
-    X(F2D35, computer_repair_holder, BATTLE_F2D35, 0xFFFF, 0xFFFF) \
-    X(F2D35, computer_factory, BATTLE_F2D35, 0xFFFF, 0xFFFF) \
+    X(F2D33, computer_holder, BATTLE_F2D33, 0xFFFF, MOON_F2E56) \
+    X(F2D35, computer_out_square, BATTLE_F2D35, 0xFFFF, MOON_F2E56) \
+    X(F2D35, computer_repair_holder, BATTLE_F2D35, 0xFFFF, MOON_F2E56) \
+    X(F2D35, computer_factory, BATTLE_F2D35, 0xFFFF, MOON_F2E56) \
     X(F2D35, approach_turns, BATTLE_F2D35, 0xFFFF, MOON_F2E59) \
-    X(F2D36, task_path_count, BATTLE_F2D36, 0xFFFF, 0xFFFF) \
-    X(F2D36, plan_foe, BATTLE_F2D36, 0xFFFF, 0xFFFF) \
-    X(F2D36, plan_unit, BATTLE_F2D36, 0xFFFF, 0xFFFF) \
-    X(F2D36, plan_kind, BATTLE_F2D36, 0xFFFF, 0xFFFF) \
-    X(F2D36, plan_aim, BATTLE_F2D36, 0xFFFF, 0xFFFF) \
-    X(F2D36, plan_count, BATTLE_F2D36, 0xFFFF, 0xFFFF) \
-    X(F2D36, plan_score, BATTLE_F2D36, 0xFFFF, 0xFFFF) \
-    X(F2D37, plan_square, BATTLE_F2D37, 0xFFFF, 0xFFFF) \
-    X(F2D37, plan_got, BATTLE_F2D37, 0xFFFF, 0xFFFF) \
-    X(F2D37, plan_other, BATTLE_F2D37, 0xFFFF, 0xFFFF) \
-    X(F2D37, helper_unit, BATTLE_F2D37, 0xFFFF, 0xFFFF) \
+    X(F2D36, task_path_count, BATTLE_F2D36, 0xFFFF, MOON_F2E59) \
+    X(F2D36, plan_foe, BATTLE_F2D36, 0xFFFF, MOON_F2E59) \
+    X(F2D36, plan_unit, BATTLE_F2D36, 0xFFFF, MOON_F2E59) \
+    X(F2D36, plan_kind, BATTLE_F2D36, 0xFFFF, MOON_F2E59) \
+    X(F2D36, plan_aim, BATTLE_F2D36, 0xFFFF, MOON_F2E59) \
+    X(F2D36, plan_count, BATTLE_F2D36, 0xFFFF, MOON_F2E59) \
+    X(F2D36, plan_score, BATTLE_F2D36, 0xFFFF, MOON_F2E59) \
+    X(F2D37, plan_square, BATTLE_F2D37, 0xFFFF, MOON_F2E59) \
+    X(F2D37, plan_got, BATTLE_F2D37, 0xFFFF, MOON_F2E59) \
+    X(F2D37, plan_other, BATTLE_F2D37, 0xFFFF, MOON_F2E59) \
+    X(F2D37, helper_unit, BATTLE_F2D37, 0xFFFF, MOON_F2E5A) \
     X(F2D37, scene_arrived, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
     X(F2D37, scene_shot, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
     X(F2D37, scene_record, BATTLE_F2D37, 0xFFFF, MOON_F2E5B) \
