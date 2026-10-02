@@ -103,8 +103,7 @@ What the port does otherwise than a PC:
   the port keeps them in C variables.
 - Before the game the kit's setup screen is shown (doskit/docs/LAUNCHER.md:
   `main.c` gives `launcher_run` a menu and four pages of items and draws
-  nothing; the menu: start, then the pages Game (title, the original's
-  `/m`), Picture (full screen), Quality of life fixes (the two choices
+  nothing; the menu: start, then the pages Game (the title), Picture (full screen), Quality of life fixes (the two choices
   below) and This port (whether to look for newer releases, update.h)). The settings are kept in the data folder's
   `battle-isle.cfg`. Looking for newer releases is not asked about at the
   first start: it is off until the player switches it on there (a
@@ -129,9 +128,10 @@ the latest release's `latest.json`.
 `/m` is the original's switch: it prints "Monochrome." in place of
 "Color." at the start and sets F2740:02C8 to 2, which is passed to the
 file name routine (T26EA:000F); the pictures are grey with it (the user
-saw), so the setup screen's item is "Monochrome" (it was "Alternate
-palette", a guess that was wrong). Not compared with the original's own
-/m run. Its `/s`, the PC speaker's sound, is not taken.
+saw). It is the third of the game's own menu's palettes ("Palette 1",
+"Palette 2", "Mono", as the user read there), so the setup screen has no
+item for it (it had one, first guessed wrong as "other palette"); the
+command line still takes it. Not compared with the original's own /m run. Its `/s`, the PC speaker's sound, is not taken.
 
 ## Releases
 

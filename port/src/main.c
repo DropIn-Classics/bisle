@@ -103,9 +103,8 @@ static const struct {
 enum { ACT_START = 1, ACT_PAGE };
 
 static const char *const no_yes[] = { "No", "Yes", NULL };
-static const char *const off_on[] = { "Off", "On", NULL };
 
-static int set_fullscreen, set_m, set_updates, set_title, set_skip, set_quit = 1;
+static int set_fullscreen, set_updates, set_title, set_skip, set_quit = 1;
 /* the titles whose folders are there, for the setup screen's choice */
 static const char *title_labels[TITLES + 1];
 static int title_of[TITLES];
@@ -128,8 +127,6 @@ static LauncherItem menu_items[] = {
 static LauncherItem game_items[] = {
     { LI_CHOICE, "Title", "title", title_labels, &set_title, 0,
       "Battle Isle or one of the data disks." },
-    { LI_CHOICE, "Monochrome", "m", off_on, &set_m, 0,
-      "The original's /m: grey pictures, as for a monochrome monitor." },
 };
 
 static LauncherItem picture_items[] = {
@@ -210,7 +207,7 @@ static int setup(const char *game, int *m, int *title)
     }
     set_fullscreen = plat_fullscreen();
     launcher_save(cfg, "battle-isle: the setup screen's settings", pages, NPAGES);
-    *m = set_m;
+    *m = 0;         /* /m is on the command line only: the game's own menu has the palettes */
     bi_skip_intro = set_skip;
     bi_quit_yz = set_quit;
     *title = n ? title_of[set_title] : 0;
