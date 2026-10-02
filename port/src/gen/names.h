@@ -518,7 +518,7 @@
     X(T2690, file_open, 0x0004, 0x0002, 0x000E) \
     X(T2695, load_file, 0x0004, 0x0002, 0x000E) \
     X(T26D2, save_file, 0x000A, 0xFFFF, 0x0004) \
-    X(F273A, reach_args, 0x0006, 0xFFFF, 0xFFFF) \
+    X(F273A, reach_args, 0x0006, 0xFFFF, 0x000A) \
     X(F273B, fatal_messages, 0x0008, 0xFFFF, 0x000C) \
     X(F2740, name_menu, 0x0000, 0xFFFF, 0x0004) \
     X(F2740, name_codes, 0x000A, 0xFFFF, 0x000E) \
@@ -625,7 +625,7 @@
     X(F27EE, remove_depth, 0x4151, 0xFFFF, 0x0CAF) \
     X(F27EE, map0, 0x4152, 0xFFFF, 0x0C8B) \
     X(F27EE, map1, 0x4156, 0xFFFF, 0x0C87) \
-    X(F27EE, cursor_kept, 0x415A, 0xFFFF, 0xFFFF) \
+    X(F27EE, cursor_kept, 0x415A, 0xFFFF, 0x4212) \
     X(F27EE, strength_values, 0x418C, 0xFFFF, 0x0CB2) \
     X(F27EE, window_y_odd, 0x4192, 0xFFFF, 0x2FD7) \
     X(F27EE, around, 0x41A2, 0xFFFF, 0x0CB8) \
@@ -815,7 +815,7 @@
     X(DATA, fx_asked, 0x16CE, 0x145C, 0x1184) \
     X(DATA, fx_voice, 0x16D6, 0x1464, 0x118C) \
     X(DATA, adlib_found, 0x16EC, 0x147A, 0x11A2) \
-    X(DATA, rand_seed, 0x1938, 0x16CA, 0xFFFF) \
+    X(DATA, rand_seed, 0x1938, 0x16CA, 0x1448) \
     X(DATA, intro_old_mode, 0xFFFF, 0x0092, 0xFFFF) \
     X(DATA, intro_page_drawn, 0xFFFF, 0x0093, 0xFFFF) \
     X(DATA, intro_page_shown, 0xFFFF, 0x0095, 0xFFFF) \
@@ -1096,7 +1096,7 @@
     X(T2690, file_open, BATTLE_T2690, INTEGA_T0608, MOON_T2763) \
     X(T2695, load_file, BATTLE_T2695, INTEGA_T060D, MOON_T2768) \
     X(T26D2, save_file, BATTLE_T26D2, 0xFFFF, MOON_T27A6) \
-    X(F273A, reach_args, BATTLE_F273A, 0xFFFF, 0xFFFF) \
+    X(F273A, reach_args, BATTLE_F273A, 0xFFFF, MOON_F2824) \
     X(F273B, fatal_messages, BATTLE_F273B, 0xFFFF, MOON_F2825) \
     X(F2740, name_menu, BATTLE_F2740, 0xFFFF, MOON_F2850) \
     X(F2740, name_codes, BATTLE_F2740, 0xFFFF, MOON_F2850) \
@@ -1203,7 +1203,7 @@
     X(F27EE, remove_depth, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, map0, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, map1, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
-    X(F27EE, cursor_kept, BATTLE_F27EE, 0xFFFF, 0xFFFF) \
+    X(F27EE, cursor_kept, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, strength_values, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, window_y_odd, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
     X(F27EE, around, BATTLE_F27EE, 0xFFFF, MOON_F2902) \
@@ -1393,7 +1393,7 @@
     X(DATA, fx_asked, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, fx_voice, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, adlib_found, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
-    X(DATA, rand_seed, BATTLE_DATA, INTEGA_DATA, 0xFFFF) \
+    X(DATA, rand_seed, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, intro_old_mode, 0xFFFF, INTEGA_DATA, 0xFFFF) \
     X(DATA, intro_page_drawn, 0xFFFF, INTEGA_DATA, 0xFFFF) \
     X(DATA, intro_page_shown, 0xFFFF, INTEGA_DATA, 0xFFFF) \

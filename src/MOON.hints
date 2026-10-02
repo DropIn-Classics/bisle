@@ -310,6 +310,10 @@ name F2902:2EBF factories
 ; the setup's own data in MOON.ASM (T070B): state_248e as BATTLE.EXE's, the random number routine of T0DA1 (BATTLE.EXE's T0D36:05FF), the ground parts the map uses (their count at F280C:0099, the table of far pointers to them at F2825:0050 that replaces the library's), the two buffers filled from MAPINFO.DAT and MAP02.DAT or MAP04.DAT (F280C:009B says which: 1 for the larger maps) and the names of those files
 name F2902:0D43 state_248e
 name T0DA1:05F2 random
+; read in MOON.ASM: the C library's random seed (rand: DATA:1448, 144A), reach's kept arguments (T0C0E:0372, in the segment F2824 at 0Ah) and the cursor record kept (T0DA1:0324)
+name DATA:1448 rand_seed
+name F2824:000A reach_args
+name F2902:4212 cursor_kept
 name F280C:0099 parts_stored
 name F280C:009B overview_scale
 name F280C:009D overview_data

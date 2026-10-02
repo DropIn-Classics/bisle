@@ -23,6 +23,34 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- MOON's computer and fights (2026-10-02, later still): a game of two
+  computers on MOON's map 0 is compared with the runner by the scratch
+  `build/scratch/mcvc.sh NAME PASS [MAP]` (cvc.sh's way: the menu keys of
+  cvcmap.py with MOON's code; `rdiff.py NAME` compares a named routine of
+  BATTLE.ASM with MOON.ASM's, `moonroutines.py` lists the routines by
+  instructions unmatched). Same to pass 346 but for scratch bytes; at 348 the
+  original has done one step more (computer_state+7 06 against 05,
+  path_count 0Ah against 07, `around` another) and at 400 a unit is on
+  another square; the port needs more than 300 s to pass 900 (a loop, not
+  looked into). Read and made MOON's (reach.c, MOON only): `find_path` sets
+  the end node's (2) column and row to 0 and stops when the search comes to
+  it (BATTLE's goes on with it as with a square), `neighbours64` puts a
+  column or row outside the map on its edge first. Three data names the
+  port used had no address for MOON, so it wrote to 0FFFFh: `rand_seed` is
+  DATA:1448, `reach_args` F2824:000A, `cursor_kept` F2902:4212 (own lines
+  in MOON.hints). Neither changed the divergence at 348. Not the cause:
+  `rand`/`random` (the same but an unsigned compare of the upper bound),
+  `timer_set`/`timer_due`/`square_distance`/`off_map` (read: the same).
+  Still unmapped data names the port uses: scene_count_a, scene_a_after,
+  scene_b_silent (the scene's, F2E5B in MOON), credits_*, credits_text.
+  Next: bisect the pass-348 step further (which routine of the computer
+  first gives another result: the scratch pcmp.py -break at the computer's
+  routines), then T178C..T1ED2 (computer_plan 386 of 4118 instructions
+  unmatched, computer_assess 224 of 1214, command_out 159, stop_check
+  248, change_phase 255, make_unit 169), then fights (fight_reckon's
+  differences read so far are register changes only), the statistics and the
+  end of a map.
+
 - MOON's overview (2026-10-02, later still): read in MOON.ASM (T0F3E:094A,
   T039B:0007, and the loop at T070B:226C..25FD) and done in map.c
   (`moon_draw_overview`, `moon_overview_map`) and `loop_overview`. It draws
