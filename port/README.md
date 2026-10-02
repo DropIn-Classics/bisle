@@ -298,7 +298,19 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   memory has a unit's reach in `marks`, `path_count` 0 and
   `computer_state`+17h 1 (memcmp.py on the two dumps), the timers go
   on. Not known: whether a game of a human against the computer on
-  that map can come to the same place.
+  that map can come to the same place. The place is `find_path`
+  (reach.c; found with counters put into the port for a run): the aim
+  (0036h from 0282h, unit 10, player 1) is not reached, the search
+  goes on with the list's last node as with a square and the search
+  for a new node's place goes round. The port does not follow the
+  original here, at the user's wish: `find_path` counts that search's
+  steps and gives "no path" beyond 316h, the most nodes a list has.
+  With that the game on map 30 goes on and ends as the others do, in
+  the wait for a key after the pass 36589 (round 13, player 0 without
+  units); nothing of it after the pass 30304 can be compared with the
+  original. Compared again with that change, at the ends of the maps
+  17, 18 and 20 (the passes 4196, 3423 and 14236): the same as before.
+  Not run again: the other comparisons of this list.
 - The setup screen, in the headless build with scripted keys (`DK_KEYS`,
   the picture through `DK_DUMP`, looked at): the page as the kit draws
   it; down twice, right, up twice and Enter start the game with `/m`

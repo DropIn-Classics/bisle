@@ -1675,8 +1675,12 @@ compared):
       T268A, T267C: not read, mouse_on is the only name) and the port
       leaves it out so far ("the port has none" in battle.c, menu.c,
       timer.c). To do: read the four routines, runs of the original
-      with a mouse (whether the runner has an INT 33h is not checked),
-      then the port's.
+      with a mouse, then the port's. The runner has no INT 33h (no
+      handler in doskit/tools/run; the runtime has the window's
+      pointer and clicks, plat_mouse): a mouse driver for the runner,
+      with scripted moves and clicks as its keys are, goes into the
+      kit first, with a test there (rule 7). The user wants that
+      driver anyway.
 1. BATTLE.EXE's last 4.1 KB: menus, a map, saving, loading, battles
    against the computer and poked wins with their animations ran none
    of it (above) but for a RETF; unused library code and switch tables,
@@ -1772,15 +1776,25 @@ For the port (behaviour):
    pass 30304 (round 10; the original run on from 2132 s to 5000 s of
    its time with LT0708_135C still at 30304 hits, the port not at
    30305 within 45 s where 30304 passes take it about 20 s). The same
-   in both at the pass 30304, so the game's own, not the port's. Where
-   it spins is not looked into: the original's memory when stopped has
-   a unit's reach in `marks`, `path_count` 0, `computer_state`+17h 1
-   (against the pass 30304's dump). To find it: a break in the port at
-   that pass and the routines the computer's tasks call from there, or
-   the runner's -log on their entries. Not known: whether a human
-   against the computer on that map can come to it, and whether the
-   port should leave it (a matter for the user).
+   in both at the pass 30304, so the game's own, not the port's. It
+   is find_path, called by can_go for task_move (found in the port with
+   counters; the original's memory when stopped fits: can_go's marks
+   over the map, many taken, `path_count` 0): when the aim is not
+   reached the loop takes the list's last node (2, the key 7530h, its
+   column and row whatever the buffer held) as a square too; a marked
+   square beside it that is not taken is then put in, the search for
+   its place starting at node 2's next, node 0, and that search went
+   round for ever (at=2, j=0, key 34, node 0's next 290, 291 nodes).
+   Without such a square beside node 2's bytes the routine ends with
+   no path, which is the usual case. The user wants it mended: the
+   port's find_path counts the steps of that search and gives no path
+   beyond 316h (port/README.md, Checked). Not known: whether a human
+   against the computer comes to it; how the list got round (which
+   node's +8 led back) was not followed.
    The scratch stall.py MAP LO HI finds such a last pass by halving.
+   A map of two computers ends in the wait for a key (key_wait) after
+   its last pass, not at after_map: `cvcmap.py N key_wait` gives the
+   pass.
 
 9. The maps (mapfiles.py): the .SHP's kind 3 (F27EE:0B64), its bytes
    +3, +4 and its 27 bits; the .COM's records and why the loader swaps

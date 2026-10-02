@@ -313,7 +313,16 @@ int fire_reach(fptr buf, int square, int range, int side, int unit, int targets,
  * `list` holds nodes of 10 bytes (column, row, +2 the node it was
  * reached from, +4 a key, +6 and +8 the nodes before and after in the
  * key's order); the key is the distance to the aim times the type's
- * +14h plus the ground's cost times its +15h. */
+ * +14h plus the ground's cost times its +15h.
+ *
+ * Not the original's: the count of `steps`.  When the aim is not reached
+ * the original goes on with the list's last node (2, the key 7530h) as
+ * with a square, at whatever column and row its bytes hold; a marked
+ * square beside that, not taken yet, is then put in from node 0 on, and
+ * the search for its place can go round for ever (seen in a game of two
+ * computers on map 30, the original stopping there as well).  A list has
+ * no more than 316h nodes, so a search of more steps is such a round:
+ * no path. */
 int find_path(fptr list, int unit, int from, int to, int side, fptr map)
 {
 #define NODE(n) MKFP(FSEG(list), FOFF(list) + 10 * (n))
@@ -355,7 +364,7 @@ int find_path(fptr list, int unit, int from, int to, int side, fptr map)
         }
         neighbours64((int8_t)pb(NODE(at), 0), (int8_t)pb(NODE(at), 1));
         for (k = 0; k < 6; k++) {
-            int n = (int16_t)GWO(around, 2 * k), nx, ny, distance, key, cost;
+            int n = (int16_t)GWO(around, 2 * k), nx, ny, distance, key, cost, steps = 0;
             unsigned m, j, before;
 
             if (n < 0)
@@ -371,7 +380,8 @@ int find_path(fptr list, int unit, int from, int to, int side, fptr map)
             key = distance ? (int16_t)(distance * by_distance) + (int16_t)(cost * by_cost) : 0;
             key = (int16_t)key;
             for (j = pw(NODE(at), 8); (int16_t)pw(NODE(j), 4) <= key; j = pw(NODE(j), 8))
-                ;
+                if (++steps > 0x316)
+                    goto none;
             spb(NODE(next), 0, nx);
             spb(NODE(next), 1, ny);
             spw(NODE(next), 4, key);
