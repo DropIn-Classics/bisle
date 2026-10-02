@@ -67,10 +67,13 @@ START shows the first map, the original's at its 200th pass (`pcmp.py`
 with MOON's names): the computer's tables and the far data segments the
 same, video memory the same (MOON's loop draws the two cursors with the
 colour base 40h, which map_loop does for MOON), the code segments the
-same but for the library's 75 bytes of scratch, DATA below 2000h 149
-bytes (the library's variables as in ISLE's comparisons, not looked at one
-by one: the sound's pointer tables at DATA:1216..14FE are the original's
-only; not read). Not in the port for MOON: its overview (the keys, the dots), the
+same but for the library's scratch bytes, DATA below 2000h 149 bytes, each
+looked at (the handoff lists them): the C library's startup (saved
+vectors, argv, exit hooks, stream records at DATA:1226..150E, which
+nothing of the port reads: it does not run that startup), the mouse the
+runner has, and the clock's phase. MOON's image is loaded at 0076h, so
+`pcmp.py` takes `-- --load 76` for it (memcmp.py's default 0077h is
+BATTLE's). Not in the port for MOON: its overview (the keys, the dots), the
 fights, the statistics, the end of a map; MOON.hints' carried names are
 unchecked beyond what the setup uses (see the handoff). The names MOON.hints lacked for
 the port are its own lines now (`name` lines above the carried block:

@@ -46,10 +46,35 @@ menu's entry (port/README.md; "The port" below).
   base 40h to draw_entry for them, BATTLE's 0 (map_loop in battle.c now
   does the same for MOON). After it both pages, the lists and the parts
   are the original's at that pass. What remains of the comparison: DATA
-  bytes below 2000h (149: the C library's, the mouse's, the timers', the
-  key counts and the sound's; the ISLE scripts filter that range out as
-  known, not looked at one by one for MOON; in 1216..14FE the original
-  has pointer tables the port has not) and the library segments' 75 bytes.
+  bytes below 2000h (149 in 89 runs, all looked at, below) and the
+  library segments' bytes (82 unfiltered, not looked at).
+  A correction: MOON's image is loaded at 0076h (BATTLE's at 0077h, the
+  default of memcmp.py), so the comparison of MOON wants
+  `pcmp.py ... -- --load 76`; without it every offset in the segments
+  was 10h too low (the counts of bytes were the same, the names and the
+  addresses of this entry as first written were not; the far data
+  segments were not re-checked with it). The 149 bytes, true addresses:
+  - the C library's startup (read in MOON.ASM, the code before L01E0 and L2DA5..): the
+    interrupt vectors it saved (INT 0, 4, 5, 6: 005B..006A), argc and the
+    argv list's place (006B..0070: 0FF4h, SS = 3097h), 0075..0090 other
+    startup variables (the PSP's 0066h at 007B, presumably; the rest not
+    read), the exit hooks' far pointers (1226, 122A, 122E, to CODE:1C5D),
+    records of 20 bytes with a self pointer and a byte FFh (129A..13C1,
+    what they are not read), the argv code's variables (14EA..14F9) and
+    two FFh bytes by the initialiser table (1508, 150E; DATA:150A in the
+    hints, not read further). The port does not run
+    that startup and no name of MOON.hints lies there, so no routine of
+    the port reads them. Not the sound's, as the first note said;
+  - the mouse (040A..044A, 0AD6 excepted): the runner's driver finds a
+    mouse, the port has none (as in ISLE, above);
+  - the clock's phase: the timers' left counts (0CFE..0D03), the divider
+    of four ticks (input_divider, 0AD6: 2, the port 0) and the five
+    counters of passes without a direction (input0_counts+2.. and
+    input1_counts+2..: 1, the port 9; input_events counts them 0..0Ah
+    round, so only their phase differs, read, the phases themselves not
+    traced);
+  - old_int08 (0DE3, 0DE5): the BIOS's vector the original saved
+    (F000:0E00); the port's old_timer is a routine that does nothing.
 
 - MOON's first map (2026-10-02, later): `map_setup` follows MOON.EXE's setup
   (T070B:0000.., read in MOON.ASM) where it differs, and the first map is
