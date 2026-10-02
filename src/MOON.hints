@@ -319,6 +319,10 @@ name F280C:00D8 name_map02
 name F280C:00E2 name_map04
 name F2825:0048 name_statmap
 name F2825:0050 parts_table
+; the computer player's tables as MOON's computer_start (T1867:01AE) clears them, in F2D2D: the states 0Ch bytes a player, the move records 9 bytes a unit (the attack records, named below in the carry, are at 00AC), the keys' scripts 20h a player (the carry left all three unmapped)
+name F2D2D:1277 computer_state
+name F2D2D:0925 computer_move_units
+name F2D2D:119E computer_scripts
 ; DATA: the sound's tables and the second player's counts, the picture's palette (the first two by their bytes, the others by votes of matched code)
 name DATA:0DEC voice_scale
 name DATA:0E77 slots

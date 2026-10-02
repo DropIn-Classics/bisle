@@ -23,6 +23,27 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- MOON's computer tables (2026-10-02, later still): the 517 bytes of F2D2D
+  that differed at the first map's 200th pass were names the carry had left
+  unmapped, so the port's `computer_start` wrote through 0xFFFF: from
+  MOON's own computer_start (T1867:01AE, read in MOON.ASM) `computer_state`
+  is F2D2D:1277 (0Ch bytes a player, `computer_keys` follows at 128F),
+  `computer_move_units` F2D2D:0925 and `computer_scripts` F2D2D:119E, now
+  own names in MOON.hints (names.h regenerated). The same comparison
+  (`ORIG=0` keeps the original's dump; 8 s in all) after: CODE 1587 -> 11
+  bytes, F2D2D 517 -> 6, F2902 4 -> 0, DATA 170 -> 149, video memory 1960
+  -> 1336 bytes; the library segments' T238E..T2768 diffs (75 bytes) are
+  the same as before and not looked into. Left in F2D2D: scripts+1Eh of
+  player 1 (original 3, port 0), queues+3Bh and +3Eh of player 1 (original
+  1 and 5, port 0), computer_state+10h (original 3, port 0): the original's
+  computer has run by then and the port's has not, presumably because
+  names it needs are still unmapped (computer_holder, computer_factory,
+  computer_out_square, computer_repair_holder, helper_unit, the plan_*
+  values, command_out: 79 names the port uses have no MOON address, listed
+  by comparing names.h's MOON column with the port's sources). Not checked
+  whether the remaining DATA bytes (149, DATA:004C.. and the input's
+  counts) are the same cause.
+
 - MOON's first map (2026-10-02, later): `map_setup` follows MOON.EXE's setup
   (T070B:0000.., read in MOON.ASM) where it differs, and the first map is
   the original's at its 200th pass (`pcmp.py mm LT070B_13DD#200

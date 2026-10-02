@@ -632,10 +632,10 @@
     X(F2C09, name_titel, 0x0006, 0xFFFF, 0x0000) \
     X(F2C09, name_bb, 0x000C, 0xFFFF, 0x0006) \
     X(F2C0A, computer_types, 0x0000, 0xFFFF, 0x000A) \
-    X(F2C0A, computer_state, 0x00A2, 0xFFFF, 0xFFFF) \
-    X(F2C0A, computer_move_units, 0x00BA, 0xFFFF, 0xFFFF) \
+    X(F2C0A, computer_state, 0x00A2, 0xFFFF, 0x1277) \
+    X(F2C0A, computer_move_units, 0x00BA, 0xFFFF, 0x0925) \
     X(F2C0A, computer_attack_units, 0x0934, 0xFFFF, 0x00AC) \
-    X(F2C0A, computer_scripts, 0x11AE, 0xFFFF, 0xFFFF) \
+    X(F2C0A, computer_scripts, 0x11AE, 0xFFFF, 0x119E) \
     X(F2C0A, computer_keys, 0x11EE, 0xFFFF, 0x128F) \
     X(F2C0A, computer_command, 0x11F6, 0xFFFF, 0x1297) \
     X(F2C0A, computer_queues, 0x11FE, 0xFFFF, 0x11E5) \
@@ -1210,10 +1210,10 @@
     X(F2C09, name_titel, BATTLE_F2C09, 0xFFFF, MOON_F2D2D) \
     X(F2C09, name_bb, BATTLE_F2C09, 0xFFFF, MOON_F2D2D) \
     X(F2C0A, computer_types, BATTLE_F2C0A, 0xFFFF, MOON_F2D2D) \
-    X(F2C0A, computer_state, BATTLE_F2C0A, 0xFFFF, 0xFFFF) \
-    X(F2C0A, computer_move_units, BATTLE_F2C0A, 0xFFFF, 0xFFFF) \
+    X(F2C0A, computer_state, BATTLE_F2C0A, 0xFFFF, MOON_F2D2D) \
+    X(F2C0A, computer_move_units, BATTLE_F2C0A, 0xFFFF, MOON_F2D2D) \
     X(F2C0A, computer_attack_units, BATTLE_F2C0A, 0xFFFF, MOON_F2D2D) \
-    X(F2C0A, computer_scripts, BATTLE_F2C0A, 0xFFFF, 0xFFFF) \
+    X(F2C0A, computer_scripts, BATTLE_F2C0A, 0xFFFF, MOON_F2D2D) \
     X(F2C0A, computer_keys, BATTLE_F2C0A, 0xFFFF, MOON_F2D2D) \
     X(F2C0A, computer_command, BATTLE_F2C0A, 0xFFFF, MOON_F2D2D) \
     X(F2C0A, computer_queues, BATTLE_F2C0A, 0xFFFF, MOON_F2D2D) \
