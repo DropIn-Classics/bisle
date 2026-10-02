@@ -271,7 +271,8 @@ static int load_program(const char *game, int title)
         plat_message(err);
         return 0;
     }
-    rm_ds = SEG(DATA);
+    bi_program(BI_GAME);
+    rm_ds = bi_data_seg(BI_GAME);
     sys_data_dir(data, sizeof data);
     sys_join(save, sizeof save, data, titles[title].save);
     sys_mkdir(save);

@@ -18,15 +18,22 @@
 
 /* the segment the image is loaded at */
 #define LOAD_SEG (RM_LOAD_PSP + 0x10u)
-/* a segment of the hints as loaded: SEG(DATA), SEG(F27EE) */
-#define SEG(s) ((uint16_t)(BATTLE_##s + LOAD_SEG))
+/* The programs the port runs: the game (BATTLE.EXE, DESERT.EX2) and the
+ * intro (INTEGA/INTRO.EXE).  The hints' names are in other places in each
+ * (prog.c): A_name is the offset and S_name the segment as loaded of the
+ * program chosen by bi_program. */
+enum { BI_GAME, BI_INTRO };
+extern int bi_prog;
+void bi_program(int prog);
+/* the segment the program's DS holds (DATA) */
+uint16_t bi_data_seg(int prog);
+/* a segment of the game's hints as loaded (the intro has others) */
+#define SEG(s) SEG_##s
+#define SEG_DATA bi_data_seg(bi_prog)
+#define SEG_F2736 ((uint16_t)(BATTLE_F2736 + LOAD_SEG))
 
-/* the hints' names: A_name the offset, S_name the segment as loaded */
-#define X(seg, name, a) A_##name = a,
-enum { BI_NAMES(X) A_names_end };
-#undef X
-#define X(seg, name, a) S_##name = BATTLE_##seg + LOAD_SEG,
-enum { BI_NAMES(X) S_names_end };
+#define X(seg, name, ...) extern uint16_t A_##name, S_##name;
+BI_NAMES(X)
 #undef X
 
 /* a named variable: byte, word, long; o bytes further on */

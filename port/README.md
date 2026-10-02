@@ -44,6 +44,16 @@ and the scores `MAP\NN.HI` there; the port has the data folder's
 the setup screen (the item "Title", offered for each title whose folder
 is in the game's files) or by `-title isle|desert`.
 
+The port runs more than one program now (2026-10-02, begun for the
+intro INTEGA/INTRO.EXE, later MOON.EXE): `gen/names.h` holds a column a
+program (`symmap.py ... BATTLE=src/BATTLE.hints INTEGA=src/INTEGA.hints`),
+`prog.c` turns the columns into the variables A_name and S_name for the
+program chosen with `bi_program`, and the shared modules (the sound, the
+files, the timer) read the memory through them. Checked after the change:
+map 03 at its 100th pass (the scratch m03.sh) is as before in the video
+memory (0 bytes differ) and the heap (the same one byte); the other
+comparisons were not run again. The intro itself is not in yet.
+
 | File | The original's | What |
 |---|---|---|
 | `main.c` | - | finds the game's files, the setup screen's page, loads BATTLE.EXE or DESERT.EX2, starts it |
