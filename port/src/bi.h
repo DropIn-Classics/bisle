@@ -43,7 +43,10 @@ BI_NAMES(X)
 #define GD(n) (frw(S_##n, A_##n) | (uint32_t)frw(S_##n, A_##n + 2) << 16)
 #define SB(n, v) fwb(S_##n, A_##n, (uint8_t)(v))
 #define SW(n, v) fww(S_##n, A_##n, (uint16_t)(v))
-#define SD(n, v) (fww(S_##n, A_##n, (uint16_t)(v)), fww(S_##n, A_##n + 2, (uint16_t)((uint32_t)(v) >> 16)))
+/* SD and SFP take their value once (bi_sd): written as two words with the
+ * value read again for the second, SD(passes, GD(passes) + 1) made FFFEh
+ * 1FFFFh, the low word already written when the high one was computed */
+#define SD(n, v) bi_sd(S_##n, A_##n, (uint32_t)(v))
 #define GBO(n, o) frb(S_##n, (uint16_t)(A_##n + (o)))
 #define GWO(n, o) frw(S_##n, (uint16_t)(A_##n + (o)))
 #define SBO(n, o, v) fwb(S_##n, (uint16_t)(A_##n + (o)), (uint8_t)(v))
@@ -56,12 +59,17 @@ typedef uint32_t fptr;
 #define FOFF(p) ((uint16_t)((p) & 0xFFFF))
 #define FP(n) MKFP(S_##n, A_##n)
 #define GFP(n) MKFP(frw(S_##n, A_##n + 2), frw(S_##n, A_##n))
-#define SFP(n, p) (fww(S_##n, A_##n, FOFF(p)), fww(S_##n, A_##n + 2, FSEG(p)))
+#define SFP(n, p) bi_sd(S_##n, A_##n, (fptr)(p))
 
 static inline uint8_t pb(fptr p, unsigned o) { return frb(FSEG(p), (uint16_t)(FOFF(p) + o)); }
 static inline uint16_t pw(fptr p, unsigned o) { return frw(FSEG(p), (uint16_t)(FOFF(p) + o)); }
 static inline uint32_t pd(fptr p, unsigned o) { return pw(p, o) | (uint32_t)pw(p, o + 2) << 16; }
 static inline fptr pfp(fptr p, unsigned o) { return MKFP(pw(p, o + 2), pw(p, o)); }
+static inline void bi_sd(uint16_t seg, uint16_t off, uint32_t v)
+{
+    fww(seg, off, (uint16_t)v);
+    fww(seg, (uint16_t)(off + 2), (uint16_t)(v >> 16));
+}
 static inline void spb(fptr p, unsigned o, unsigned v) { fwb(FSEG(p), (uint16_t)(FOFF(p) + o), (uint8_t)v); }
 static inline void spw(fptr p, unsigned o, unsigned v) { fww(FSEG(p), (uint16_t)(FOFF(p) + o), (uint16_t)v); }
 static inline void spd(fptr p, unsigned o, uint32_t v)

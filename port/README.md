@@ -538,12 +538,21 @@ with 8000 s of the runner's time, 31 with 10000 s): the same as those.
 On 12 and 23 the two computers play on without an end (12: round 331
 at the pass 150000, 23: round 292). Map 12 compared at the passes
 50000 and 100000 instead: at 50000 the same (the timers' slots too);
-at 100000 the video memory the same, but the timers' slots differ
-(F27EE:2525.., 2534..): the same three timers, the original with slot 2
-free, the port with slot 0 free. timer_set and the loop that runs the
-timers due are the original's instruction for instruction, so the two
-set their timers in another order somewhere between; where, not yet
-found (a run at 75000 was stopped by the host). Map 23 not compared.
+at 100000 the timers' slots differed (F27EE:2525.., 2534..). Found by
+a trace of the timers set and run in both (the runner's -log at
+T0D36:01E7 and T0708:4451, a temporary print in the port; the scratch
+ttrace.sh, ttcmp.py): the same 911989 events to the pass 65534, then
+the port's pass count went from FFFEh to 1FFFFh. bi.h's SD wrote a long
+as two words and computed the value again for the second, so
+SD(passes, GD(passes) + 1) saw the low word already written; SFP had
+the same form. Both take their value once now (bi_sd). The count was
+wrong for that one pass (the next step, 1FFFFh + 1, comes out 10000h
+again), and there every timer waiting was due at once; on the maps 26
+and 31 above (65908 and 91431 passes) that left nothing different at
+their ends, on 12 the slots' order. After the
+change map 12 at 100000 against the same dump of the original: F27EE
+the same, the rest but for the kinds above. The comparisons above were
+not run again. Map 23 not compared.
 Formerly not compared: 12 and 23 (the port alone does
 not reach key_wait within 550 s; map 12 is at round 66 at its pass
 40000, so a long game, not a stall as far as seen; a longer run was
