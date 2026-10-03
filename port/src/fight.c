@@ -83,7 +83,8 @@ static fptr pieces(unsigned kind)
 
 static void piece(int x, int y, unsigned entry)
 {
-    draw_packed(x, y, pfp(pfp(REC, 0x42), 4 * entry), 0, 0, 0x5F, pfp(REC, 0x46));
+    /* the colour base: 5Fh, MOON.EXE's scene_ground has 60h */
+    draw_packed(x, y, pfp(pfp(REC, 0x42), 4 * entry), 0, 0, bi_prog == BI_MOON ? 0x60 : 0x5F, pfp(REC, 0x46));
 }
 
 static void draw_pieces(fptr list, int x0, int dy)

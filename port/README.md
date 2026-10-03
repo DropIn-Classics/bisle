@@ -87,8 +87,10 @@ values and scripts, `unit_script` and `place_units` as MOON.EXE has them, the
 overview's files read again after a scene as MOON.EXE does, in phase.c): a
 game of two computers on map 0 is the original's in all of memory at passes
 957, 958, 1000, 1300, 2000, 2250, 2375, 2440, 2470, 2500, 3000 and 6000
-(MOON's computer step 0Ah sub 3 has one check more: `much_weaker`); video memory differs from pass 958 on (the
-marks' rings, the scene's page: not looked at). Not in the port for MOON: the
+(MOON's computer step 0Ah sub 3 has one check more: `much_weaker`); video memory (all 256 KB) is the
+original's at passes 958, 2000 and 3000 too (`map_loop` reads the cursor library's table at each draw, as
+the original, since the change of phase loads other files over the buffer; the scene's ground pieces are
+drawn in colour base 60h for MOON, 5Fh for BATTLE; not run for 6000, nor for fights of other units). Not in the port for MOON: the
 statistics, the end of a map; MOON.hints' carried names are
 unchecked beyond what the setup uses (see the handoff). The names MOON.hints lacked for
 the port are its own lines now (`name` lines above the carried block:

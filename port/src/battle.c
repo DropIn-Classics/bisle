@@ -1262,7 +1262,6 @@ static void loop_player_pass(int side, unsigned *key, fptr orders, fptr cursor_l
 /* the map's loop, until game_flags' bit 2 is cleared */
 static void map_loop(fptr orders, fptr cursor_lib, fptr pmp, fptr palette)
 {
-    fptr cursors_lib = pfp(FP(lib_cursor), 0x0E);
     unsigned key;
     int i;
 
@@ -1289,7 +1288,7 @@ static void map_loop(fptr orders, fptr cursor_lib, fptr pmp, fptr palette)
             fptr keep = (pw(player_rec(i), 0) & 4) ? pfp(player_rec(i), 5) : 0;
 
             draw_entry((int16_t)pw(CURSOR(i), 0x10), (int16_t)pw(CURSOR(i), 0x12),
-                       pfp(cursors_lib, 4 * pb(CURSOR(i), 0x1B)), FOFF(keep), FSEG(keep),
+                       pfp(pfp(FP(lib_cursor), 0x0E), 4 * pb(CURSOR(i), 0x1B)), FOFF(keep), FSEG(keep),
                        bi_prog == BI_MOON ? 0x40 : 0); /* MOON.EXE adds the colour base 40h */
         }
         effects_start();
