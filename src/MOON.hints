@@ -350,6 +350,8 @@ name DATA:0E77 slots
 name DATA:0E89 slots_perc
 name DATA:03EE input1_counts
 name DATA:04A0 picture_palette
+; T2695:02BB's message, pushed as 0C88h as in BATTLE.EXE (MOON.ASM)
+name DATA:0C88 disk_message
 ; The fight scene's values (F2E5B) by hand: MOON.EXE keeps them in another
 ; order than BATTLE.EXE (read in T2084:0008, 0CF5 and 10B7, the counts
 ; and the two sides' units and shots as the port reads them; not run
@@ -1812,6 +1814,7 @@ name DATA:0AD8 keys_up
 name DATA:0AE8 last_scancode
 name DATA:0AE9 keys0_table
 name DATA:0AEB keys1_table
+; (not mapped) name DATA:0C88 disk_message
 ; the timers (above, at timer_add)
 name DATA:0CBC timers_last
 name DATA:0CBE timers_period_low

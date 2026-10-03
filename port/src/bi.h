@@ -135,8 +135,8 @@ void bi_fatal(const char *text);
 void bi_at(const char *name);
 /* a place a run came through, for $BI_SEEN */
 void bi_seen(const char *what, int n);
-/* a routine not translated yet was reached */
-void bi_todo(const char *name);
+/* main.c: the volume set (0..1, 0 while muted), for the sound's output */
+float bi_volume_gain(void);
 
 /* ---- timer.c: T2354, the timers, the keys, the players' input ---- */
 void t2354_0011(void);              /* set up: the timers, the joysticks, INT 24h */

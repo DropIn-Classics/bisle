@@ -768,6 +768,7 @@
     X(DATA, last_scancode, 0x0AE8, 0x0DC2, 0x0AE8) \
     X(DATA, keys0_table, 0x0AE9, 0x0DC3, 0x0AE9) \
     X(DATA, keys1_table, 0x0AEB, 0x0DC5, 0x0AEB) \
+    X(DATA, disk_message, 0x0C88, 0xFFFF, 0x0C88) \
     X(DATA, timers_last, 0x0CBC, 0x0F96, 0x0CBC) \
     X(DATA, timers_period_low, 0x0CBE, 0x0F98, 0x0CBE) \
     X(DATA, timers_period_high, 0x0CDE, 0x0FB8, 0x0CDE) \
@@ -1346,6 +1347,7 @@
     X(DATA, last_scancode, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, keys0_table, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, keys1_table, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
+    X(DATA, disk_message, BATTLE_DATA, 0xFFFF, MOON_DATA) \
     X(DATA, timers_last, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, timers_period_low, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, timers_period_high, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \

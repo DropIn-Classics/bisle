@@ -95,6 +95,38 @@ static uint8_t rd_byte(void)
     return mem[(rd_work + rd_pos++) & (MEM_SIZE - 1)];
 }
 
+/* T2695:02BB: the message for a disk, until a key.  What is put over the
+ * dots 10 bytes before the second byte after the message's first '|':
+ * with disk_record's second word 0 the disk's name in the record, above 0
+ * the file's name, below 0 the string behind the file's name; from its end
+ * up to the next '|' spaces. */
+static void ask_disk(fptr name)
+{
+    fptr msg = FP(disk_message), src = FP(disk_record) + 4;
+    uint16_t seg = FSEG(msg), di = FOFF(msg), w = GWO(disk_record, 2);
+    uint8_t c;
+
+    while (frb(seg, di++) != 0x7C)
+        ;
+    di = (uint16_t)(di + 1 - 0x0A);
+    if (w) {
+        src = name;
+        if ((int16_t)w < 0) {
+            while (frb(FSEG(src), FOFF(src)))
+                src = MKFP(FSEG(src), FOFF(src) + 1);
+            src = MKFP(FSEG(src), FOFF(src) + 1);
+        }
+    }
+    do {
+        c = frb(FSEG(src), FOFF(src));
+        src = MKFP(FSEG(src), FOFF(src) + 1);
+        fwb(seg, di++, c);
+    } while (c);
+    for (di--; frb(seg, di) != 0x7C; di++)
+        fwb(seg, di, ' ');
+    t262a_000e(msg);
+}
+
 /* The file `name` into memory at `dest`, or into a new block when dest is
  * 0 or FFFF:FFFF; a file that begins TPWM is unpacked (tools/tpwmfiles.py
  * has the format), `work` the 1000h bytes it is read through.  Returns
@@ -115,11 +147,11 @@ fptr load_file(fptr dest, fptr name, fptr work)
         h = file_open(0, name);
         if (h && !GW(file_error))
             break;
-        /* the original asks for the disk here (T2695:02BB) while
-         * disk_record's first word is set, three times */
+        /* the original asks for the disk while disk_record's first word
+         * is set, three times */
         if (--tries == 0 || !GW(disk_record))
             return 0;
-        bi_todo("the question for a disk");
+        ask_disk(name);
     }
     /* the 8 bytes go into the code segment (T2695:03CF) in the original */
     n = dos_read_to(h, head, 8);

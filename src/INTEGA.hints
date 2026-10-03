@@ -894,6 +894,7 @@ name DATA:0DB2 keys_up
 name DATA:0DC2 last_scancode
 name DATA:0DC3 keys0_table
 name DATA:0DC5 keys1_table
+; (not mapped) name DATA:0C88 disk_message
 ; the timers (above, at timer_add)
 name DATA:0F96 timers_last
 name DATA:0F98 timers_period_low

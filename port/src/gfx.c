@@ -118,15 +118,16 @@ int t2593_0006(void)
 
 /* T2485:0001: the mode (the port has the 320 by 200 one: the others the
  * routine knows, 360 by 240 and 360 by 480, the program does not ask
- * for), the CRTC's ports, the pages */
+ * for: its only call, in T0708 (battle.c here), passes
+ * 140h and C8h), the CRTC's ports, the pages */
 int t2485_0001(int width, int height, int unused, int second, int unused2, int pages)
 {
     unsigned i;
 
     (void)unused;
+    (void)width;
+    (void)height;
     SW(old_video_mode, 0x5003);         /* INT 10h AH=0Fh: mode 3, 80 columns */
-    if (width != 0x140 && height != 0xC8)
-        bi_todo("a mode of 360 pixels");
     vga_set_mode(0x13);
     vga_outb(0x3C4, 4);                 /* the planes unchained */
     vga_outb(0x3C5, vga_inb(0x3C5) & 0xF7);
@@ -310,8 +311,24 @@ void restore_sprites(void)
         uint16_t si = vrw(seg, (uint16_t)(bp - 2)), di = vrw(seg, (uint16_t)(bp - 8));
         unsigned bytes = vrw(seg, (uint16_t)(bp - 4)), rows = vrw(seg, (uint16_t)(bp - 6)), x;
 
-        if (!si)                        /* T2467:007B: an item of another kind */
-            bi_todo("restore_sprites: a block from the second page");
+        if (!si) {
+            /* T2467:007B: an item of 14 bytes, a block copied from the
+             * page at A400h to the same place (T2475:0006: rows of 28h
+             * bytes; it leaves the latches off for the items after it, as
+             * here).  Nothing in BATTLE.EXE was found to make one (read in
+             * BATTLE.ASM, not run). */
+            latches(1);
+            do {
+                for (x = 0; x < bytes; x++) {
+                    vrb(0xA400, di);
+                    vwb(page, di++, 0);
+                }
+                di = (uint16_t)(di + 0x28 - bytes);
+            } while (--rows);
+            latches(0);
+            bp = (uint16_t)(bp - 0x0E);
+            continue;
+        }
         do {
             for (x = 0; x < bytes; x++) {
                 vrb(seg, si++);
@@ -888,6 +905,52 @@ static fptr find_chunk(uint16_t seg, uint16_t *di, unsigned *n, unsigned first, 
     return 0;
 }
 
+/* T2550:02E5: a picture wider than 360 and higher than 240 pixels (none of
+ * the game's files is; read in BATTLE.ASM, not run).  Only compression 1:
+ * the runs (as below) go byte after byte to page_drawn:0 with the map mask
+ * as it is, h rows of (w + 7) / 8 bytes, a run over a row's end counted
+ * into the next; both pointers step on by 1000h paragraphs where their
+ * offset wraps.  What would land above A000:FFFF is not on the card in this
+ * mode and is left out here. */
+static void draw_large(fptr body, unsigned w, unsigned h, unsigned packing)
+{
+    uint16_t ss = FSEG(body), so = (uint16_t)(FOFF(body) + 8);
+    uint16_t ds = GW(page_drawn), d = 0;
+    int16_t x = 0, y = 0, row = (int16_t)((w + 7) >> 3);
+
+    if (packing != 1)
+        return;
+    do {
+        int8_t c = (int8_t)frb(ss, so);
+        int16_t run = c >= 0 ? c + 1 : 1 - c;
+        uint8_t v = 0;
+
+        if (!++so)
+            ss += 0x1000;
+        if (c < 0) {
+            v = frb(ss, so);
+            if (!++so)
+                ss += 0x1000;
+        }
+        for (int16_t k = run; k; k--) {
+            if (c >= 0) {
+                v = frb(ss, so);
+                if (!++so)
+                    ss += 0x1000;
+            }
+            if (ds < 0xB000)
+                vwb(ds, d, v);
+            if (!++d)
+                ds += 0x1000;
+        }
+        x = (int16_t)(x + run);
+        if (x >= row) {
+            x = 0;
+            y++;
+        }
+    } while (y < (int16_t)h);
+}
+
 int load_picture(fptr dest, fptr name, fptr work, int *width, int *height)
 {
     fptr at, bmhd, cmap, body;
@@ -929,8 +992,10 @@ int load_picture(fptr dest, fptr name, fptr work, int *width, int *height)
         n = pb(cmap, 6) << 8 | pb(cmap, 7);
         for (i = 0; i < n; i++)
             SBO(picture_palette, i, pb(cmap, 8 + i));
-        if ((int)w > 0x168 && (int)h > 0xF0)
-            bi_todo("a picture larger than a page");       /* T2550:02E5 */
+        if ((int16_t)w > 0x168 && (int16_t)h > 0xF0) {
+            draw_large(body, w, h, packing);
+            goto out;
+        }
         si = 8;
         if (packing != 1)
             goto out;

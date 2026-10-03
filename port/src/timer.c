@@ -36,7 +36,8 @@ static void call_handler(fptr handler)
             handlers[i].fn();
             return;
         }
-    bi_todo("a timer's handler");
+    /* every timer the port adds has its handler (timer_handler first) */
+    bi_fatal("call_handler: a timer without a handler");
 }
 
 /* T2354:063C, timer 0: the INT 08h handler that was there before (the

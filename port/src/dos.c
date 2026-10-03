@@ -462,11 +462,3 @@ void bi_fatal(const char *text)
     plat_message(text);
     bi_exit(1);
 }
-
-void bi_todo(const char *name)
-{
-    char text[160];
-
-    snprintf(text, sizeof text, "This part of the game is not in the port yet (%s).", name);
-    bi_fatal(text);
-}
