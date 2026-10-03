@@ -190,6 +190,25 @@ static void apply_keys(void)
     pad_set_keys(&play_keys);
 }
 
+/* the controller's button that sends the key `code` (a make code), as
+ * the game's letters can show it; NULL when none does or no controller
+ * is in use */
+const char *bi_pad_name(int code)
+{
+    static const char *const shown[PAD_BUTTONS] = {
+        "A", "B", "X", "Y", "BACK", "START", "L3", "R3", "LB", "RB", "LT", "RT",
+        "UP", "DOWN", "LEFT", "RIGHT",
+    };
+    int i;
+
+    if (!pad_in_use())
+        return NULL;
+    for (i = 0; i < PAD_BUTTONS; i++)
+        if (play_keys[i][0] == code || play_keys[i][1] == code)
+            return shown[i];
+    return NULL;
+}
+
 static void apply_sound(void)
 {
     plat_audio_lock();

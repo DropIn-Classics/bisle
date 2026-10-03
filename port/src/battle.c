@@ -346,6 +346,28 @@ static void key_message(int number, int side, int passes_shown)
 
 /* the keys that are not a player's: the version, the music and the
  * effects on and off, the joysticks, the mouse, Esc */
+/* QUIT THE GAME ? (Y) and CANCEL : PRESS BUTTON (messages 0Ch, 0Dh) with
+ * the controller's buttons for Y and fire named, when a controller is in
+ * use and has both (the port's; the original names the keys only): 1 when
+ * shown */
+static int quit_for_pad(fptr ks)
+{
+    const char *yes = bi_pad_name(pb(ks, 0x18)), *no = bi_pad_name(0x1C);
+    char text[32];
+
+    if (!yes && bi_quit_yz)
+        yes = bi_pad_name(0x15) ? bi_pad_name(0x15) : bi_pad_name(0x2C);
+    if (!no)
+        no = bi_pad_name(pb(ks, 1));
+    if (!yes || !no)
+        return 0;
+    snprintf(text, sizeof text, "QUIT THE GAME ? (%s)", yes);
+    show_text(text, 0);
+    snprintf(text, sizeof text, "CANCEL : PRESS %s", no);
+    show_text(text, 1);
+    return 1;
+}
+
 static void loop_keys(unsigned key)
 {
     fptr ks = GFP(key_set);
@@ -405,8 +427,10 @@ static void loop_keys(unsigned key)
         if (GW(game_flags2) & 0x200)
             return;
         /* QUIT THE GAME ? (Y): Y leaves the map, fire or space goes on */
-        show_message(0x0C, 0);
-        show_message(0x0D, 1);
+        if (!quit_for_pad(ks)) {
+            show_message(0x0C, 0);
+            show_message(0x0D, 1);
+        }
         flip_page();
         copy_page();
         for (;;) {

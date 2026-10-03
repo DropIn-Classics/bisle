@@ -228,7 +228,12 @@ What the port does otherwise than a PC:
   BATTLE.EXE's data), the game's other keys staying; a controller's
   buttons each one of the players' actions or Esc, Enter, F1 ("change
   mode": the original takes it from the keyboard only), Y, N, D. Player 1's fire on a button sends Enter with it: the
-  menus (T1090) confirm with Enter only, not with the players' fire. Checked:
+  menus (T1090) confirm with Enter only, not with the players' fire.
+  While a controller is in use (pad.h's pad_in_use: the last press a
+  button's) the question QUIT THE GAME (messages 0Ch and 0Dh) names the
+  buttons that send Y and fire, as the port's texts drawn as the game
+  draws its messages (show_text in orders.c, the text at 0050:0100 below
+  the program); with the keyboard, and headless, the original's. Checked:
   the build, map 03 at its 100th pass headless as before (video memory 0
   bytes, the heap the one byte). Not checked: the window's sound, the
   keys and a controller in play.

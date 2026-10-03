@@ -26,6 +26,21 @@ void show_message(int number, int side)
     SW(game_flags, GW(game_flags) | (side ? 8 : 4));
 }
 
+/* a player's message line with a text of the port's (as show_message:
+ * the text in the megabyte below the program, where the original has
+ * none) */
+void show_text(const char *s, int side)
+{
+    fptr text = MKFP(0x0050, 0x0100);
+
+    show_message(-1, side);
+    strncpy(fstr(text), s, 0x17);
+    fstr(text)[0x17] = 0;
+    SW(draw_colour, side ? 0x12 : 3);
+    draw_chars((side ? 0xA0 : 0) + 0x4C - 3 * (int)strlen(fstr(text)), 0xBD, text);
+    SW(game_flags, GW(game_flags) | (side ? 8 : 4));
+}
+
 /* the line of a unit: its count, EXP.LIB's entry for its experience, its
  * serial with st, nd, rd or th (not for a unit of nobody), its type's
  * second name */

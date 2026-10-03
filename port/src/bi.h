@@ -294,6 +294,10 @@ void list_reach(fptr list, int side, int unit);
 
 /* ---- orders.c: T0B70, T11FD ---- */
 void show_message(int number, int side);
+void show_text(const char *s, int side);
+/* main.c: the controller's button for a key, NULL when none or no
+ * controller in use */
+const char *bi_pad_name(int code);
 void unit_line(int unit, int side);
 int give_order(fptr cur, fptr map, int side);
 void order_release(fptr cur, int side);
