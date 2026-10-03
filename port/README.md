@@ -513,12 +513,16 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   the heap the same, the data segment above DATA:2000 and the code
   segments the same but for the kinds of differences above (the mouse,
   the timers, input counts, the interrupt's stack leftovers). The other
-  maps 9, 10, 13 to 16, 18 to 21 and 24 (2026-10-03, the same way: the
-passes 29846, 32153, 18066, 7921, 12499, 22826, 7862, 23404, 16781,
-9650 and 14853): the same as those. Not compared: 11 and 22 (the
-original did not reach the port's last pass, 45172 and 44800, within
-the runner's 3000 s), 12 and 23 (the scratch cvcmap.py gave no last
-pass for them; not looked into), 25 to 31 (not run). The setup screen's item "Title" was looked
+  maps 9, 10, 11, 13 to 16, 18 to 21, 24, 27, 28 and 30 (2026-10-03, the
+same way: the passes 29846, 32153, 45172, 18066, 7921, 12499, 22826,
+7862, 23404, 16781, 9650, 14853, 18917, 16933 and 3794; 11 with 8000 s
+of the runner's time): the same as those. Not compared: 22, 25, 26, 29
+and 31 (the original did not reach the port's last pass, 44800, 42232,
+65908, 50509 and 91431, within the runner's 3000 s; the run with 8000 s
+was stopped by the host after map 11), 12 and 23 (the port alone does
+not reach key_wait within 550 s; map 12 is at round 66 at its pass
+40000, so a long game, not a stall as far as seen; a longer run was
+stopped by the host). The setup screen's item "Title" was looked
   at in the headless build's picture (`DK_DUMP`, Esc scripted): it is
   there under "The game", showing "Battle Isle"; changed to the data
   disk and started from there: not tried.
