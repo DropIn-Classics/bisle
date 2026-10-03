@@ -182,6 +182,10 @@ static void apply_keys(void)
         } else if (a >= P_ESC && a < P_COUNT)
             code = other_key[a - P_ESC];
         play_keys[i][0] = (unsigned char)code;
+        /* the menus (T1090) take Enter, not the players' fire: player 1's
+         * fire sends it too (in a map Enter is player 1's fire as well) */
+        if (a == P_KEYS + K_P1_FIRE && code != 0x1C)
+            play_keys[i][1] = 0x1C;
     }
     pad_set_keys(&play_keys);
 }
