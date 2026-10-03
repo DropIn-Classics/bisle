@@ -866,7 +866,15 @@
     X(F0728, intro_pic_list, 0xFFFF, 0x068A, 0xFFFF) \
     X(F0728, intro_vowels, 0xFFFF, 0x0705, 0xFFFF) \
     X(F07D4, intro_effects, 0xFFFF, 0x0000, 0xFFFF) \
+    X(T070B, moon_win_film, 0xFFFF, 0xFFFF, 0x4703) \
+    X(T070B, moon_end_film, 0xFFFF, 0xFFFF, 0x49ED) \
     X(T27D5, unpack_mem, 0xFFFF, 0xFFFF, 0x0008) \
+    X(F280C, name_win_ani, 0xFFFF, 0xFFFF, 0x002D) \
+    X(F280C, name_win_pal, 0xFFFF, 0xFFFF, 0x0049) \
+    X(F280C, name_win_snd, 0xFFFF, 0xFFFF, 0x0065) \
+    X(F280C, name_end_ani, 0xFFFF, 0xFFFF, 0x0081) \
+    X(F280C, name_end_pal, 0xFFFF, 0xFFFF, 0x0089) \
+    X(F280C, name_end_snd, 0xFFFF, 0xFFFF, 0x0091) \
     X(F280C, parts_stored, 0xFFFF, 0xFFFF, 0x0099) \
     X(F280C, overview_scale, 0xFFFF, 0xFFFF, 0x009B) \
     X(F280C, overview_data, 0xFFFF, 0xFFFF, 0x009D) \
@@ -874,6 +882,7 @@
     X(F280C, name_mapinfo, 0xFFFF, 0xFFFF, 0x00CC) \
     X(F280C, name_map02, 0xFFFF, 0xFFFF, 0x00D8) \
     X(F280C, name_map04, 0xFFFF, 0xFFFF, 0x00E2) \
+    X(F280C, end_text, 0xFFFF, 0xFFFF, 0x00EC) \
     X(F2825, name_statmap, 0xFFFF, 0xFFFF, 0x0048) \
     X(F2825, parts_table, 0xFFFF, 0xFFFF, 0x0050) \
 
@@ -1445,7 +1454,15 @@
     X(F0728, intro_pic_list, 0xFFFF, INTEGA_F0728, 0xFFFF) \
     X(F0728, intro_vowels, 0xFFFF, INTEGA_F0728, 0xFFFF) \
     X(F07D4, intro_effects, 0xFFFF, INTEGA_F07D4, 0xFFFF) \
+    X(T070B, moon_win_film, 0xFFFF, 0xFFFF, MOON_T070B) \
+    X(T070B, moon_end_film, 0xFFFF, 0xFFFF, MOON_T070B) \
     X(T27D5, unpack_mem, 0xFFFF, 0xFFFF, MOON_T27D5) \
+    X(F280C, name_win_ani, 0xFFFF, 0xFFFF, MOON_F280C) \
+    X(F280C, name_win_pal, 0xFFFF, 0xFFFF, MOON_F280C) \
+    X(F280C, name_win_snd, 0xFFFF, 0xFFFF, MOON_F280C) \
+    X(F280C, name_end_ani, 0xFFFF, 0xFFFF, MOON_F280C) \
+    X(F280C, name_end_pal, 0xFFFF, 0xFFFF, MOON_F280C) \
+    X(F280C, name_end_snd, 0xFFFF, 0xFFFF, MOON_F280C) \
     X(F280C, parts_stored, 0xFFFF, 0xFFFF, MOON_F280C) \
     X(F280C, overview_scale, 0xFFFF, 0xFFFF, MOON_F280C) \
     X(F280C, overview_data, 0xFFFF, 0xFFFF, MOON_F280C) \
@@ -1453,6 +1470,7 @@
     X(F280C, name_mapinfo, 0xFFFF, 0xFFFF, MOON_F280C) \
     X(F280C, name_map02, 0xFFFF, 0xFFFF, MOON_F280C) \
     X(F280C, name_map04, 0xFFFF, 0xFFFF, MOON_F280C) \
+    X(F280C, end_text, 0xFFFF, 0xFFFF, MOON_F280C) \
     X(F2825, name_statmap, 0xFFFF, 0xFFFF, MOON_F2825) \
     X(F2825, parts_table, 0xFFFF, 0xFFFF, MOON_F2825) \
 

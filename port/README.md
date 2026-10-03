@@ -92,8 +92,15 @@ game of two computers on map 0 is the original's in all of memory at passes
 (MOON's computer step 0Ah sub 3 has one check more: `much_weaker`); video memory (all 256 KB) is the
 original's at passes 958, 2000 and 3000 too (`map_loop` reads the cursor library's table at each draw, as
 the original, since the change of phase loads other files over the buffer; the scene's ground pieces are
-drawn in colour base 60h for MOON, 5Fh for BATTLE; not run for 6000, nor for fights of other units). Not in the port for MOON: the
-statistics, the end of a map; MOON.hints' carried names are
+drawn in colour base 60h for MOON, 5Fh for BATTLE; not run for 6000, nor for fights of other units). MOON's films at a map's end are its own routines (T070B:4703 `moon_win_film`, HQ.ANI or TOT.ANI, and
+T070B:49ED `moon_end_film`, END.ANI and five lines of text, in battle.c where BATTLE.EXE plays play_anim
+and end_credits). Checked with the map's end poked in (game_flags, F2902:4155, linear 2D8D5, 04CFh at
+pass 30 of map 0, two computers, made 04DDh, 24DDh for the other film, 04FDh for the last map): the
+1st, 40th and 100th frame of HQ.ANI, the 1st, 60th and 120th of TOT.ANI, the 1st, 40th and 76th of
+END.ANI, the text before its wait of 2000 (T070B:4D1D) and the menu's next entry (T1151:0003, 2nd):
+video memory and the far data segments the same as the original's, DATA but for the kinds above and
+the C library's. The sound was not compared, a real win (not poked) not run. Not in the port for
+MOON: the statistics; MOON.hints' carried names are
 unchecked beyond what the setup uses (see the handoff). The names MOON.hints lacked for
 the port are its own lines now (`name` lines above the carried block:
 make_path's tables, the menus' texts, the statistics' and the logo's

@@ -1341,6 +1341,102 @@ static void map_loop(fptr orders, fptr cursor_lib, fptr pmp, fptr palette)
     }
 }
 
+/* MOON.EXE's films (T070B:4703 and 49ED): three files of ANIM loaded one
+ * behind the other at `buffer` (T26F8:0000 is load_file that gives the
+ * size), the frames ("VDIF") one after the other, a frame each `ticks`
+ * ticks; the first is drawn behind a black palette and faded in; -1
+ * when a file is missing */
+static int moon_film(fptr buffer, fptr work, fptr ani, fptr pal, fptr snd, int frames, int ticks, int first_wait,
+                     fptr *start)
+{
+    fptr anim, palette;
+    long n;
+    int i;
+
+    for (i = 0; i < 0x300; i++)
+        SBO(picture_palette, i, 0);
+    set_palette(0xFF, FP(picture_palette));
+    SW(draw_colour, 0);
+    clear_page();
+    check_vga_disk();
+    n = t2624_0006(buffer, make_path(1, 3, ani, -1), work, NULL);
+    if (n == -1)
+        return -1;
+    anim = *start = buffer;
+    buffer = hadd(buffer, n);
+    n = t2624_0006(buffer, make_path(1, 3, pal, -1), work, NULL);
+    if (n == -1)
+        return -1;
+    palette = buffer;
+    buffer = hadd(buffer, n);
+    if (load_song(buffer, make_path(1, 3, snd, -1), work) == -1)
+        return -1;
+    anim = t24c5_002e(0, 0, anim);
+    flip_page();
+    copy_page();
+    for (i = 0; i < 0x300; i++)
+        SBO(picture_palette, i, pb(palette, i));
+    fade_in();
+    play_song(0, 0);
+    if (first_wait)
+        t0d36_000f(first_wait);
+    for (i = 0; i < frames; i++) {
+        SW(tick_count, 0);
+        anim = t24c5_002e(0, 0, anim);
+        flip_page();
+        copy_page();
+        while ((int16_t)GW(tick_count) < ticks)
+            wait_retrace();
+    }
+    return 0;
+}
+
+/* T070B:4703: a map won, where BATTLE.EXE plays play_anim 2 or 3: HQ.ANI
+ * (0: the headquarters taken; 87h frames of 2 ticks after a wait of 300)
+ * or TOT.ANI (1: the other's units gone; 80h frames of 6 ticks) */
+static void moon_win_film(fptr buffer, fptr work, int which)
+{
+    fptr start;
+
+    make_path(1, 3, 0, -1);
+    if (moon_film(buffer, work, MKFP(S_name_win_ani, A_name_win_ani + 0x0E * which),
+                  MKFP(S_name_win_pal, A_name_win_pal + 0x0E * which),
+                  MKFP(S_name_win_snd, A_name_win_snd + 0x0E * which),
+                  which ? 0x80 : 0x87, which ? 6 : 2, which ? 0 : 0x12C, &start))
+        return;
+    t0d36_000f(0xDC);
+    stop_song();
+    fade_out();
+}
+
+/* T070B:49ED: the last map won, where BATTLE.EXE plays play_anim 4 and
+ * end_credits: END.ANI (4Ch frames of 6 ticks), then its first frame
+ * again with five lines of text (MOON's codes asked for) for 2000 ticks */
+static void moon_end_film(fptr buffer, fptr work)
+{
+    static const uint16_t at[5][3] = {
+        { 0x36, 0x78, 0x00 }, { 0x48, 0x84, 0x2A }, { 0x48, 0x8C, 0x4E }, { 0x5E, 0x9B, 0x71 }, { 0x5E, 0xA5, 0x8B },
+    };
+    fptr start;
+    int i;
+
+    if (moon_film(buffer, work, FP(name_end_ani), FP(name_end_pal), FP(name_end_snd), 0x4C, 6, 0x12C, &start))
+        return;
+    t0d36_000f(0x3E8);
+    stop_song();
+    fade_out();
+    t0d36_000f(0x258);
+    t24c5_002e(0, 0, start);
+    SW(draw_colour, 1);
+    for (i = 0; i < 5; i++)
+        draw_chars(at[i][0], at[i][1], MKFP(S_end_text, A_end_text + at[i][2]));
+    flip_page();
+    copy_page();
+    fade_in();
+    t0d36_000f(0x7D0);
+    fade_out();
+}
+
 /* main: the switch /m (the third palette in the map, and another text
  * than "Color." at the start).  The original's /s, the PC speaker's
  * sound, is not taken: the port plays the AdLib's. */
@@ -1421,13 +1517,25 @@ void battle_main(int argc, char **argv)
                 SW(draw_colour, 0);
                 clear_page();
                 check_vga_disk();
-                play_anim((GW(game_flags) & 0x2000) ? 3 : 2, spare, 0, 0, 1, path);
-                t0d36_000f(0x64);
-                fade_out();
+                if (bi_prog == BI_MOON) {
+                    bi_at("moon_win_film");
+                    moon_win_film(hadd(spare, 0x2710), spare, (GW(game_flags) & 0x2000) ? 1 : 0);
+                } else {
+                    play_anim((GW(game_flags) & 0x2000) ? 3 : 2, spare, 0, 0, 1, path);
+                    t0d36_000f(0x64);
+                    fade_out();
+                }
             }
             bi_at("after_map");
             after_map(spare);
-            if (GW(game_flags) & 0x20) {
+            if ((GW(game_flags) & 0x20) && bi_prog == BI_MOON) {
+                bi_at("moon_end_film");
+                moon_end_film(hadd(work, 0x2710), work);
+                SW(draw_colour, 0);
+                clear_page();
+                flip_page();
+                clear_page();
+            } else if (GW(game_flags) & 0x20) {
                 /* the last map: the ending and the credits */
                 fptr path = make_path(1, 3, 0, -1);
 

@@ -321,6 +321,16 @@ name F280C:00A1 mapinfo_data
 name F280C:00CC name_mapinfo
 name F280C:00D8 name_map02
 name F280C:00E2 name_map04
+; read in MOON.ASM (T070B:4703, T070B:49ED, the main loop's two calls after map_loop, where BATTLE.EXE calls play_anim 2 or 3, then play_anim 4 and end_credits): the films of a map won, 0Eh bytes a film (0 the headquarters taken, 1 all units gone), the ending's three names, its five lines of text at EC, 116, 13A, 15D and 177
+name F280C:002D name_win_ani
+name F280C:0049 name_win_pal
+name F280C:0065 name_win_snd
+name F280C:0081 name_end_ani
+name F280C:0089 name_end_pal
+name F280C:0091 name_end_snd
+name F280C:00EC end_text
+name T070B:4703 moon_win_film
+name T070B:49ED moon_end_film
 name F2825:0048 name_statmap
 name F2825:0050 parts_table
 ; the computer player's tables as MOON's computer_start (T1867:01AE) clears them, in F2D2D: the states 0Ch bytes a player, the move records 9 bytes a unit (the attack records, named below in the carry, are at 00AC), the keys' scripts 20h a player (the carry left all three unmapped)
