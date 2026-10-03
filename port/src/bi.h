@@ -295,6 +295,7 @@ void list_reach(fptr list, int side, int unit);
 /* ---- orders.c: T0B70, T11FD ---- */
 void show_message(int number, int side);
 void show_text(const char *s, int side);
+fptr pad_box_text(fptr text);
 /* main.c: the controller's button for a key, NULL when none or no
  * controller in use */
 const char *bi_pad_name(int code);

@@ -1,6 +1,7 @@
 /* orders.c - BATTLE.EXE's T0B70 and T11FD: an order given in the attack
  * phase, and the line below a player's window (a message, a unit).
  */
+#include <stdio.h>
 #include <string.h>
 #include "bi.h"
 
@@ -39,6 +40,23 @@ void show_text(const char *s, int side)
     SW(draw_colour, side ? 0x12 : 3);
     draw_chars((side ? 0xA0 : 0) + 0x4C - 3 * (int)strlen(fstr(text)), 0xBD, text);
     SW(game_flags, GW(game_flags) | (side ? 8 : 4));
+}
+
+/* a box's text (t262a_000e's) with PRESS ANY KEY made PRESS and the
+ * button that sends Enter while a controller is in use: a copy at
+ * 0050:0140 below the program; else the text itself */
+fptr pad_box_text(fptr text)
+{
+    static const char any[] = "PRESS ANY KEY";
+    const char *button = bi_pad_name(0x1C), *s = fstr(text), *at = strstr(s, any);
+    fptr out = MKFP(0x0050, 0x0140);
+    char buf[0x40];
+
+    if (!button || !at)
+        return text;
+    snprintf(buf, sizeof buf, "%.*sPRESS %s%s", (int)(at - s), s, button, at + sizeof any - 1);
+    strcpy(fstr(out), buf);
+    return out;
 }
 
 /* the line of a unit: its count, EXP.LIB's entry for its experience, its

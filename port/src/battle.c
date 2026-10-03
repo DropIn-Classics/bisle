@@ -290,7 +290,7 @@ static void map_setup(fptr work0, fptr *palette, fptr *orders, fptr *cursor_lib,
     SB(remove_depth, 0);
     if (GW(game_flags) & 0x200) {
         /* a saved game */
-        t262a_000e(MKFP(SEG(F2736), 0));
+        t262a_000e(pad_box_text(MKFP(SEG(F2736), 0)));
         load_game(*palette);
         SW(game_flags, GW(game_flags) & ~0x200);
     }
@@ -1164,8 +1164,20 @@ static void loop_change(fptr cur, int bits, int side, unsigned *key, fptr orders
         flip_page();
         copy_page();
     } else {
-        show_message(0x20, 0);
-        show_message(0x0D, 1);
+        /* F1 : CHANGE MODE and CANCEL : PRESS BUTTON, or with the
+         * controller's buttons named */
+        const char *f1 = bi_pad_name(pb(ks, 0x0C)), *no = bi_pad_name(0x1C);
+        char text[32];
+
+        if (f1 && no) {
+            snprintf(text, sizeof text, "%s : CHANGE MODE", f1);
+            show_text(text, 0);
+            snprintf(text, sizeof text, "CANCEL : PRESS %s", no);
+            show_text(text, 1);
+        } else {
+            show_message(0x20, 0);
+            show_message(0x0D, 1);
+        }
     }
 }
 

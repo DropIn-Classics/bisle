@@ -233,7 +233,12 @@ What the port does otherwise than a PC:
   button's) the question QUIT THE GAME (messages 0Ch and 0Dh) names the
   buttons that send Y and fire, as the port's texts drawn as the game
   draws its messages (show_text in orders.c, the text at 0050:0100 below
-  the program); with the keyboard, and headless, the original's. Checked:
+  the program); with the keyboard, and headless, the original's.
+  The same for F1 : CHANGE MODE (message 20h, with 0Dh) and the boxes
+  with PRESS ANY KEY (INSERT SAVE DISK at a saved game's load, the
+  question for a disk): there the button that sends Enter is named
+  (pad_box_text, the text copied to 0050:0140). Messages 0..4Fh were
+  looked through for keys named: only 0Ch, 0Dh and 20h. Checked:
   the build, map 03 at its 100th pass headless as before (video memory 0
   bytes, the heap the one byte). Not checked: the window's sound, the
   keys and a controller in play.

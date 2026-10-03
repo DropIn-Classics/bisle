@@ -124,7 +124,7 @@ static void ask_disk(fptr name)
     } while (c);
     for (di--; frb(seg, di) != 0x7C; di++)
         fwb(seg, di, ' ');
-    t262a_000e(msg);
+    t262a_000e(pad_box_text(msg));
 }
 
 /* The file `name` into memory at `dest`, or into a new block when dest is
