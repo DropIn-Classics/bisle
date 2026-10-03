@@ -530,13 +530,13 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   the heap the same, the data segment above DATA:2000 and the code
   segments the same but for the kinds of differences above (the mouse,
   the timers, input counts, the interrupt's stack leftovers). The other
-  maps 9, 10, 11, 13 to 16, 18 to 22, 24, 25, 27, 28 and 30 (2026-10-03,
-the same way: the passes 29846, 32153, 45172, 18066, 7921, 12499, 22826,
-7862, 23404, 16781, 9650, 44800, 14853, 42232, 18917, 16933 and 3794;
-11, 22 and 25 with 8000 s of the runner's time): the same as those. Not
-compared: 26, 29 and 31 (the port's last passes 65908, 50509 and 91431,
-beyond the runner's 3000 s; the runs with 8000 s were stopped by the
-host, which ran low on memory), 12 and 23 (the port alone does
+  maps 9 to 11, 13 to 16, 18 to 22 and 24 to 30 (2026-10-03, the same
+way: the passes 29846, 32153, 45172, 18066, 7921,
+12499, 22826, 7862, 23404, 16781, 9650, 44800, 14853, 42232, 65908,
+18917, 16933, 50509 and 3794; 11, 22, 25, 26 and 29 with 8000 s of the
+runner's time): the same as those. Not compared: 31 (the port's last
+pass 91431; the run with 10000 s was stopped by the host, which ran
+low on memory), 12 and 23 (the port alone does
 not reach key_wait within 550 s; map 12 is at round 66 at its pass
 40000, so a long game, not a stall as far as seen; a longer run was
 stopped by the host). The setup screen's item "Title" was looked
