@@ -491,10 +491,12 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   scores' wait (key_wait, its 100th): the video memory and the memory
   the same but for the kinds above; at the scores the two pages come out
   exchanged, as in ISLE (the Enter a pass of the name's loop apart).
-  The statistics' own wait (after.c, before fade_out) was passed in
-  neither before the name was asked for, so the statistics' screen
-  itself was not compared; why the poke leaves it out was not looked
-  into. A game of two computers that ends by itself waits in key_wait
+  The statistics are left out there because after_map returns at once
+  while the round is 0. Poked at the 5000th pass instead (round 5), the
+  statistics' screen at its wait's 100th pass: won (DDh: rating 845, the
+  next code WATCH) and lost (CDh: MISSION NOT COMPLETED, rating 0), the
+  video memory the same and the memory the same but for the kinds above
+  (the C library's ZEROS, 7 and 8 bytes). A game of two computers that ends by itself waits in key_wait
   for ever: neither a key given by time (Enter, space at 300 s) nor one
   at key_wait's passes (the loop clears it at once) ended it, in the
   original or the port; why was not looked into.
