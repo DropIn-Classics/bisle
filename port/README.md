@@ -535,7 +535,16 @@ way: the passes 29846, 32153, 45172, 18066, 7921,
 12499, 22826, 7862, 23404, 16781, 9650, 44800, 14853, 42232, 65908,
 18917, 16933, 50509 and 3794, and 31 at 91431; 11, 22, 25, 26 and 29
 with 8000 s of the runner's time, 31 with 10000 s): the same as those.
-Not compared: 12 and 23 (the port alone does
+On 12 and 23 the two computers play on without an end (12: round 331
+at the pass 150000, 23: round 292). Map 12 compared at the passes
+50000 and 100000 instead: at 50000 the same (the timers' slots too);
+at 100000 the video memory the same, but the timers' slots differ
+(F27EE:2525.., 2534..): the same three timers, the original with slot 2
+free, the port with slot 0 free. timer_set and the loop that runs the
+timers due are the original's instruction for instruction, so the two
+set their timers in another order somewhere between; where, not yet
+found (a run at 75000 was stopped by the host). Map 23 not compared.
+Formerly not compared: 12 and 23 (the port alone does
 not reach key_wait within 550 s; map 12 is at round 66 at its pass
 40000, so a long game, not a stall as far as seen; a longer run was
 stopped by the host). The setup screen's item "Title" was looked
