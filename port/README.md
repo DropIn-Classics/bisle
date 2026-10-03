@@ -97,9 +97,14 @@ MOON's other maps, two computers each (scratch mcvall.sh, 2026-10-03), compared 
 segments and video memory): three more differences of MOON's computer found and done: computer_assess
 step 1 (T18B8:0FF9) leaves out the three +19h for a type with 20h in its +10h and adds the values of
 the units one holds (computer.c); computer_plan step 1 sub 1 leaves out units by 0C040h, not 0C048h,
-and step 0Bh sub 2 does not leave out a unit with 20h in its +6 (plan.c). Now the same at pass 1000:
-maps 0, 1, 2, 4, 9, 11 to 13, 15 to 19, 21, 23 to 33 (16, 17, 19, 23 to 33 already before these
-changes, and not run again after them). Not yet: 3, 5, 6, 7, 8, 10, 14, 20, 22. MOON's films at a map's end are its own routines (T070B:4703 `moon_win_film`, HQ.ANI or TOT.ANI, and
+and step 0Bh subs 1 and 2 do not leave out a unit with 20h in its +6, step 1 sub 3's 46h for a
+unit whose +1 is above 0, not above 1 (plan.c); cost_map makes a building's square (ground 540h)
+no way for a unit of two squares (reach.c, T0C0E:0BBB); a type's big picture is placed by MOON's
+two tables of signed bytes, `bigunit_dx` and `bigunit_dy` (shop.c, T154F:0C9E), not by the
+type's +18h. Found by the first pass that differs (scratch mbis.sh) and the routines' code
+compared with BATTLE's (scratch rdiffs.py). With them all 34 maps (0 to 33) are the
+original's at pass 1000 in the far data segments and the video memory (one run each with the same
+build). Not compared: later passes but on map 0, a map played to its end. MOON's films at a map's end are its own routines (T070B:4703 `moon_win_film`, HQ.ANI or TOT.ANI, and
 T070B:49ED `moon_end_film`, END.ANI and five lines of text, in battle.c where BATTLE.EXE plays play_anim
 and end_credits). Checked with the map's end poked in (game_flags, F2902:4155, linear 2D8D5, 04CFh at
 pass 30 of map 0, two computers, made 04DDh, 24DDh for the other film, 04FDh for the last map): the

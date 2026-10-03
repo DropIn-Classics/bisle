@@ -885,6 +885,8 @@
     X(F280C, end_text, 0xFFFF, 0xFFFF, 0x00EC) \
     X(F2825, name_statmap, 0xFFFF, 0xFFFF, 0x0048) \
     X(F2825, parts_table, 0xFFFF, 0xFFFF, 0x0050) \
+    X(F28F3, bigunit_dx, 0xFFFF, 0xFFFF, 0x000C) \
+    X(F28F3, bigunit_dy, 0xFFFF, 0xFFFF, 0x0027) \
 
 /* X(SEG, name, BATTLE, INTEGA, MOON): the frame of the name segment in each program */
 #define BI_FRAMES(X) \
@@ -1473,5 +1475,7 @@
     X(F280C, end_text, 0xFFFF, 0xFFFF, MOON_F280C) \
     X(F2825, name_statmap, 0xFFFF, 0xFFFF, MOON_F2825) \
     X(F2825, parts_table, 0xFFFF, 0xFFFF, MOON_F2825) \
+    X(F28F3, bigunit_dx, 0xFFFF, 0xFFFF, MOON_F28F3) \
+    X(F28F3, bigunit_dy, 0xFFFF, 0xFFFF, MOON_F28F3) \
 
 #endif

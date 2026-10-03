@@ -138,6 +138,10 @@ static void cost_map(fptr buf, int unit, int side, int flags, fptr map)
                 v = (unsigned)-pb(g, 3);
             if (flags != -1 && (flags & 0xFFFF) != 0xFFFF && (pw(g, 0) & (unsigned)flags))
                 v = 0xB0;
+            /* MOON (T0C0E:0BBB): a unit of two squares not onto a
+             * building */
+            if (bi_prog == BI_MOON && (pw(g, 0) & 0x540) && (pw(mover, 4) & 0x40))
+                v = 0xB0;
             spb(buf, at, v);
         }
     for (row = 0; row < h; row++)

@@ -153,9 +153,16 @@ void t1479_0c93(int x, int y, int type, int side, int owner)
 {
     fptr t = TYPE(type), name = MKFP(FSEG(t), FOFF(t) + 0x1A);
 
+    int dx = 0, dy = pb(t, 0x18);
+
     if (side)
         x += 0xA0;
-    draw_packed(x, y + pb(t, 0x18), pfp(pfp(FP(lib_bigunit), 0x0E), 4 * pb(t, 0x19)), 0, 0, owner ? 0x30 : 0x20,
+    if (bi_prog == BI_MOON) {
+        /* MOON (T154F:0C9E): the type's offsets from two tables of its own */
+        dx = (int8_t)GBO(bigunit_dx, type);
+        dy = (int8_t)GBO(bigunit_dy, type);
+    }
+    draw_packed(x + dx, y + dy, pfp(pfp(FP(lib_bigunit), 0x0E), 4 * pb(t, 0x19)), 0, 0, owner ? 0x30 : 0x20,
                 pfp(MKFP(S_players, A_players + 0x17 * owner), 0x0D));
     SW(draw_colour, GBO(amok, 0x0D));
     draw_chars(x + 0x30 - 3 * (int)strlen(fstr(name)), y + 0x56, name);

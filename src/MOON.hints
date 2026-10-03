@@ -387,6 +387,11 @@ name F2E5B:021B scene_units_a
 ; the units' scripts (T237F:0007 unit_script): the first, for a unit that
 ; is none of the others, is at 0004 here, 10 bytes before BATTLE.EXE's
 name F2E8A:0000 scene_scripts
+; T154F:0C9E (MOON's T1479:0C93, a type's big picture from BIGUNIT.LIB):
+; the picture is placed by two tables of signed bytes, one a type (the
+; type's +18h, BATTLE's y offset, is not read): x offset and y offset
+name F28F3:000C bigunit_dx
+name F28F3:0027 bigunit_dy
 
 ; ==== carried over from BATTLE.hints by tools/xfer.py; check, then keep or edit
 ; the library's assembly modules: the byte form of AND/OR, XCHG AX,reg in

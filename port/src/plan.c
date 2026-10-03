@@ -378,7 +378,8 @@ int computer_plan(int player)
             SW(plan_count, GW(plan_count) - 1);
             sq = pw(list, 2 * GW(plan_count));
             n = CUR;
-            v = pb(UNIT(n), 2) < 5 && pb(UNIT(n), 1) > 1 ? 0x46 + 10u * pb(UNIT(n), 1) : 0x0F;
+            /* MOON: +1 above 0, not above 1 */
+            v = pb(UNIT(n), 2) < 5 && pb(UNIT(n), 1) > (bi_prog == BI_MOON ? 0 : 1) ? 0x46 + 10u * pb(UNIT(n), 1) : 0x0F;
             if (can_go((int)sq, (int)n, player, 1) && (int16_t)GW(path_count) <= pb(TYPE(pb(UNIT(n), 8)), 0)) {
                 /* within a move */
                 v <<= 1;
@@ -725,7 +726,9 @@ int computer_plan(int player)
         case 1:
             for (; CUR <= 0xF0; NEXT_UNIT) {
                 n = CUR;
-                if (!half(n) && !(FLAGS(n) & 0xC000) && !(pw(UNIT(n), 6) & 0x20) && !(ai_com(n) & 0x380)
+                /* MOON has no test of the +6's 20h here either */
+                if (!half(n) && !(FLAGS(n) & 0xC000) && (bi_prog == BI_MOON || !(pw(UNIT(n), 6) & 0x20))
+                    && !(ai_com(n) & 0x380)
                     && same_side(FLAGS(n), player) && !pb(T(n), 8))
                     break;
             }
