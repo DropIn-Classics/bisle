@@ -552,7 +552,8 @@ and 31 above (65908 and 91431 passes) that left nothing different at
 their ends, on 12 the slots' order. After the
 change map 12 at 100000 against the same dump of the original: F27EE
 the same, the rest but for the kinds above. The comparisons above were
-not run again. Map 23 not compared.
+not run again. Map 23 at its pass 100000 (round 187), with the change:
+the video memory the same, the memory but for the kinds above.
 Formerly not compared: 12 and 23 (the port alone does
 not reach key_wait within 550 s; map 12 is at round 66 at its pass
 40000, so a long game, not a stall as far as seen; a longer run was
