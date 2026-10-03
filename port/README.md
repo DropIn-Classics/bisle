@@ -104,7 +104,10 @@ two tables of signed bytes, `bigunit_dx` and `bigunit_dy` (shop.c, T154F:0C9E), 
 type's +18h. Found by the first pass that differs (scratch mbis.sh) and the routines' code
 compared with BATTLE's (scratch rdiffs.py). With them all 34 maps (0 to 33) are the
 original's at pass 1000 in the far data segments and the video memory (one run each with the same
-build). Not compared: later passes but on map 0, a map played to its end. MOON's films at a map's end are its own routines (T070B:4703 `moon_win_film`, HQ.ANI or TOT.ANI, and
+build). At pass 3000: the units in a building get the task 5 (out) unless their +6 has 4 (BATTLE:
+24h; computer.c `tasks_out`, MOON's T1C22:04D8); with it all 34 maps the same at pass 3000 (28 of
+them run with the build before this change, which differs from it only there). Not compared:
+later passes but on map 0, a map played to its end. MOON's films at a map's end are its own routines (T070B:4703 `moon_win_film`, HQ.ANI or TOT.ANI, and
 T070B:49ED `moon_end_film`, END.ANI and five lines of text, in battle.c where BATTLE.EXE plays play_anim
 and end_credits). Checked with the map's end poked in (game_flags, F2902:4155, linear 2D8D5, 04CFh at
 pass 30 of map 0, two computers, made 04DDh, 24DDh for the other film, 04FDh for the last map): the

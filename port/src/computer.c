@@ -306,7 +306,8 @@ static void tasks_out(fptr table, int player, int count)
         for (i = 0; i < 7; i++) {
             unsigned v = pb(r, (unsigned)(7 * player + i));
 
-            if (v > 0xF0 || (pw(UNIT(v), 6) & 0x24))
+            /* MOON (T1C22:04D8) tests the 4 only */
+            if (v > 0xF0 || (pw(UNIT(v), 6) & (bi_prog == BI_MOON ? 4 : 0x24)))
                 continue;
             spb(AI_MOVE(v), 8, 5);
             spw(AI_MOVE(v), 4, 7);
