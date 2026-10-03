@@ -482,8 +482,15 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   same but for the kinds of differences above (and the mouse's
   variables, the runner being the one with the mouse driver). Nothing
   else of DESERT was compared but the games of two computers (below):
-  no key on the map; the answer to QUIT THE GAME with DESERT's key not
-  tried.
+  no key on the map.
+  QUIT THE GAME in DESERT (2026-10-03, without "Quit key Y and Z"): on
+  the first map Esc at 25 s and the scancode 2Ch (Z on QWERTY) at 30 s
+  leave the map for the title menu in the original, 15h does not; the
+  original and the port compared at the menu's 200th pass: the video
+  memory the same, the memory the same but for the passes' count
+  F27EE:251F (85h against B4h: the keys go by time, the port had run more
+  map passes by 25 s) and two bytes of the cursors (+2Ch, +5Dh, 0 against
+  1; presumably from the same, not checked). The port with 15h not run.
   A game saved and loaded in DESERT (2026-10-02, the scratch pcmp.py):
   the first map, the cursors moved right twice (player 1 right, player 2
   down) and both asking for the change of phase (player 1 left with fire,
@@ -506,7 +513,12 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   the heap the same, the data segment above DATA:2000 and the code
   segments the same but for the kinds of differences above (the mouse,
   the timers, input counts, the interrupt's stack leftovers). The other
-  maps (9 to 16, 18 to 31) not run. The setup screen's item "Title" was looked
+  maps 9, 10, 13 to 16, 18 to 21 and 24 (2026-10-03, the same way: the
+passes 29846, 32153, 18066, 7921, 12499, 22826, 7862, 23404, 16781,
+9650 and 14853): the same as those. Not compared: 11 and 22 (the
+original did not reach the port's last pass, 45172 and 44800, within
+the runner's 3000 s), 12 and 23 (the scratch cvcmap.py gave no last
+pass for them; not looked into), 25 to 31 (not run). The setup screen's item "Title" was looked
   at in the headless build's picture (`DK_DUMP`, Esc scripted): it is
   there under "The game", showing "Battle Isle"; changed to the data
   disk and started from there: not tried.
@@ -531,8 +543,8 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
     and the other way round on QWERTZ: the original is right on QWERTY
     and wrong on QWERTZ in both. Tried in the headless build on ISLE's
     map (Esc, then the scancode 15h and 2Ch): without the choice 15h
-    leaves the map and 2Ch does not, with it both do. DESERT's key not
-    tried; the message's text is not changed.
+    leaves the map and 2Ch does not, with it both do. DESERT's key
+    without the choice: above; the message's text is not changed.
 - The setup screen, in the headless build with scripted keys (`DK_KEYS`,
   the pictures through `DK_SHOTS`, looked at): the menu and each of the
   four pages as the kit draws them (the design of pddnative's setup
