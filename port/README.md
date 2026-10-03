@@ -483,6 +483,21 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   variables, the runner being the one with the mouse driver). Nothing
   else of DESERT was compared but the games of two computers (below):
   no key on the map.
+  A map's end in DESERT (2026-10-03, the scratch dstat.sh): two
+  computers on map 8, game_flags' low byte (linear 2AB5Ch) poked to DDh
+  at the map loop's 30th pass, as for MOON's films. Compared with the
+  original at after_map's entry, at the name for the scores
+  (name_pass, its 100th pass) and, Enter given at its 150th, at the
+  scores' wait (key_wait, its 100th): the video memory and the memory
+  the same but for the kinds above; at the scores the two pages come out
+  exchanged, as in ISLE (the Enter a pass of the name's loop apart).
+  The statistics' own wait (after.c, before fade_out) was passed in
+  neither before the name was asked for, so the statistics' screen
+  itself was not compared; why the poke leaves it out was not looked
+  into. A game of two computers that ends by itself waits in key_wait
+  for ever: neither a key given by time (Enter, space at 300 s) nor one
+  at key_wait's passes (the loop clears it at once) ended it, in the
+  original or the port; why was not looked into.
   QUIT THE GAME in DESERT (2026-10-03, without "Quit key Y and Z"): on
   the first map Esc at 25 s and the scancode 2Ch (Z on QWERTY) at 30 s
   leave the map for the title menu in the original, 15h does not; the
