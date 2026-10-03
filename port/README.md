@@ -99,8 +99,12 @@ pass 30 of map 0, two computers, made 04DDh, 24DDh for the other film, 04FDh for
 1st, 40th and 100th frame of HQ.ANI, the 1st, 60th and 120th of TOT.ANI, the 1st, 40th and 76th of
 END.ANI, the text before its wait of 2000 (T070B:4D1D) and the menu's next entry (T1151:0003, 2nd):
 video memory and the far data segments the same as the original's, DATA but for the kinds above and
-the C library's. The sound was not compared, a real win (not poked) not run. Not in the port for
-MOON: the statistics; MOON.hints' carried names are
+the C library's. The sound was not compared, a real win (not poked) not run. MOON's statistics
+after a map (T1682:000B) are BATTLE's but for the song, started after the fade-in (after.c);
+compared with the end poked at pass 5000 of map 0 (two computers, round 6; scratch mstat.sh), at
+the wait's 100th pass (T0DA1:0D0F): won (DDh: rating 542, the next code LUNAR) and lost (CDh),
+the video memory and the far data segments the same, the rest but for the kinds above. The
+sound not compared. MOON.hints' carried names are
 unchecked beyond what the setup uses (see the handoff). The names MOON.hints lacked for
 the port are its own lines now (`name` lines above the carried block:
 make_path's tables, the menus' texts, the statistics' and the logo's

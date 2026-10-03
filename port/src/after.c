@@ -168,9 +168,14 @@ void after_map(fptr buffer)
     n = GB(state_2497);
     draw_text(0xD2, 0x56, 0x14, GBO(amok, 0x0D));
     draw_text(0x102, 0x56, n >= 0x20 ? 0x17 : n >= 0x10 ? 0x16 : 0x15, GBO(amok, 0x0B));
-    play_song(0, 0);
+    /* MOON starts the song after the fade (its second pointer, the same
+     * as the first) */
+    if (bi_prog != BI_MOON)
+        play_song(0, 0);
     flip_page();
     fade_in();
+    if (bi_prog == BI_MOON)
+        play_song(0, 1);
     t0d36_000f(0x32);
     t0d36_0c85();
     fade_out();
