@@ -23,11 +23,13 @@ overview), the screens over a window (status, a unit, a building with
 its slots), a move carried out, the change of phase with the fights and
 their scene, the films, a game saved and loaded, a map's end with the
 statistics, the last map's ending and the credits, the computer
-player. That is all of BATTLE.EXE the game calls; a few rare paths
-still end the program with a message that names them (`bi_todo`: a
-picture larger than a page, a block of the second page in
-restore_sprites, the question for another disk, a timer's handler that
-is not one of the program's). Not in the port: the game's other
+player. That is all of BATTLE.EXE the game calls, the rare paths too
+(2026-10-03: the question for a disk when a file does not open,
+T2695:02BB; a picture larger than 360 by 240, T2550:02E5; restore_sprites'
+block from the page at A400h, T2467:007B; these three translated from
+BATTLE.ASM and not run, since none of the game's files and no code of
+BATTLE.EXE leads there with the game installed whole; the modes of 360
+pixels left out, the program never asks for them). Not in the port: the game's other
 programs (the starter BI.EXE, INTVGA's intro of 16 colours (not wanted),
 MOON.EXE of the second scenario disk), the PC speaker's sound (not
 wanted), joystick and mouse (the port answers as a PC without them).
@@ -157,7 +159,7 @@ comparisons were not run again. The intro itself is not in yet.
 | `timer.c` | T2354 | the timers, the keys, the players' input |
 | `files.c` | T2619..T2728, T164D | memory blocks, files, TPWM unpacking, paths |
 | `gfx.c` | T23DC..T259F | pages, sprites, pictures, palette, text, lines |
-| `lib.c` | T0CEB | the sprite libraries (`sort_lib` not yet) |
+| `lib.c` | T0CEB | the sprite libraries |
 | `text.c` | T164D | text in the large letters |
 | `title.c` | T1727 | the logo and the title |
 | `menu.c` | T1090 | the menus, a code typed, the scores, the name for them |
@@ -215,6 +217,20 @@ What the port does otherwise than a PC:
   first start: it is off until the player switches it on there (a
   question of its own would be a dialog the kit does not have). A newer
   release known when the screen opens gets a line that opens its page.
+- The player's settings (2026-10-03; doskit/docs/PLAYER-SETTINGS.md),
+  pages Sound, Keys and Controller of the setup screen, applied only after
+  it (so never in the headless comparisons): the volume 0..10 and in play
+  the keypad's + and - and * (mute) with doskit's hud box; the headphone
+  mix (audiofx.h, after the OPL's mono is made stereo in audio.c); the
+  players' keys for up, down, left, right and fire, mapped onto the
+  game's (player 1 keypad 8 2 4 6 and Space, player 2 D C X V and the
+  left Ctrl: the tables at DATA:0AE9 and 0AEB point to, read from
+  BATTLE.EXE's data), the game's other keys staying; a controller's
+  buttons each one of the players' actions or Esc, Enter, F1 ("change
+  mode": the original takes it from the keyboard only), Y, N, D. Checked:
+  the build, map 03 at its 100th pass headless as before (video memory 0
+  bytes, the heap the one byte). Not checked: the window's sound, the
+  keys and a controller in play.
   The players' keys cannot be chosen yet.
 
 ## Build and run

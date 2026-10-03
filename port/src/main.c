@@ -42,9 +42,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "audiofx.h"
 #include "cdimage.h"
+#include "frame.h"
+#include "hud.h"
 #include "inno.h"
 #include "launcher.h"
+#include "pad.h"
 #include "platform.h"
 #include "sys.h"
 #include "update.h"
@@ -115,8 +119,107 @@ static int title_of[TITLES];
 static UpdateInfo newer;
 static char newer_label[64];
 
+/* ---- the sound, the keys and the controller (the port's, not the game's) ---- */
+
+static int set_volume = 10, set_headphone, muted;
+
+static const char *const volume_values[] = { "0 (off)", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", NULL };
+
+/* The players' keys in a map: each player has a table of records (a
+ * scancode, then left, right, up, down, fire; DATA:0AE9 and 0AEB point to
+ * them, read from the program's data): player 1 the keypad (the arrows
+ * send the same scancodes) and Space or Enter to fire, player 2 X, V,
+ * D or F, C and Alt or the left Ctrl.  The player's key for one of them
+ * is turned into that one (frame.h's keymap), so the game's other keys
+ * for the same stay. */
+enum { K_P1_UP, K_P1_DOWN, K_P1_LEFT, K_P1_RIGHT, K_P1_FIRE,
+       K_P2_UP, K_P2_DOWN, K_P2_LEFT, K_P2_RIGHT, K_P2_FIRE, K_COUNT };
+static const int game_key[K_COUNT] = { 0x48, 0x50, 0x4B, 0x4D, 0x39, 0x20, 0x2E, 0x2D, 0x2F, 0x1D };
+static int player_key[K_COUNT] = { 0x48, 0x50, 0x4B, 0x4D, 0x39, 0x20, 0x2E, 0x2D, 0x2F, 0x1D };
+
+/* what a controller's button gives: a game key above, or one of these
+ * (Esc leaves and asks to quit, Enter and the arrows run the menus, F1
+ * carries out the change of mode both players asked for: the original
+ * reads it from the keyboard only, so a button must send it; Y and N
+ * answer, D saves) */
+enum { P_NONE, P_KEYS, P_ESC = P_KEYS + K_COUNT, P_ENTER, P_F1, P_Y, P_N, P_D, P_COUNT };
+static const int other_key[] = { 0x01, 0x1C, 0x3B, 0x15, 0x31, 0x20 };
+static const char *const pad_actions[] = {
+    "nothing", "P1 up", "P1 down", "P1 left", "P1 right", "P1 fire",
+    "P2 up", "P2 down", "P2 left", "P2 right", "P2 fire",
+    "back / quit (Esc)", "Enter", "change mode (F1)", "yes (Y)", "no (N)", "save (D)", NULL
+};
+static int pad_choice[PAD_BUTTONS] = {
+    [PAD_A] = P_KEYS + K_P1_FIRE, [PAD_B] = P_ESC, [PAD_X] = P_ENTER, [PAD_Y] = P_F1,
+    [PAD_BACK] = P_N, [PAD_START] = P_Y, [PAD_LB] = P_KEYS + K_P1_FIRE,
+    [PAD_RB] = P_KEYS + K_P1_FIRE, [PAD_UP] = P_KEYS + K_P1_UP,
+    [PAD_DOWN] = P_KEYS + K_P1_DOWN, [PAD_LEFT] = P_KEYS + K_P1_LEFT,
+    [PAD_RIGHT] = P_KEYS + K_P1_RIGHT,
+};
+
+static unsigned char keymap[256];
+static PadKeys play_keys;
+
+/* the keymap and the controller's table from the settings */
+static void apply_keys(void)
+{
+    int i, k;
+
+    for (i = 0; i < 256; i++)
+        keymap[i] = (unsigned char)i;
+    for (k = 0; k < K_COUNT; k++)
+        if (player_key[k] && player_key[k] != game_key[k])
+            keymap[player_key[k]] = (unsigned char)game_key[k];
+    frame_set_keymap(keymap);
+    memset(play_keys, 0, sizeof play_keys);
+    for (i = 0; i < PAD_BUTTONS; i++) {
+        int a = pad_choice[i], code = 0;
+
+        if (a >= P_KEYS && a < P_ESC) {
+            /* the player's key, which the keymap turns into the game's */
+            k = a - P_KEYS;
+            code = player_key[k] ? player_key[k] : game_key[k];
+        } else if (a >= P_ESC && a < P_COUNT)
+            code = other_key[a - P_ESC];
+        play_keys[i][0] = (unsigned char)code;
+    }
+    pad_set_keys(&play_keys);
+}
+
+static void apply_sound(void)
+{
+    plat_audio_lock();
+    audiofx_set(0, 0, 0, set_headphone);
+    plat_audio_unlock();
+}
+
+float bi_volume_gain(void)
+{
+    return muted ? 0.0f : (float)set_volume / 10.0f;
+}
+
+/* the keypad's + and - and * (mute) while the game runs: doskit's hud.h
+ * box at the top of the picture for two seconds */
+static void hud_control(int c)
+{
+    if (c == PLAT_VOLUME_UP || c == PLAT_VOLUME_DOWN) {
+        if (c == PLAT_VOLUME_UP && set_volume < 10)
+            set_volume++;
+        else if (c == PLAT_VOLUME_DOWN && set_volume > 0)
+            set_volume--;
+        muted = 0;
+    } else if (c == PLAT_MUTE)
+        muted = !muted;
+    else
+        return;
+    if (muted)
+        hud_show("MUTE", 0, 0, 140);
+    else
+        hud_show("VOLUME", set_volume, 10, 140);
+}
+
 /* the menu, and a page for each group of settings (doskit/docs/LAUNCHER.md) */
-enum { PAGE_MENU, PAGE_QOL, PAGE_PORT };
+enum { PAGE_MENU, PAGE_SOUND, PAGE_KEYS, PAGE_PAD, PAGE_QOL, PAGE_PORT };
 
 static LauncherItem menu_items[] = {
     { LI_ACTION, "Start the game", NULL, NULL, NULL, ACT_START, NULL },
@@ -125,6 +228,9 @@ static LauncherItem menu_items[] = {
     { LI_CHOICE, "Full screen", "fullscreen", no_yes, &set_fullscreen, 0,
       "Alt+Enter changes it while the game runs." },
     { LI_HEAD, "", NULL, NULL, NULL, 0, NULL },
+    { LI_PAGE, "Sound", NULL, NULL, NULL, PAGE_SOUND, "Volume and headphones." },
+    { LI_PAGE, "Keys", NULL, NULL, NULL, PAGE_KEYS, "The players' keys in a map." },
+    { LI_PAGE, "Controller", NULL, NULL, NULL, PAGE_PAD, "What a controller's buttons do." },
     { LI_PAGE, "Quality of Life changes", NULL, NULL, NULL, PAGE_QOL,
       "Improvements to the gameplay experience." },
     { LI_PAGE, "This port", NULL, NULL, NULL, PAGE_PORT, "New versions." },
@@ -137,6 +243,53 @@ static LauncherItem qol_items[] = {
       "QUIT THE GAME takes Y and Z on any keyboard layout." },
 };
 
+static LauncherItem sound_items[] = {
+    { LI_CHOICE, "Volume", "volume", volume_values, &set_volume, 0,
+      "In the game: keypad + and -, * mutes." },
+    { LI_CHOICE, "Headphones", "headphone", no_yes, &set_headphone, 0,
+      "A wider stereo picture for headphones." },
+};
+
+#define KEY_ITEM(k, label, name, help) { LI_KEY, label, name, NULL, &player_key[k], 0, help }
+static LauncherItem key_items[] = {
+    { LI_HEAD, "Player 1", NULL, NULL, NULL, 0, NULL },
+    KEY_ITEM(K_P1_UP, "Up", "key_p1_up", "The arrow and the keypad's 8 stay too."),
+    KEY_ITEM(K_P1_DOWN, "Down", "key_p1_down", "The arrow and the keypad's 2 stay too."),
+    KEY_ITEM(K_P1_LEFT, "Left", "key_p1_left", "The arrow and the keypad's 4 stay too."),
+    KEY_ITEM(K_P1_RIGHT, "Right", "key_p1_right", "The arrow and the keypad's 6 stay too."),
+    KEY_ITEM(K_P1_FIRE, "Fire", "key_p1_fire", "Enter stays too."),
+    { LI_HEAD, "Player 2", NULL, NULL, NULL, 0, NULL },
+    KEY_ITEM(K_P2_UP, "Up", "key_p2_up", "F stays too."),
+    KEY_ITEM(K_P2_DOWN, "Down", "key_p2_down", NULL),
+    KEY_ITEM(K_P2_LEFT, "Left", "key_p2_left", NULL),
+    KEY_ITEM(K_P2_RIGHT, "Right", "key_p2_right", NULL),
+    KEY_ITEM(K_P2_FIRE, "Fire", "key_p2_fire", "Alt stays too."),
+};
+
+#define PAD_ITEM(b, label) { LI_CHOICE, label, NULL, pad_actions, &pad_choice[b], 0, NULL }
+static LauncherItem pad_items[] = {
+    PAD_ITEM(PAD_A, "A"), PAD_ITEM(PAD_B, "B"), PAD_ITEM(PAD_X, "X"), PAD_ITEM(PAD_Y, "Y"),
+    PAD_ITEM(PAD_LB, "Left shoulder"), PAD_ITEM(PAD_RB, "Right shoulder"),
+    PAD_ITEM(PAD_LT, "Left trigger"), PAD_ITEM(PAD_RT, "Right trigger"),
+    PAD_ITEM(PAD_LSTICK, "Left stick pressed"), PAD_ITEM(PAD_RSTICK, "Right stick pressed"),
+    PAD_ITEM(PAD_START, "Start"), PAD_ITEM(PAD_BACK, "Back"),
+    PAD_ITEM(PAD_UP, "D-pad up"), PAD_ITEM(PAD_DOWN, "D-pad down"),
+    PAD_ITEM(PAD_LEFT, "D-pad left"), PAD_ITEM(PAD_RIGHT, "D-pad right"),
+};
+
+/* the buttons' names in the settings file: pad_ and pad.h's name */
+static void pad_names(void)
+{
+    static char names[PAD_BUTTONS][24];
+    size_t i, b;
+
+    for (i = 0; i < sizeof pad_items / sizeof pad_items[0]; i++) {
+        b = (size_t)(pad_items[i].value - pad_choice);
+        snprintf(names[b], sizeof names[b], "pad_%s", pad_button_name((int)b));
+        pad_items[i].name = names[b];
+    }
+}
+
 static LauncherItem port_items[] = {
     { LI_CHOICE, "Look for new versions", NULL, no_yes, &set_updates, 0,
       "One small file from GitHub, at most once a day; nothing is sent." },
@@ -148,6 +301,9 @@ static LauncherItem port_items[] = {
 
 static LauncherPage pages[] = {
     { "Setup", menu_items, (int)(sizeof menu_items / sizeof menu_items[0]) },
+    { "Sound", sound_items, (int)(sizeof sound_items / sizeof sound_items[0]) },
+    { "Keys", key_items, (int)(sizeof key_items / sizeof key_items[0]) },
+    { "Controller", pad_items, (int)(sizeof pad_items / sizeof pad_items[0]) },
     { "Quality of Life changes", qol_items, (int)(sizeof qol_items / sizeof qol_items[0]) },
     { "This port", port_items, PORT_ITEMS },
 };
@@ -158,6 +314,8 @@ static void setting_changed(const LauncherItem *item)
 {
     if (item->value == &set_fullscreen)
         plat_set_fullscreen(set_fullscreen);
+    else if (item->value == &set_headphone)
+        apply_sound();
     else if (item->value == &set_updates)
         update_set_consent(set_updates);
 }
@@ -182,7 +340,9 @@ static int setup(const char *game, int *m, int *title)
     sys_data_dir(data, sizeof data);
     sys_join(cfg, sizeof cfg, data, "battle-isle.cfg");
     set_fullscreen = plat_fullscreen();
+    pad_names();
     launcher_load(cfg, pages, NPAGES);
+    apply_sound();
     if (set_title < 0 || set_title >= n)
         set_title = 0;
     plat_set_fullscreen(set_fullscreen);
@@ -205,7 +365,11 @@ static int setup(const char *game, int *m, int *title)
     bi_skip_intro = set_skip;
     bi_quit_yz = set_quit;
     *title = n ? title_of[set_title] : 0;
-    return r == ACT_START;
+    if (r != ACT_START)
+        return 0;
+    apply_keys();
+    frame_set_hud(hud_draw, hud_control);
+    return 1;
 }
 
 /* the game's files: found, or from the GOG release (its CD image

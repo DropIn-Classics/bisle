@@ -13,6 +13,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include "audiofx.h"
 #include "bi.h"
 #include "opl.h"
 #include "platform.h"
@@ -32,7 +33,8 @@ static FILE *reg_log;
 static void fill(int16_t *out, int frames, void *user)
 {
     static int16_t mono[1024];
-    int i, n;
+    int16_t *start = out;
+    int i, n, total = frames;
 
     (void)user;
     while (frames > 0) {
@@ -53,6 +55,8 @@ static void fill(int16_t *out, int frames, void *user)
         frames -= n;
         played += n;
     }
+    /* the headphone mix and the volume (main.c's settings) */
+    audiofx_process(start, total, bi_volume_gain());
 }
 
 static void audio_start(void)
@@ -63,6 +67,7 @@ static void audio_start(void)
     if (path)
         reg_log = fopen(path, "w");
     opl_init(&chip, RATE);
+    audiofx_init(RATE);
     playing = plat_audio_start(RATE, fill, NULL);
 }
 
