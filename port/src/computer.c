@@ -614,12 +614,27 @@ int computer_assess(int player)
             v = (int8_t)pb(AI_COM(pb(u, 8)), 0);
             if (pw(t, 5) & 0xC0)
                 v += 0x32;
-            if (!pb(t, 9))
-                v += 0x19;
-            if (!pb(t, 0x0B))
-                v += 0x19;
-            if (!pb(t, 0x0A))
-                v += 0x19;
+            /* MOON (T18B8:0FF9): not for a type with 20h in its +10h;
+             * one that holds others adds the held units' values, from
+             * the slots of the assessing player (as the original) */
+            if (bi_prog != BI_MOON || !(pw(t, 0x10) & 0x20)) {
+                if (!pb(t, 9))
+                    v += 0x19;
+                if (!pb(t, 0x0B))
+                    v += 0x19;
+                if (!pb(t, 0x0A))
+                    v += 0x19;
+            }
+            if (bi_prog == BI_MOON && (f & 0x1000)) {
+                fptr c = AI_BUILDING(cargo, (int8_t)pb(u, 0x0A));
+
+                for (i = 0; i < 7; i++) {
+                    unsigned held = pb(c, (unsigned)(7 * player) + i);
+
+                    if (held <= 0xF0)
+                        v += (int8_t)pb(AI_COM(pb(UNIT(held), 8)), 0);
+                }
+            }
             v += (6 - pb(u, 1)) * 10;
             if (ai_com(n) & 1) {
                 /* one that takes buildings, nearer to the headquarters

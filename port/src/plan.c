@@ -350,7 +350,8 @@ int computer_plan(int player)
         case 1:
             for (; CUR <= 0xF0; NEXT_UNIT) {
                 n = CUR;
-                if (!(FLAGS(n) & 0xC048) && same_side(FLAGS(n), player)
+                /* MOON leaves out the 8 (T1D2C's 0C040h) */
+                if (!(FLAGS(n) & (bi_prog == BI_MOON ? 0xC040 : 0xC048)) && same_side(FLAGS(n), player)
                     && pb(UNIT(n), 2) < pb(TYPE(pb(UNIT(n), 8)), 2))
                     break;
             }
@@ -733,7 +734,8 @@ int computer_plan(int player)
         case 2:
             /* the others' distances: of an own unit its aim's */
             for (u = 0; u <= 0xF0; u++) {
-                if ((FLAGS(u) & 0xC002) || (pw(UNIT(u), 6) & 0x20) || u == CUR)
+                /* MOON does not leave out a unit with 20h in its +6 */
+                if ((FLAGS(u) & 0xC002) || (bi_prog != BI_MOON && (pw(UNIT(u), 6) & 0x20)) || u == CUR)
                     continue;
                 spw(T(u), 2, (unsigned)distance(ai_place(CUR, player),
                                                  same_side(FLAGS(u), player) ? pw(T(u), 0) : ai_place(u, player)));

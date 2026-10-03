@@ -92,7 +92,14 @@ game of two computers on map 0 is the original's in all of memory at passes
 (MOON's computer step 0Ah sub 3 has one check more: `much_weaker`); video memory (all 256 KB) is the
 original's at passes 958, 2000 and 3000 too (`map_loop` reads the cursor library's table at each draw, as
 the original, since the change of phase loads other files over the buffer; the scene's ground pieces are
-drawn in colour base 60h for MOON, 5Fh for BATTLE; not run for 6000, nor for fights of other units). MOON's films at a map's end are its own routines (T070B:4703 `moon_win_film`, HQ.ANI or TOT.ANI, and
+drawn in colour base 60h for MOON, 5Fh for BATTLE; not run for 6000, nor for fights of other units).
+MOON's other maps, two computers each (scratch mcvall.sh, 2026-10-03), compared at pass 1000 (far data
+segments and video memory): three more differences of MOON's computer found and done: computer_assess
+step 1 (T18B8:0FF9) leaves out the three +19h for a type with 20h in its +10h and adds the values of
+the units one holds (computer.c); computer_plan step 1 sub 1 leaves out units by 0C040h, not 0C048h,
+and step 0Bh sub 2 does not leave out a unit with 20h in its +6 (plan.c). Now the same at pass 1000:
+maps 0, 1, 2, 4, 9, 11 to 13, 15 to 19, 21, 23 to 33 (16, 17, 19, 23 to 33 already before these
+changes, and not run again after them). Not yet: 3, 5, 6, 7, 8, 10, 14, 20, 22. MOON's films at a map's end are its own routines (T070B:4703 `moon_win_film`, HQ.ANI or TOT.ANI, and
 T070B:49ED `moon_end_film`, END.ANI and five lines of text, in battle.c where BATTLE.EXE plays play_anim
 and end_credits). Checked with the map's end poked in (game_flags, F2902:4155, linear 2D8D5, 04CFh at
 pass 30 of map 0, two computers, made 04DDh, 24DDh for the other film, 04FDh for the last map): the
