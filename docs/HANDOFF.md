@@ -48,8 +48,8 @@ menu's entry (port/README.md; "The port" below).
   must be pressed only (`0+`, let go later on the map), a press and its
   release one loop pass apart are lost. At INSERT SAVE DISK give a key
   that is no player's (n): space is player 0's fire and reaches the map
-  by time. Left from the load: the video memory's lists (another order,
-  not looked into). `segdiff.py BSEG MSEG` compares a whole segment of
+  by time. The video memory's lists after the load differed only with
+  the menu's keys given by time (below, mload2.sh). `segdiff.py BSEG MSEG` compares a whole segment of
   BATTLE.ASM with MOON.ASM's and keeps the hunks with other constants or
   tests; T0708 against T070B shows nothing left for the map loop but
   what the port has; most hunks of the others are the compiler's.
@@ -127,7 +127,15 @@ menu's entry (port/README.md; "The port" below).
   original shows INSERT SAVE DISK once more after the header's map
   differs): the same at the map's pass 10 in memory and both pages, the
   video memory's lists differ (28930 bytes), as after map 0's load.
-  Next: a game of people to a map's end, the lists after a load.
+  That was the keys by time: the menu's cursor moved at other passes in
+  the two, the pages differed in between (menu pass 620) and the lists
+  kept it. `mload2.sh` gives the keys by loop passes (menu LT1151_058E,
+  the position's digit LT1151_1240 = the port's ask_key, PLEASE INSERT
+  DISK key_wait, the save-disk box LT26FE_0116 = box_key; the second
+  box by time, T=60:n, as that box loop is a tight poll whose hit count
+  races through any number within the first box): loads of map 5's and
+  of map 0's save are the same at the map's pass 10 in all memory and
+  all video memory, the lists too. Next: a game of people to a map's end.
 - MOON's films at a map's end (2026-10-03): MOON.EXE does not call
   play_anim there but two routines of its own, T070B:4703 (HQ.ANI or
   TOT.ANI with .PAL and .SND, by game_flags 2000h) and T070B:49ED
