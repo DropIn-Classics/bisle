@@ -106,13 +106,19 @@ compared with BATTLE's (scratch rdiffs.py). With them all 34 maps (0 to 33) are 
 original's at pass 1000 in the far data segments and the video memory (one run each with the same
 build). At pass 3000: the units in a building get the task 5 (out) unless their +6 has 4 (BATTLE:
 24h; computer.c `tasks_out`, MOON's T1C22:04D8); with it all 34 maps the same at pass 3000 (28 of
-them run with the build before this change, which differs from it only there). Not compared:
-later passes but on map 0, a map played to its end. At pass 6000 (2026-10-04): a holder's cargo
+them run with the build before this change, which differs from it only there). At pass 6000 (2026-10-04): a holder's cargo
 with 4 in its +6 becomes 6 energy a point in MOON, 8 in BATTLE (phase.c, T03EB:1290; map 6, pass
 5963); then all 34 maps the same at pass 6000 (map 6 run again with the change, the others with the build
 before it) in the far data segments, and in the video memory
 but for map 20: from its pass 5654 on, 291 bytes of the lists of what sprites covered (A7E8h on)
 differ, the two pages and all memory the same; not found yet.
+A game of two computers on map 0 played to its end (pass 8826, round 16, the headquarters taken;
+scratch mend.sh): at the statistics' wait (key_wait's 100th pass) memory and video memory the same,
+the film before it included.
+Maps 1 to 23 so too (2026-10-04): the same at their ends (passes 14988 to 57414) in memory and
+both pages, maps 5, 7, 9 with a few bytes of the video memory's lists other, as map 20; map 19 not
+decided (the original cut off before its end), maps 24 to 33 not run (the menu keys did not start
+them).
 A game saved and loaded in MOON (2026-10-04, scratch msave.sh and mload.sh): MOON's header is 14h
 bytes (3, 7, the map's number, a byte not written, then BATTLE's fields; save.c), and the message
 box before load_game takes its text from the setup's data (`text_insert_save`, F280C:000Eh; the
