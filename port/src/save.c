@@ -4,7 +4,9 @@
  * program's memory, as they are: the two maps, the players' lists of
  * moves, the history, the palette's buffer, the game's state, the
  * cursors, the marks, the buildings, the cargo, the units, the types,
- * the computer player's state.
+ * the computer player's state.  MOON's header is of 14h bytes: 3, 7, the
+ * map's number, a byte not written (what the list held), then the same
+ * as BATTLE's (T148F:000E, T148F:0480).
  */
 #include "bi.h"
 
@@ -60,6 +62,7 @@ static const uint8_t kept[5] = {2, 3, 4, 0x15, 0x16};
 int save_game(fptr palette)
 {
     fptr list, hdr;
+    unsigned moon = bi_prog == BI_MOON;
     unsigned fill = GBO(amok, 0x10), colour = GBO(amok, 0x0D), k, i, j;
     int result = 0x29, h, waiting = 1;
 
@@ -104,17 +107,21 @@ int save_game(fptr palette)
     if (!h)
         result = 0x2A;
     else {
+        unsigned at = moon ? 4 : 2;
+
         hdr = list;
-        spb(hdr, 0, 0);
+        spb(hdr, 0, moon ? 3 : 0);
         spb(hdr, 1, 7);
-        spb(hdr, 2, GB(state_248e));
-        spb(hdr, 3, GB(state_2497));
+        if (moon)
+            spb(hdr, 2, GB(map_number));
+        spb(hdr, at, GB(state_248e));
+        spb(hdr, at + 1, GB(state_2497));
         for (i = 0; i < 2; i++) {
-            spw(hdr, 4 + 7 * i, pw(PLAYER(i), 0));
+            spw(hdr, at + 2 + 7 * i, pw(PLAYER(i), 0));
             for (j = 0; j < 5; j++)
-                spb(hdr, 6 + 7 * i + j, pb(PLAYER(i), kept[j]));
+                spb(hdr, at + 4 + 7 * i + j, pb(PLAYER(i), kept[j]));
         }
-        t26de_0008(h, list, 0x12);
+        t26de_0008(h, list, at + 0x10);
         parts(list, palette);
         for (i = 0; i < PARTS; i++)
             t26de_0008(h, pfp(list, 8 * i), pd(list, 8 * i + 4));
@@ -136,25 +143,25 @@ int save_game(fptr palette)
 void load_game(fptr palette)
 {
     fptr list = pfp(PLAYER(0), 0x0D), hdr = list;
-    unsigned i, j, menu;
+    unsigned i, j, menu, moon = bi_prog == BI_MOON, at = moon ? 4 : 2;
     int h;
 
     t164d_0482(2);
     h = file_open(0, make_path(2, -1, t26ea_000f((int16_t)GW(number_asked), FP(save_name), 2, 4), 5));
     if (!h)
         return;
-    t264b_0000(h, list, 0x12);
-    if (pb(hdr, 0) != 0 || pb(hdr, 1) != 7) {
+    t264b_0000(h, list, at + 0x10);
+    if (pb(hdr, 0) != (moon ? 3 : 0) || pb(hdr, 1) != 7) {
         file_close(h);
         t164d_0482(1);
         return;
     }
-    SB(state_248e, pb(hdr, 2));
-    SB(state_2497, pb(hdr, 3));
+    SB(state_248e, pb(hdr, at));
+    SB(state_2497, pb(hdr, at + 1));
     for (i = 0; i < 2; i++) {
-        spw(PLAYER(i), 0, pw(hdr, 4 + 7 * i));
+        spw(PLAYER(i), 0, pw(hdr, at + 2 + 7 * i));
         for (j = 0; j < 5; j++)
-            spb(PLAYER(i), kept[j], pb(hdr, 6 + 7 * i + j));
+            spb(PLAYER(i), kept[j], pb(hdr, at + 4 + 7 * i + j));
     }
     menu = GW(menu_flags);
     parts(list, palette);

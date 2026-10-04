@@ -290,7 +290,7 @@ static void map_setup(fptr work0, fptr *palette, fptr *orders, fptr *cursor_lib,
     SB(remove_depth, 0);
     if (GW(game_flags) & 0x200) {
         /* a saved game */
-        t262a_000e(pad_box_text(MKFP(SEG(F2736), 0)));
+        t262a_000e(pad_box_text(FP(text_insert_save)));
         load_game(*palette);
         SW(game_flags, GW(game_flags) & ~0x200);
     }

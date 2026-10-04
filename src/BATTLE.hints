@@ -1798,6 +1798,8 @@ name CODE:1A67 speaker_note
 ; opens the file first to see that it is there).
 name T13CA:000F save_game
 name T13CA:0462 load_game
+; the message box's text before load_game (the call just before T0708:1202, the box T262A:000E)
+name F2736:0000 text_insert_save
 
 ; CODE:2296 passes CODE:2460 (a near routine) to CODE:3312 with a far
 ; pointer into DATA and the address of its own further arguments (an

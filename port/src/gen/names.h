@@ -518,6 +518,7 @@
     X(T2690, file_open, 0x0004, 0x0002, 0x000E) \
     X(T2695, load_file, 0x0004, 0x0002, 0x000E) \
     X(T26D2, save_file, 0x000A, 0xFFFF, 0x0004) \
+    X(F2736, text_insert_save, 0x0000, 0xFFFF, 0x000E) \
     X(F273A, reach_args, 0x0006, 0xFFFF, 0x000A) \
     X(F273B, fatal_messages, 0x0008, 0xFFFF, 0x000C) \
     X(F2740, name_menu, 0x0000, 0xFFFF, 0x0004) \
@@ -1108,6 +1109,7 @@
     X(T2690, file_open, BATTLE_T2690, INTEGA_T0608, MOON_T2763) \
     X(T2695, load_file, BATTLE_T2695, INTEGA_T060D, MOON_T2768) \
     X(T26D2, save_file, BATTLE_T26D2, 0xFFFF, MOON_T27A6) \
+    X(F2736, text_insert_save, BATTLE_F2736, 0xFFFF, MOON_F280C) \
     X(F273A, reach_args, BATTLE_F273A, 0xFFFF, MOON_F2824) \
     X(F273B, fatal_messages, BATTLE_F273B, 0xFFFF, MOON_F2825) \
     X(F2740, name_menu, BATTLE_F2740, 0xFFFF, MOON_F2850) \

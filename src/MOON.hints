@@ -392,6 +392,9 @@ name F2E8A:0000 scene_scripts
 ; type's +18h, BATTLE's y offset, is not read): x offset and y offset
 name F28F3:000C bigunit_dx
 name F28F3:0027 bigunit_dy
+; the message box's text before load_game (the call just before T070B:1211): in the setup's
+; data, not at BATTLE.EXE's F2736:0000
+name F280C:000E text_insert_save
 
 ; ==== carried over from BATTLE.hints by tools/xfer.py; check, then keep or edit
 ; the library's assembly modules: the byte form of AND/OR, XCHG AX,reg in

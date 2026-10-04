@@ -31,7 +31,6 @@ uint16_t bi_data_seg(int prog);
 /* a segment of the game's hints as loaded (the intro has others) */
 #define SEG(s) SEG_##s
 #define SEG_DATA bi_data_seg(bi_prog)
-#define SEG_F2736 ((uint16_t)(BATTLE_F2736 + LOAD_SEG))
 
 #define X(seg, name, ...) extern uint16_t A_##name, S_##name;
 BI_NAMES(X)

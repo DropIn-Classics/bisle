@@ -673,7 +673,8 @@ int change_phase(fptr buffer, fptr libs, fptr pmp, fptr palette)
 
                 if (s > 0xF0 || !(pw(UNIT(s), 6) & 4))
                     continue;
-                e = (pb(UNIT(s), 2) << 3) & 0xFF;
+                /* MOON (T03EB:1290): 6 a point */
+                e = (pb(UNIT(s), 2) * (bi_prog == BI_MOON ? 6 : 8)) & 0xFF;
                 if (pb(r, 0x16 + other) + e > 0xFA)
                     spb(r, 0x16 + other, 0xFA);
                 else
