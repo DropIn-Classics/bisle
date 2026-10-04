@@ -120,8 +120,14 @@ menu's entry (port/README.md; "The port" below).
   is draw_overview (MOON.hints names only overview_dot there). So
   segdiff finds nothing more than the save's map. Not compared this
   way: hunks with other constants but no other test (offsets of the
-  data, mostly the per-title addresses). Next: a save loaded with
-  another map in the menu, a game of people to a map's end.
+  data, mostly the per-title addresses). A save loaded with another map
+  in the menu: map 5 saved (`MAP=5 P=200 msave.sh`; at P=30 neither
+  saved, not looked into why; both 00.DAT the same, header byte 2 = 5),
+  loaded with the menu at map 0 (mload.sh with one key more, 52:n: the
+  original shows INSERT SAVE DISK once more after the header's map
+  differs): the same at the map's pass 10 in memory and both pages, the
+  video memory's lists differ (28930 bytes), as after map 0's load.
+  Next: a game of people to a map's end, the lists after a load.
 - MOON's films at a map's end (2026-10-03): MOON.EXE does not call
   play_anim there but two routines of its own, T070B:4703 (HQ.ANI or
   TOT.ANI with .PAL and .SND, by game_flags 2000h) and T070B:49ED
