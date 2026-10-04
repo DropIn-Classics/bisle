@@ -348,6 +348,7 @@ int fight_step(fptr rec);
 void play_anim(int number, fptr buffer, int x, int y, int load_files, fptr dir);
 int save_game(fptr palette);
 void load_game(fptr palette);
+int moon_save_map(fptr buf);
 void end_credits(fptr work, fptr dir);
 
 /* ---- phase.c, after.c: T0408, T15AC ---- */

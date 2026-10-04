@@ -100,8 +100,17 @@ menu's entry (port/README.md; "The port" below).
   last scancode, presumably the same phase thing, not checked). For
   this doskit's runner takes a -keysat per place now (pcmp.py gives
   each place its own), so only pokes and breaks count to the 64.
-  Next: a game of people to a map's end, or MOON's segments
-  (segdiff.py).
+  MOON's segments (2026-10-04): segdiff.py run on all 29 pairs in
+  order (T0408/T03EB .. T2248/T238E); `sdcmp.py build/scratch/sd_SEG.txt`
+  keeps the hunks whose CMP/TEST lines differ (counts: T0D36 25, T1938
+  23, T122D 13, T0708 11, T0BA0 and T1C04 10, T2190 8, others 0..6).
+  Looked at: T0B70, T11FD, T1F3C, T164D, T169E, T178C (MOON's extra
+  routine T1867:034E is never called), T223C (in the port), T13CA (the
+  save's version byte 3 is in the port; the header read before the map's
+  setup was not, done now), T0408, T1090, T1ED2 (encoding only).
+  `sdctx.py BSEG MSEG J` prints MOON's lines at a hunk's index J. Next:
+  T17C0 and T1ABC's extra tests and routine, then the larger counts;
+  a save loaded with another map in the menu is to be run.
 - MOON's films at a map's end (2026-10-03): MOON.EXE does not call
   play_anim there but two routines of its own, T070B:4703 (HQ.ANI or
   TOT.ANI with .PAL and .SND, by game_flags 2000h) and T070B:49ED

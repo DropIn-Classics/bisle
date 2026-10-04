@@ -137,6 +137,23 @@ int save_game(fptr palette)
     return result;
 }
 
+/* MOON.EXE's T148F:0B21: the saved game number_asked's header (14h bytes)
+ * read into buf, its map's number (+2) returned; 0 when there is no such
+ * file */
+int moon_save_map(fptr buf)
+{
+    int h;
+
+    t164d_0482(2);
+    h = file_open(0, make_path(2, -1, t26ea_000f((int16_t)GW(number_asked), FP(save_name), 2, 4), 5));
+    if (!h)
+        return 0;
+    t264b_0000(h, buf, 0x14);
+    file_close(h);
+    t164d_0482(1);
+    return pb(buf, 2);
+}
+
 /* the saved game number_asked loaded over the map that was set up; a
  * file that is not there or not one of these leaves all as it is.  The
  * sound's two switches stay as the menu has them. */

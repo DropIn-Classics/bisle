@@ -136,6 +136,19 @@ static void map_setup(fptr work0, fptr *palette, fptr *orders, fptr *cursor_lib,
     SFP(game_txt, p);
     p = hadd(p, 0x3E8);
     *spare = p;
+    if (bi_prog == BI_MOON && (GW(game_flags) & 0x200)) {
+        /* MOON.EXE (T070B:04F9): a saved game's map is the one its header
+         * names, and CODES.DAT's entry of that map says whether the
+         * computer's table is loaded (400h), as the menu's code does */
+        t262a_000e(pad_box_text(FP(text_insert_save)));
+        SW(map_number, (uint16_t)moon_save_map(p));
+        if (!load_file(p, make_path(1, -1, FP(name_codes), 5), work))
+            fatal_error(2);
+        if (pb(hadd(p, 10 * (int32_t)(int16_t)GW(map_number)), 6) == 2)
+            SW(game_flags, GW(game_flags) & ~0x400);
+        else
+            SW(game_flags, GW(game_flags) | 0x400);
+    }
     if (bi_prog == BI_MOON) {
         SW(parts_stored, (uint16_t)moon_parts(p, work));
         if ((int16_t)GW(parts_stored) < 0)

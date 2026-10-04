@@ -137,7 +137,11 @@ bytes), memory and video memory the same at pass 100. Loaded from the menus (key
 space, 33 down, 34 down, 35 enter, 37 enter, 39 0, 42 enter, 55 n at INSERT SAVE DISK; space
 there is player 0's fire and reached the map by time): the same at passes 1, 10 and 300 but for
 the video memory's lists (28930 bytes, the same number of non-zero bytes in another order; not
-looked into; neither page shows them). MOON's films at a map's end are its own routines (T070B:4703 `moon_win_film`, HQ.ANI or TOT.ANI, and
+looked into; neither page shows them). Found later by segdiff.py (T13CA against T148F): before
+the map is set up MOON shows the box once more, reads the save's header (T148F:0B21, `moon_save_map`)
+and takes the map's number from it, and sets game_flags 400h by CODES.DAT's entry of that map as the
+menu's code does (battle.c). mload.sh again: the same at pass 10 as before. A save loaded while the
+menu holds another map was not run. MOON's films at a map's end are its own routines (T070B:4703 `moon_win_film`, HQ.ANI or TOT.ANI, and
 T070B:49ED `moon_end_film`, END.ANI and five lines of text, in battle.c where BATTLE.EXE plays play_anim
 and end_credits). Checked with the map's end poked in (game_flags, F2902:4155, linear 2D8D5, 04CFh at
 pass 30 of map 0, two computers, made 04DDh, 24DDh for the other film, 04FDh for the last map): the
