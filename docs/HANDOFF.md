@@ -135,7 +135,14 @@ menu's entry (port/README.md; "The port" below).
   box by time, T=60:n, as that box loop is a tight poll whose hit count
   races through any number within the first box): loads of map 5's and
   of map 0's save are the same at the map's pass 10 in all memory and
-  all video memory, the lists too. Next: a game of people to a map's end.
+  all video memory, the lists too. A game of people to a map's end
+  (`mpend.sh 25 3100 MAP...`: mpvp.sh's driven cursors, 25 changes of
+  phase 120 passes apart, then game_flags poked to DDh at map pass
+  3100, compared at the statistics' wait, key_wait's 100th pass): maps
+  24..31 and 33 all the same in far data and all video memory (DATA
+  151..152 bytes, the music's and timers' as in mend.sh's runs). A real
+  end of a people's game (a headquarters taken by keys) was not
+  scripted; whether a fight happened in these games was not looked at.
 - MOON's films at a map's end (2026-10-03): MOON.EXE does not call
   play_anim there but two routines of its own, T070B:4703 (HQ.ANI or
   TOT.ANI with .PAL and .SND, by game_flags 2000h) and T070B:49ED
