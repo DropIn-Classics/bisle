@@ -123,8 +123,10 @@ both pages; later maps 19 and 32 too, and maps 5, 7, 9 also in the video memory'
 change to the fight scene's edge pieces: all 25 maps a computer can play the same at their ends.
 Maps 24 to 31 and 33, which only two people can play (2026-10-04, scratch mpvp.sh): both cursors'
 state poked to 5 and F1 given ten passes later, every 60 map passes from 30, 15 times; at map pass
-1000 (round 7) memory and all video memory the same on all nine, but the music's place. No unit
-was moved, so their moves, fights and ends are not checked.
+1000 (round 7) memory and all video memory the same on all nine, but the music's place. With both
+people's cursors driven between the changes by a fixed pseudo-random walk of keys (25 changes, 120
+passes apart): at pass 3000 (round 12) the same on all nine (the input counters' clock phase aside);
+units moved, but whether a fight happened and the maps' ends are not checked.
 A game saved and loaded in MOON (2026-10-04, scratch msave.sh and mload.sh): MOON's header is 14h
 bytes (3, 7, the map's number, a byte not written, then BATTLE's fields; save.c), and the message
 box before load_game takes its text from the setup's data (`text_insert_save`, F280C:000Eh; the

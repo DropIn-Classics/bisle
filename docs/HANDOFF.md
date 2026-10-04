@@ -89,8 +89,19 @@ menu's entry (port/README.md; "The port" below).
   byte is one, presumably the key events too; not checked): N=15 fits, 40 did not. At pass
   1000, round 7, all nine the same in memory and video memory (DATA
   only the music's and timers' place). F2902 is linear 29780 in both
-  dumps (base 76h). Next: moves and fights of people (keys by place
-  for the cursor), or what else MOON's segments hold (segdiff.py).
+  dumps (base 76h). Then with the cursors driven (`W=120 mpvp.sh 25
+  3000 MAP...`, mpk.py: between the changes both people's keys in a
+  fixed pseudo-random walk, each held 3 passes; player 1's keys x v d
+  c and Ctrl from its table DATA:0AEB in a dump): at pass 3000, round
+  12, all nine the same in memory and video memory; units were seen
+  moved out of map 24's headquarters (not looked at further, no fight
+  known to have happened). DATA besides the music: the input counters'
+  clock phase (above) and on map 33 key_scan+1 (50h against 20h; the
+  last scancode, presumably the same phase thing, not checked). For
+  this doskit's runner takes a -keysat per place now (pcmp.py gives
+  each place its own), so only pokes and breaks count to the 64.
+  Next: a game of people to a map's end, or MOON's segments
+  (segdiff.py).
 - MOON's films at a map's end (2026-10-03): MOON.EXE does not call
   play_anim there but two routines of its own, T070B:4703 (HQ.ANI or
   TOT.ANI with .PAL and .SND, by game_flags 2000h) and T070B:49ED
