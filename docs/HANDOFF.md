@@ -108,9 +108,20 @@ menu's entry (port/README.md; "The port" below).
   routine T1867:034E is never called), T223C (in the port), T13CA (the
   save's version byte 3 is in the port; the header read before the map's
   setup was not, done now), T0408, T1090, T1ED2 (encoding only).
-  `sdctx.py BSEG MSEG J` prints MOON's lines at a hunk's index J. Next:
-  T17C0 and T1ABC's extra tests and routine, then the larger counts;
-  a save loaded with another map in the menu is to be run.
+  `sdctx.py BSEG MSEG J` prints MOON's lines at a hunk's index J.
+  sdcmp.py now masks registers and stack slots too; with that every
+  segment's remaining hunks were read (T0708, T0BA0, T0D36, T0E9B,
+  T1938, T1C04, T15AC, T1B01, T1F5A, T2112, T17C0, T1ABC): all are in
+  the port already (neighbours64, cost_map, find_path, the overview
+  and its scale, moon_parts' loader T0DA1:16AE..19B0, computer_assess,
+  much_weaker, computer_plan's C040h and the count test, task_move's
+  stage 7, tasks' +6 test 4, scene_ground) or are the compiler's
+  (operands swapped with the jump, other registers). T0F3E:094A..0C64
+  is draw_overview (MOON.hints names only overview_dot there). So
+  segdiff finds nothing more than the save's map. Not compared this
+  way: hunks with other constants but no other test (offsets of the
+  data, mostly the per-title addresses). Next: a save loaded with
+  another map in the menu, a game of people to a map's end.
 - MOON's films at a map's end (2026-10-03): MOON.EXE does not call
   play_anim there but two routines of its own, T070B:4703 (HQ.ANI or
   TOT.ANI with .PAL and .SND, by game_flags 2000h) and T070B:49ED
