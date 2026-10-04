@@ -119,9 +119,12 @@ A game of two computers on map 0 played to its end (pass 8826, round 16, the hea
 scratch mend.sh): at the statistics' wait (key_wait's 100th pass) memory and video memory the same,
 the film before it included.
 Maps 1 to 23 so too (2026-10-04): the same at their ends (passes 14988 to 57414) in memory and
-both pages, maps 5, 7, 9 with a few bytes of the video memory's lists other, as map 20; map 19 not
-decided (the original cut off before its end), maps 24 to 33 not run (the menu keys did not start
-them).
+both pages; later maps 19 and 32 too, and maps 5, 7, 9 also in the video memory's lists after the
+change to the fight scene's edge pieces: all 25 maps a computer can play the same at their ends.
+Maps 24 to 31 and 33, which only two people can play (2026-10-04, scratch mpvp.sh): both cursors'
+state poked to 5 and F1 given ten passes later, every 60 map passes from 30, 15 times; at map pass
+1000 (round 7) memory and all video memory the same on all nine, but the music's place. No unit
+was moved, so their moves, fights and ends are not checked.
 A game saved and loaded in MOON (2026-10-04, scratch msave.sh and mload.sh): MOON's header is 14h
 bytes (3, 7, the map's number, a byte not written, then BATTLE's fields; save.c), and the message
 box before load_game takes its text from the setup's data (`text_insert_save`, F280C:000Eh; the

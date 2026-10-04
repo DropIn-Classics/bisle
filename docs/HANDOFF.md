@@ -80,9 +80,17 @@ menu's entry (port/README.md; "The port" below).
   the port ended at pass 86627 (round 34); at pass 70000 (t=5687 s of
   the runner) the same in memory and all video memory; with UNTIL=7500
   the same at its end (pass 86627, round 34, t=6911 s), lists too. So
-  all 25 maps a computer can play are the same at their ends. Next: a
-  game of two people on maps 24..31,
-  33 (keys by place).
+  all 25 maps a computer can play are the same at their ends. Maps
+  24..31, 33 with two people (`mpvp.sh N PASS MAP...`): cvcmap.py's
+  menu keys start them with both players people (the toggles keep
+  HUMAN); both cursors' state poked to 5 (linear 2D9DA, 2DA0B) and F1
+  ten passes later changes the phase, so N changes without a unit
+  moved. The runner takes at most 64 -break/-log/-poke (each poked
+  byte is one, presumably the key events too; not checked): N=15 fits, 40 did not. At pass
+  1000, round 7, all nine the same in memory and video memory (DATA
+  only the music's and timers' place). F2902 is linear 29780 in both
+  dumps (base 76h). Next: moves and fights of people (keys by place
+  for the cursor), or what else MOON's segments hold (segdiff.py).
 - MOON's films at a map's end (2026-10-03): MOON.EXE does not call
   play_anim there but two routines of its own, T070B:4703 (HQ.ANI or
   TOT.ANI with .PAL and .SND, by game_flags 2000h) and T070B:49ED
