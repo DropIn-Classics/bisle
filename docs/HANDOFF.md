@@ -78,8 +78,10 @@ menu's entry (port/README.md; "The port" below).
   9 again with the change: the same at their ends, the lists too. Map
   32 (UNTIL=6000): the original was cut off at pass 74188 (round 18),
   the port ended at pass 86627 (round 34); at pass 70000 (t=5687 s of
-  the runner) the same in memory and all video memory. Next: map 32 to
-  its end with UNTIL=7500 or so; a game of two people on maps 24..31,
+  the runner) the same in memory and all video memory; with UNTIL=7500
+  the same at its end (pass 86627, round 34, t=6911 s), lists too. So
+  all 25 maps a computer can play are the same at their ends. Next: a
+  game of two people on maps 24..31,
   33 (keys by place).
 - MOON's films at a map's end (2026-10-03): MOON.EXE does not call
   play_anim there but two routines of its own, T070B:4703 (HQ.ANI or
