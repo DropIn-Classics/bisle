@@ -73,8 +73,14 @@ menu's entry (port/README.md; "The port" below).
   cannot be played by two computers: the original's player menu
   (run.py -shotevery) keeps both HUMAN when toggled, as CODES.DAT says
   (against the computer 0..23 and 32 only); a game there needs keys for
-  two people. Map 32 and map 19 (UNTIL=6000) run again, maps 5, 7, 9
-  again with the change: see below if written, else not done.
+  two people. Map 19 with UNTIL=6000 (build before the change): ends at
+  pass 57671, round 11, the same in memory, pages and lists. Maps 5, 7,
+  9 again with the change: the same at their ends, the lists too. Map
+  32 (UNTIL=6000): the original was cut off at pass 74188 (round 18),
+  the port ended at pass 86627 (round 34); at pass 70000 (t=5687 s of
+  the runner) the same in memory and all video memory. Next: map 32 to
+  its end with UNTIL=7500 or so; a game of two people on maps 24..31,
+  33 (keys by place).
 - MOON's films at a map's end (2026-10-03): MOON.EXE does not call
   play_anim there but two routines of its own, T070B:4703 (HQ.ANI or
   TOT.ANI with .PAL and .SND, by game_flags 2000h) and T070B:49ED

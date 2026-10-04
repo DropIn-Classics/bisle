@@ -95,7 +95,7 @@ the original, since the change of phase loads other files over the buffer; the s
 drawn in colour base 60h for MOON, 5Fh for BATTLE; not run for 6000, nor for fights of other units).
 The scene's pieces 3 and 4 where two grounds meet: BATTLE puts them at ground kinds 2 and 5, MOON
 (T2250:037A) at kind 5 only (fight.c `edged`); MOON's map 20, two computers, pass 5654 (a fight scene; its
-grounds' kinds not looked at): the lists of covered areas differed by 291 bytes, now all video memory the same.
+grounds' kinds not looked at): the lists of covered areas differed by 291 bytes, now all video memory the same; maps 5, 7 and 9, whose lists differed at their ends, now the same there.
 MOON's other maps, two computers each (scratch mcvall.sh, 2026-10-03), compared at pass 1000 (far data
 segments and video memory): three more differences of MOON's computer found and done: computer_assess
 step 1 (T18B8:0FF9) leaves out the three +19h for a type with 20h in its +10h and adds the values of
