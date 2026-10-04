@@ -98,6 +98,13 @@ static void draw_pieces(fptr list, int x0, int dy)
         piece(x0 + pb(list, 2 + 3 * i), pb(list, 3 + 3 * i) + dy, pb(list, 1 + 3 * i));
 }
 
+/* a ground kind that gets pieces 3 and 4 where it meets another: 2 and 5
+ * in BATTLE.EXE, 5 only in MOON.EXE (T2250:037A) */
+static int edged(unsigned kind)
+{
+    return kind == 5 || (kind == 2 && bi_prog != BI_MOON);
+}
+
 /* the target's ground above, the attacker's below; between them a black
  * ragged band for a fight over a distance, else a piece where the two
  * grounds differ */
@@ -123,11 +130,11 @@ static void scene_ground(int side, int far_apart)
         }
         return;
     }
-    if (kb != 2 && kb != 5 && (ka == 2 || ka == 5)) {
+    if (!edged(kb) && edged(ka)) {
         piece(x0, 0x58, 3);
         piece(x0 + 0x4C, 0x58, 3);
     }
-    if (ka != 2 && ka != 5 && (kb == 2 || kb == 5)) {
+    if (!edged(ka) && edged(kb)) {
         piece(x0, 0x50, 4);
         piece(x0 + 0x4C, 0x50, 4);
     }

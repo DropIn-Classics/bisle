@@ -66,13 +66,15 @@ menu's entry (port/README.md; "The port" below).
   57671): run it again with UNTIL=6000. Maps 5, 7, 9 differ in the
   video memory's lists only (312, 417, 21 bytes), as map 20 (above):
   in map 20 they come from a fight scene in pass 5654 (the stored
-  ground pieces, 7E84..8ADB; the port writes 7 offsets more), not
-  found. Maps 24 to 33 not run: on map 24 the original stayed at round
-  0 for 4000 s and the port never reached key_wait, so the menu keys
-  of cvcmap.py are presumably wrong for them (their CODES.DAT records
-  have 2 in the field cvcmap prints as `step`; not checked). Look at
-  the original's screen on map 24 first (run.py -shot). Next: that,
-  map 19 again, the lists.
+  ground pieces, 7E84..8ADB; the port writes 7 offsets more). Found
+  (later): MOON's scene_ground (T2250:037A) puts pieces 3 and 4 at
+  ground kind 5 only, BATTLE's at 2 and 5 (fight.c `edged`); map 20 at
+  pass 5654 now the same in all video memory. Maps 24 to 31 and 33
+  cannot be played by two computers: the original's player menu
+  (run.py -shotevery) keeps both HUMAN when toggled, as CODES.DAT says
+  (against the computer 0..23 and 32 only); a game there needs keys for
+  two people. Map 32 and map 19 (UNTIL=6000) run again, maps 5, 7, 9
+  again with the change: see below if written, else not done.
 - MOON's films at a map's end (2026-10-03): MOON.EXE does not call
   play_anim there but two routines of its own, T070B:4703 (HQ.ANI or
   TOT.ANI with .PAL and .SND, by game_flags 2000h) and T070B:49ED
