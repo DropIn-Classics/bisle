@@ -655,4 +655,26 @@ stopped by the host). The setup screen's item "Title" was looked
   sure, to be heard against the original: HANDOFF.md's Next, point 5).
   Not tried: a controller.
 
-Not built: macOS, Linux.
+- macOS (2026-10-06; macOS 15.7.3 on x86_64, Apple clang 17.0.0 of the
+  Command Line Tools, SDL2 2.32.10 as a framework in
+  `~/Library/Frameworks`, found by doskit's `sdl2-flags.sh`):
+  `sh port/build.sh` builds both programs with no error and no warning
+  (`-Wall -Wextra`), no source changed for it. The headless build on
+  ISLE's first map (space at the title's 200th pass, enter at the menu's
+  30th, keys by passes) against the original in the runner (built here
+  by run.py), both stopped at the map loop's 200th pass: all 256 KB of
+  video memory the same, the game's own code segments and all far data
+  segments the same, the rest the kinds of differences above (the C
+  library's startup, the routines' scratch variables, the stack's
+  leftovers, the timers' and input counts, `song_wait`, and the mouse's
+  variables: the runner has a mouse). The first map's picture of a run
+  with the setup screen passed by scripted keys was looked at
+  (`DK_SHOTS`). The window build was started for 8 s and was still
+  running then. Not checked: anything seen or heard in the window (the
+  setup screen, the picture, the sound, full screen, the keys, a
+  controller), DESERT and MOON, the intro, the other comparisons of
+  this list, a build for arm64, a package as doskit/docs/RELEASE.md
+  wants it (the binary finds SDL2 by an rpath into this machine's
+  framework folder).
+
+Not built: Linux.

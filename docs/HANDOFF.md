@@ -23,6 +23,22 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- The port on macOS (2026-10-06, branch dropin-team/port-macos-build):
+  `sh port/build.sh` built the window and the headless program at once,
+  without a warning, on macOS 15.7.3 (x86_64) with the Command Line
+  Tools' clang and SDL2 as a framework in `~/Library/Frameworks` (no
+  Xcode, no Homebrew or pkg-config needed: doskit's `sdl2-flags.sh`
+  finds the framework). ISLE's first map at its 200th pass is the
+  original's (port/README.md, Checked). The comparison without the
+  scratch pcmp.py, which this machine does not have: two files of
+  `N KEY+` / `N KEY-` lines for `run.py -keysat LT1727_031E F1 -keysat
+  LT1090_058B F2 -break 'LT0708_135C#200' -ram O.ram -vram O.vram
+  ISLE/BATTLE.EXE`, the port with `BI_BREAK='map_pass#200'
+  BI_KEYSAT='title_pass 200:39 201:B9;menu_pass 30:1C 31:9C'`, `BI_RAM`
+  and `BI_VRAM`, then `memcmp.py src/BATTLE.hints O.ram P.ram --vram
+  O.vram P.vram`. Left: the window looked at and listened to by a
+  person, DESERT and MOON, arm64, Linux, the packages.
+
 - MOON's other maps (2026-10-04): a game of two computers on each of
   the 34 maps compared at pass 1000 (`build/scratch/mcvall.sh PASS
   MAP...`, one log each; `mbis.sh MAP LO HI` finds the first pass whose
