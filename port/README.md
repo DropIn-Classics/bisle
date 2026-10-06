@@ -374,6 +374,13 @@ and Linux, which the port does not call.
 - Done since on branch dropin-team/rc1-readme-linux: dist/README.txt's
   Keys are the game's keys as the code reads them; doskit/docs/RELEASE.md's
   point 6 is met.
+`dist/uninstall.sh` and `dist/uninstall.cmd` go into the packages as
+they are (the Mac package has the first as `uninstall.command`): they
+remove what the port copied and wrote, after asking
+(doskit/docs/RELEASE.md, point 8). Tried on macOS with a made-up data
+folder only; the .cmd not at all here.
+
+(which packages were started from a download, on which systems)
 
 ## Checked
 

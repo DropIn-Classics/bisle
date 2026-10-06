@@ -244,6 +244,44 @@ menu's entry (port/README.md; "The port" below).
   Player 2's: Alt, Ctrl fire, C down, D up, F up, X left, V right, so
   dist/README.txt's "D or F up" is right; it is not changed. The 7th
   byte of a record is not understood.
+- The uninstall scripts in this repository (2026-10-06, branch
+  dropin-team/uninstall-bisleside, from origin/master 518020b).
+  - doskit's pointer moved from b051e8f to a245e40, doskit's master
+    now. That brings two things: the template's uninstall scripts, and
+    the kit's changed cymbal (runtime/opl.c, 1b90e5d): from this
+    commit on the port's music has the cymbal as a mixture of high
+    frequencies and not as a low sine; everything else sounds sample
+    for sample as before (the entries on the drums, where merged, have
+    the measurements). Both builds were made with it on macOS; nobody
+    listened.
+  - port/dist/uninstall.sh and uninstall.cmd are the template's with
+    battle-isle and Battle Isle filled in, nothing else changed (the
+    .cmd keeps its CRLF line ends, the .sh its executable bit).
+    .github/workflows/build.yml got the template's four changed places
+    and is the template's again line for line (with the name filled
+    in): the Windows package gets uninstall.cmd, the Linux one
+    uninstall.sh, the Mac one the same script as uninstall.command.
+    port/dist/README.txt got the template's section "Removing".
+  - Dry runs (macOS, sh): against this machine's real data folder
+    without a terminal it listed the one question it would ask (no
+    `game` there: the folder with the saves, 4.0K) and removed
+    nothing; in a made-up package and data folder (DK_DATA_DIR, names
+    with a space) `--yes` removed the data folder's `game` and the
+    `game` beside the script and kept the saves and settings, `--yes
+    --all` removed the data folder, the script's folder stayed.
+  - Seen on the way, not changed: port/dist/README.txt's "New
+    versions" is older than the template's (the template has the first
+    start's question, F2 and U; this file still has the line "Look for
+    new versions" and Enter), and its Keys still ends with the
+    template's "(the game's own keys)".
+  Not verified: uninstall.cmd here (no Windows; the kit's selftest ran
+  it on the lead's machine; a run with the fix a245e40 was not seen
+  from here);
+  Linux; the answers typed on a terminal with this copy (the kit's
+  selftest types them on the template's); a double click on
+  uninstall.command and Gatekeeper's word on a quarantined one; the
+  workflow on GitHub's runners and a package made by it; the port's
+  comparisons beyond check.py with the moved kit.
 
 - Played through and won (2026-10-06, the user on Windows): ISLE's
   first map (CONRA) in the window build, won by taking the
