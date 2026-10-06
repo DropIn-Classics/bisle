@@ -82,6 +82,68 @@ menu's entry (port/README.md; "The port" below).
   Found for the release: port/dist/README.txt's Keys section still
   has the template's "(the game's own keys)"; RELEASE.md's point 6
   wants the keys. Not changed here.
+- The kit's drums, changed on a kit branch (2026-10-06; doskit branch
+  dropin-team/opl-reference, commit 0f8bee2 on doskit's master b051e8f, NOT merged
+  there and not what this repository's doskit points at; this note on
+  dropin-team/opl-reference-note). It follows the entry "The AdLib's
+  drums" below and the rule there (only what is certainly wrong).
+  - The source: Yamaha's YM3812 application manual (read on
+    archive.org), nothing else. It says of the rhythm mode: the bass
+    drum is FM of two slots, the tom-tom is sine waves, and the snare
+    drum, top cymbal and hi-hat are "simulated by composite
+    frequencies": the chip combines "a number of frequencies" and a
+    white noise generator, the envelope applied after; the two
+    channels' frequencies are best set 3 to 1. It does not say which
+    frequencies are combined, nor how, nor at what levels. No
+    emulator's code was read or used, and the bit patterns that such
+    code is known for were deliberately not written from memory.
+  - Two commits there. The first (0f8bee2) also took the operator's
+    wave out of the hi-hat's and the snare's level; the second (HASH2)
+    puts those two back exactly as they were, by the lead's narrower
+    order: only what is certainly wrong (the cymbal), the rest only
+    with a reference that shows it, and none shows the hi-hat or the
+    snare alone. What the branch changes against the kit's master is
+    so the cymbal only.
+  - Changed in runtime/opl.c's drums(): the cymbal is a signal of full
+    swing times its operator's amplitude (envelope and level); the
+    operator's own wave, made absolute and given the sign of the same
+    phase, no longer makes it (that was a sine of the channel's
+    frequency). It is a composite: the exclusive or of squares 8 and
+    32 times the frequencies of the hi-hat's and the cymbal's phase
+    generators. Those four frequencies are a choice and the source
+    says so; the manual gives no more than "composite". Its mean
+    power is as before (full swing taken at a sine's mean power).
+  - Left as it was: the hi-hat, the snare, the bass drum, the tom-tom
+    and all of the melodic path.
+  - Verified by replay: the first map's logged register writes through
+    the old and the new opl.c give the same file byte for byte with
+    the drums' keys masked (the melody), and for the bass drum, the
+    tom-tom, the snare and the hi-hat each alone; only the cymbal's
+    differs. The whole replay's level is -25.1 dB RMS and -10.0 dB
+    peak as before.
+  - The kit's test (tests/opl/opltest.c, in selftest.py; `selftest
+    ok`): a 440 Hz note's frequency and level with the rhythm mode off
+    and on; the tom-tom a sine at twice an operator's level; the
+    cymbal's sign changing more than 1000 times a second with its
+    channels at 40 and 50 Hz, at one level over every 2 ms; the hi-hat
+    noise and the snare its tone (their kind only); each silent 10 ms
+    after its key. The kit's master fails it at the cymbal (80 changes
+    of sign a second).
+  - Against the recording (a measurement, not a target; the entry
+    below has the method): at the cymbal's 33 key-ons the recording's
+    4-20 kHz was 4.4, 7.9, 15.2, 10.9 and 16.4 dB above the replay at
+    0, 50, 100, 150 and 200 ms; with the branch's opl.c it is 3.8,
+    4.9, 3.8, 3.4 and 3.8 dB above. The cymbal alone now has 49% of
+    its energy in 1-4 kHz and none below 100 Hz (before: all of it
+    there).
+  Not verified: the chip (no chip, no chip recording: the composite's
+  frequencies are a choice and may be far from the chip's); by ear
+  (nobody listened, and by the rule nobody is to tune it so); gcc,
+  MSVC, Linux and Windows (built and run with Apple clang 17 on macOS
+  x86_64 only); the port built with it (this repository's doskit is
+  unchanged, so the port sounds as before until the kit branch is
+  merged and the pointer moved); DESERT, MOON and other songs; the
+  runner's selftest note is a melodic one and unchanged.
 
 - Played through and won (2026-10-06, the user on Windows): ISLE's
   first map (CONRA) in the window build, won by taking the
