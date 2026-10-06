@@ -23,6 +23,51 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- The palette's two leftovers (2026-10-06, branch
+  dropin-team/palette-leftovers, on top of dropin-team/state-flags):
+  after_map's fades and change_phase's set_palette, the two callers
+  the entry "The palette's levels" below had not reached, are now seen
+  in runs of the original (ISLE's first map; src/BATTLE.hints at
+  fade_in and at set_palette). Both runs get there by pokes, not by
+  play.
+  - after_map: beside the poked end of the map (`-poke
+    'LT0708_135C#30' 2AB5C DD`, the film qa) the round's count is
+    poked to 1 (`-poke 'LT0708_135C#30' 2AB6D 01`, F27EE:251D: with 0
+    after_map draws nothing and returns, as in the earlier runs), and
+    a key is given by time (`-key 40 space`). After the film and its
+    fade_out: after_map at 29.18 s opens STATS.IFF, 00.PAL, WINNER.SND,
+    STATS.LIB and CODES.DAT, reaches T15AC:05DA at 29.413 s, fade_in
+    from 29.420 s (64 calls, levels 0 to 252), waits, and at the key
+    fade_out from 40.049 s (64 calls, 255 to 3); then the menu with
+    its own fade_in.
+  - change_phase: both cursors' states are poked to 5 (`-poke
+    'LT0708_135C#100' 2AD1B 05 -poke 'LT0708_135C#101' 2AD4C 05`,
+    F27EE:26B4 and 26E5 +17h: the change of phase asked for) and F1
+    is pressed at the loop's 103rd pass; change_phase runs (24.34 s),
+    with no orders and no fight. With game_flags' 1000h poked in at
+    its entry (`-poke change_phase 2AB5D 10`) it reaches T0408:1A99,
+    opens MAP\00.PMP and 00.PAL, calls set_palette once at level FFh
+    (the 386th call of the run, AX 00FFh), then loads cursor.LIB,
+    shop.LIB, bigunit.LIB and .DAT, GAME.SND and GAME.FXX, and clears
+    the bit (the word's high byte was 0 at the end). Without that poke
+    the same run reaches T0408:1A99 and loads nothing.
+  - Found on the way: that set_palette is not followed by a fade, so
+    after a change of phase that showed a fight or a film the map
+    stands at level FFh and not at the 252 that fade_in left: stopped
+    six passes after the change (`-break 'LT0708_135C#110' -vgastate
+    -ram`), picture_palette was 00.PAL's 768 bytes as they are and the
+    DAC's first 32 entries were the file's at level 255; in the run
+    without a change they were the file's at 252 (10 of the 96 values
+    one higher now). The port goes through the same set_palette
+    (phase.c), so it does the same; not compared here.
+  Nothing named, no port source changed.
+  Not verified: both by play (a round really played, a fight or a film
+  really shown: the pokes stand in for them; what a real fight's scene
+  does to the palette in between is not seen here); the statistics'
+  picture and what after_map draws (the fades only); the DAC beyond
+  32 entries; the level after a real fight in the port and the
+  original side by side; DESERT and MOON.
+
 - The state flags (2026-10-06, branch dropin-team/state-flags, on top
   of dropin-team/opl-drums; open question 1): every instruction of
   BATTLE.ASM that names game_flags (F27EE:250C, 71) or menu_flags
@@ -2677,7 +2722,8 @@ For the port (behaviour):
 4. The palette level: answered for BATTLE.EXE (Start here, "The
    palette's levels"): the callers of fade_in and fade_out are read
    and the films' 6-bit palettes are set by film_palette (T2248:1077).
-   Left: after_map's fades and change_phase's set_palette in a run,
+   after_map's fades and change_phase's set_palette are seen in runs
+   with pokes (Start here, "The palette's two leftovers"). Left:
    MOON's films, the intro.
 5. Saving and the high scores: where save_game writes (save_file or its
    own), where the name "00" comes from (the position asked for at LOAD
