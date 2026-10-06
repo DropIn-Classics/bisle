@@ -461,6 +461,7 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   the memory and the video memory after it the same. Loaded again from
   the menus (DISK, LOAD, 0, a key at PLEASE INSERT DISK, a key at the
   message box): at the map's 10th pass the same.
+<<<<<<< HEAD
   The same with the digit 3 (2026-10-06, keys by passes: title_pass 200
   space; menu_pass 30 enter; map_pass 50, 60 left, 70 space and 75 left,
   100, 110 x, 120 lctrl and 125 x, 150 d; key_wait 200 p; save_key 100
@@ -491,6 +492,27 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   DESERT's memory was compared with DESERT's hints, its keys at the same
   labels (its code there reads as BATTLE's). Not run:
   the digits 1, 2, 4, 6, 7, 8, MOON, a digit without a save at LOAD.
+=======
+- A save's digit in MOON and a digit with no save at LOAD (2026-10-06,
+  branch dropin-team/save-leftovers). MOON, map 0 as the menu has it:
+  both cursors' state (+17h, linear 2D9DA and 2DA0B) poked to 5 at
+  map_pass 30 and 31, d at map_pass 150, p at key_wait 200, 7 at
+  save_key 100 never let go: the original (key_wait LT0DA1_0D0F,
+  save_key LT148F_0174) and the port wrote 07.DAT, byte for byte the
+  same (37817 bytes); at map_pass 400 the video memory the same, the
+  memory the same but for the kinds of differences above (DATA up to
+  14FEh). Loaded with 7 (the original's keys by time: 14 space, 33 down,
+  34 down, 35 enter, 37 enter, 39 7, 42 enter, 55 n; number_asked
+  F2902:415B 7 at load_game's entry; the port's by passes: menu_pass
+  30, 40 down, 50, 60 enter, ask_key 100 7, key_wait 200 n, box_key 100
+  n): at map_pass 10 the video memory the same and the memory as
+  before (DATA up to 153Dh). ISLE, LOAD with 5 and only 09.DAT there:
+  the original goes back to the DISK menu without a message box; at
+  menu_pass 1000 the video memory the same and the memory the same but
+  for the kinds above. Not run: MOON's load by passes in the original
+  (box_key's place LT26FE_0116 did not end the box with n or p at its
+  passes; not looked into), MOON with a digit and no save.
+>>>>>>> origin/dropin-team/save-leftovers
 - A map's end, on map 03 with a unit poked beside player 1's
   headquarters and moved onto it: the change of phase with the film of
   the building taken (ANIM\br; the 2nd and 25th frame), the message and
