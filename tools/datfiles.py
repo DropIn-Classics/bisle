@@ -412,6 +412,12 @@ def main():
     total = bad = 0
     for d in a.dirs or list(game_dirs(root)):
         rel = d if a.dirs else os.path.relpath(d, root)
+        if not os.path.isdir(d):
+            # a file or a path of another system given for GAMEDIR
+            print('%s: not a folder (GAMEDIR is the folder of the .DAT files)' % d)
+            total += 1
+            bad += 1
+            continue
         ground = []
         for name, read, write in (('UNIT.DAT', read_units, write_units),
                                   ('GROUND.DAT', read_ground, write_ground),
@@ -422,7 +428,7 @@ def main():
                 data = unpacked(find(d, name))
                 recs = read(data)
             except (OSError, ValueError) as e:
-                print('%s\\%s %s' % (rel, name, e))
+                print('%s %s' % (os.path.join(rel, name), e))
                 bad += 1
                 continue
             same = write(recs) == data
@@ -446,7 +452,7 @@ def main():
                         print('%02X flags %04X units %02X cost %3d %3d scene %d' % (
                             n, r['flags'], r['units'], r['cost'], r['cost2'], r['scene']))
                 line = ground_summary(recs)
-            print('%s\\%s %s; %s' % (rel, name, line,
+            print('%s %s; %s' % (os.path.join(rel, name), line,
                                      'written back identical' if same else 'WRITTEN BACK OTHERWISE'))
     print('%d files, %d not read or not written back' % (total, bad))
     return 1 if bad else 0
