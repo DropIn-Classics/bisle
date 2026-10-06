@@ -879,8 +879,23 @@ name DATA:06E6 input1_events
 name DATA:0706 key_scan
 name DATA:0708 key_char
 name DATA:070A key_there
-; the mouse (T2683:000A, T263D:000A; INT 33h)
+; (not mapped) name T2683:000A mouse_start
+; (not mapped) name T263D:000A mouse_read
+; (not mapped) name T267C:000E mouse_stop
+; (not mapped) name T268A:0006 mouse_rates
+; (not mapped) name T2354:0397 mouse_input
+; (not mapped) name T2354:04A0 mouse_centre
 name DATA:070C mouse_on
+name DATA:070E mouse_by_timer
+; (not mapped: DATA:0710 would be mouse_record and mouse_x) name DATA:040E mouse_record
+; (not mapped: DATA:0712 would be mouse_shown and mouse_threshold and mouse_y) name DATA:0410 mouse_shown
+; (not mapped: DATA:0712 would be mouse_shown and mouse_threshold and mouse_y) name DATA:0416 mouse_threshold
+; (not mapped: DATA:0710 would be mouse_record and mouse_x) name DATA:041A mouse_x
+; (not mapped: DATA:0712 would be mouse_shown and mouse_threshold and mouse_y) name DATA:041C mouse_y
+name DATA:0730 mouse_left
+name DATA:0734 mouse_right
+; (not mapped) name F2740:0438 mouse_player
+; (not mapped) name F2740:0466 mouse_speed
 ; the blocks T2619:0004 got from DOS (INT 21h AH=48h): their number and
 ; their segments
 name DATA:0744 blocks_count
