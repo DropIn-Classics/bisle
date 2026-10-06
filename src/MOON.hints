@@ -1717,7 +1717,7 @@ name CODE:19E2 effect_silence
 name CODE:1A3E speaker_timer
 name CODE:1AE5 speaker_note
 ; saving and loading a game: the file is <name>.DAT in the game's folder,
-; the name at F27EE:249C ("00" in the runs), made by make_path with no
+; the name at F27EE:249C (the digit's two places: "03" for 3 in a run), made by make_path with no
 ; directory. save_game ran at D (a run, 00.DAT created and written),
 ; load_game at the start of a map when F27EE:250C bit 200h is set, after
 ; DISK, LOAD, a position and a key at "PLEASE INSERT DISK" (T1090:0867

@@ -451,6 +451,22 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   the memory and the video memory after it the same. Loaded again from
   the menus (DISK, LOAD, 0, a key at PLEASE INSERT DISK, a key at the
   message box): at the map's 10th pass the same.
+  The same with the digit 3 (2026-10-06, keys by passes: title_pass 200
+  space; menu_pass 30 enter; map_pass 50, 60 left, 70 space and 75 left,
+  100, 110 x, 120 lctrl and 125 x, 150 d; key_wait 200 p; save_key 100
+  3, never let go): both wrote `03.DAT`, byte for byte the same, once
+  the port's data folder had the runner's `MAP\00.HI` (without it the
+  file differs in score_best, F27EE:2593, which the menu reads from
+  there); at map_pass 400 the video memory the same and the memory the
+  same but for the kinds of differences above (DATA below 2000h, the
+  timers' and interrupts' code segments, the stack). Loaded (menu_pass
+  30, 40 down, 50, 60 enter; ask_key 100 3, let go at 400; key_wait 200
+  p; box_key 100 p): number_asked 3 at load_game's entry in the
+  original; at map_pass 10 the video memory the same and the memory as
+  before. The port with only `03.DAT` in its folder gave the same
+  memory; with no save it did not reach map_pass 10 in 300 s (not
+  looked into what it waits at). save.c was not changed: it already
+  took 1..9 and 0 from the scancode. Other digits not run.
 - A map's end, on map 03 with a unit poked beside player 1's
   headquarters and moved onto it: the change of phase with the film of
   the building taken (ANIM\br; the 2nd and 25th frame), the message and
