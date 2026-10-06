@@ -1144,7 +1144,9 @@ name T2628:0004 file_close
 name T2653:0000 file_size
 ; T26D2:000A (name far, buffer far, length long): creates the file and
 ; writes the buffer in pieces below 8000h; 0 when all went (MAP\NN.HI
-; was written from here in a run; where save_game writes is not checked).
+; was written from here in a run). save_game does not call it: it opens
+; the file itself (file_open 1, AH=3Ch) and writes with T26DE:0008
+; (AH=40h), as a run's -dos showed (2026-10-06).
 name T26D2:000A save_file
 ; T2695:0004 (buffer far, name far, work far): opens the file and reads 8
 ; bytes. A packed file ("TPWM", then the unpacked length as a long) is
@@ -1611,7 +1613,9 @@ name T2536:0004 draw_column
 ; F27EE:251B is also what T15AC (after_map) sets to the map's number
 ; (F27EE:2523) and what names the .HI file: in the poked end of map 16
 ; it was 4, the loop's value, so MAP\04.HI was written (presumably the
-; poke's doing; a real end of a map not run).
+; poke's doing). In a real end (map 16 lost to the computer, 2026-10-06)
+; T15AC:03B0 set it to 10h, CODES.DAT was read, then the menu opened
+; MAP\16.HI (-watch, -dos).
 name T2479:000A copy_page
 ; T247D:0004: set_palette with the palette DATA:04A0 at the levels 0, 4,
 ; .. 252; T247D:002B at 255, 251, .. 3 (read, not run).
@@ -1791,8 +1795,11 @@ name CODE:1964 effect_silence
 name CODE:19C0 speaker_timer
 name CODE:1A67 speaker_note
 ; saving and loading a game: the file is <name>.DAT in the game's folder,
-; the name at F27EE:249C ("00" in the runs), made by make_path with no
-; directory. save_game ran at D (a run, 00.DAT created and written),
+; the name at F27EE:249C, made by make_path with no directory and
+; extension 5. save_game takes the digit key pressed at its box (scancode
+; 2..0Ah less 1, 0Bh 0) and T26EA:000F (a long, far text, width 2, flags
+; 4: decimal digits, filled with '0' to the width) writes it as two
+; digits: key 0 gives "00", key 3 "03" (a run: 03.DAT, 37815 bytes). save_game ran at D (a run, 00.DAT created and written),
 ; load_game at the start of a map when F27EE:250C bit 200h is set, after
 ; DISK, LOAD, a position and a key at "PLEASE INSERT DISK" (T1090:0867
 ; opens the file first to see that it is there).
