@@ -343,6 +343,12 @@ prescribes; a pushed tag `vX.Y` makes a release of them. `dist/README.txt`
 is the players' README in each package: fill in the game's keys and
 anything the game needs before the first release.
 
+`dist/uninstall.sh` and `dist/uninstall.cmd` go into the packages as
+they are (the Mac package has the first as `uninstall.command`): they
+remove what the port copied and wrote, after asking
+(doskit/docs/RELEASE.md, point 8). Tried on macOS with a made-up data
+folder only; the .cmd not at all here.
+
 (which packages were started from a download, on which systems)
 
 ## Checked
