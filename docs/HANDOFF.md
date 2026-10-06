@@ -694,8 +694,8 @@ games, each its own folder mounted as C: and started there:
   45 s), 48 left, 49 left, 50 space+, 50.6 left+, 51.5 space-, 52 left-,
   53 x, 54 x, 55 lctrl+, 55.6 x+, 56.5 lctrl-, 57 x-, 59 d, 62 0; for
   loading 14 space, 33 down, 34 down, 35 enter, 37 enter, 39 0, 42
-  enter. The save asks for no position; where its name "00" comes from
-  is not looked into. The path was found from the code (the key set,
+  enter. The save asks for no position; its name is the digit key
+  pressed (point 5 of the open questions). The path was found from the code (the key set,
   the cursor record's state 5, the message table; BATTLE.hints). Esc, Y leaves the map without a
   save question. Neither run reached any of the 4.1 KB of gaps (-cover,
   gaps.py: 0 ran).
@@ -2292,13 +2292,20 @@ For the port (behaviour):
 4. The palette level: fade_in and fade_out give set_palette its levels
    (above; their callers are not read), where the animations' 6-bit
    palettes are set.
-5. Saving and the high scores: where save_game writes (save_file or its
-   own), where the name "00" comes from (the position asked for at LOAD
-   is F27EE:2512, and T26EA:000F makes the name from it: not read), the
-   .HI file after a real end of a map (written and read back in runs of
-   a poked end, above; named by F27EE:251B, which after_map sets to the
-   map's number and the map's loop to its 4 ticks, and the scores'
-   screen takes its code by the same number).
+5. Saving and the high scores (2026-10-06, read and run; BATTLE.hints
+   at save_file and save_game): save_game writes on its own (file_open
+   with AH=3Ch, T26DE:0008 with AH=40h), not through save_file. Its name
+   is the digit key pressed at its box (scancode 2..0Ah less 1, 0Bh 0;
+   F27EE:2512 is LOAD's and plays no part), made two digits by
+   T26EA:000F (decimal, filled with '0' to width 2): the HANDOFF's save
+   keys with 3 instead of 0 created ISLE\03.DAT, 37815 bytes. A real end
+   (the CONRA game against the computer above, map 16 lost at about
+   534 s): after_map (T15AC:03B0) set F27EE:251B from 4 to 10h, then
+   CODES.DAT was read and the menu opened MAP\16.HI (none there); no
+   name was asked and nothing was written, back at the title menu by
+   560 s. Left: a .HI written after a real end (a map won, or a score
+   above the lowest of the file: the score of this loss not looked
+   at), the port's save names beyond 00.
 6. The animations: play_anim's names from ANIM\anim.fx (presumably),
    the .Axx/.FX/.PX formats, end_credits (T25A6:0655) and ab.fx.
 7. Sound (the AdLib's; the speaker's is left out on purpose): what
