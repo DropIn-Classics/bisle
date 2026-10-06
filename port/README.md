@@ -677,4 +677,19 @@ stopped by the host). The setup screen's item "Title" was looked
   wants it (the binary finds SDL2 by an rpath into this machine's
   framework folder).
 
-Not built: Linux.
+- Linux (2026-10-06; Debian 13, kernel 6.12 on x86_64, gcc 14.2.0,
+  SDL2 2.32.4 as pkg-config reports it, found by `sdl2-flags.sh`):
+  `sh port/build.sh` builds both programs with no error, no source
+  changed for it; gcc gives 10 `-Wrestrict` warnings (make_path in
+  files.c, anim_file in anim.c: strcpy/strcat between two strings of the
+  one memory image, which gcc cannot tell apart; the strings are at
+  different fixed places, so presumably harmless, not changed). The
+  headless build on ISLE's first map against the original in the runner,
+  as on macOS (both at the map loop's 200th pass): all 256 KB of video
+  memory the same, the segments T0408..T2248 the same; 13 bytes in CODE
+  and a few in T2354..T2470 differ, not looked at (presumably the kinds
+  of differences listed for macOS). The window build was started for 8 s without a
+  display (no X or Wayland in this session) and was still running then;
+  nothing seen or heard. Not checked: the window on a desktop, the
+  sound, full screen, a controller, DESERT and MOON, the intro, a
+  package as doskit/docs/RELEASE.md wants it.
