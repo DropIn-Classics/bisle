@@ -432,6 +432,18 @@ name CODE:26BB rand
 name T03FA:0288 film_wait
 ; (not mapped) name T2248:008E film_show
 ; (not mapped) name T2248:00E3 film_load
+; T2248:104D: draw_colour 0 (through DATA:0092), clear_page, flip_page,
+; copy_page: both pages black. T2248:1077: the 300h bytes at anim_palette
+; shifted left by 2 into picture_palette (through DATA:00CA), then
+; set_palette at level FFh. No fade: the picture before a film is faded
+; out by the caller, the film's first frames come at full level, and the
+; caller's fade_out after play_anim fades the film's palette (FFh .. 3).
+; In a run with qa (a map's end poked in, stopped at film_show's second
+; pass): picture_palette was qa.pal's 768 bytes times 4, and the DAC's
+; first 32 entries (all the runner's -vgastate prints) were (4n * 255) >>
+; 10 for the file's n, one less than n for every n but 0.
+name T03FA:1337 film_black
+; (not mapped) name T2248:1077 film_palette
 ; (not mapped) name T24C5:002E draw_frame
 ; (not mapped) name T25A6:0655 end_credits
 ; (not mapped) name T15AC:0007 after_map
