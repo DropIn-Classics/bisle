@@ -110,6 +110,70 @@ menu's entry (port/README.md; "The port" below).
   Also seen: this file had a NUL byte in the line about MOON's missing
   .PMP ("After the scene change_phase loaded"), so grep took the file
   for binary; the byte is taken out, what stood there is not known.
+- Map 30's stall traced to its end (2026-10-06, branch
+  dropin-team/map30-trace; open question 8a). In the original, two
+  computers on ISLE's map 30, the list goes round between node 0 and
+  node 290: node 0's +8 is 290 and node 290's +8 is 0, and the end node
+  2 with the key 7530h, the only one that stops every search, is not in
+  that ring. How it comes about, from three runs of the original:
+  - The call: find_path's 4147th (t=2132.18 s), unit 0Ah from 0282h to
+    0036h (column 3, row 1 of a map 24 wide), side 1, the list at
+    45F0:000C, called from 1B33:0424 as loaded. The run stopped at
+    2200 s is inside the search for a new node's place (CS:IP 0C17:1272,
+    the loop LT0BA0_1253..1267), DI (at) 2, SI (the next free node)
+    291, [BP-1Ch] (j) 290, [BP-1Ah] (the key) 34, the map loop's start
+    still at 30304 hits.
+  - The aim is not reached over the marked squares, so the main loop
+    comes to node 2 and takes it for a square. Its column and row are
+    not written by find_path: they held C2h and 03h (at the call's entry
+    nodes 2 on hold words that look like a list of squares' offsets,
+    03C2h, 03F4h, 0424h ..: what the buffer held before, not looked
+    into whose). Two neighbours of that place were marked and not
+    taken: column 2, row 1 became node 289 (key 34, put in after node 1
+    in the ordinary way: prev 1, next 7), and column 3, row 1, the aim
+    itself, became node 290 with the key 0.
+  - For node 290 the search for its place starts at node 2's next,
+    node 0, and stops there at once: node 0's key (+4) is 1, above 0.
+    So the node is put in before node 0, and "the node before" is taken
+    from node 0's +6, which is 0: node 0 itself. That writes 290 into
+    node 0's own +8 (1 until then) and 0 into node 290's +8. find_path
+    writes neither +4 nor +6 of node 0 (read in the listing: only its
+    +8); at the call's entry node 0's five words were 0, 1, 1, 0, 0.
+  - The third neighbour (the loop's count [BP-10h] is 2) has the key 34
+    again; its search starts at node 0 (key 1), goes to 290 (key 0), to
+    0, and so on: no key above 34 in the ring.
+  Checked by: the memory at 2200 s (`-until 2200 -break
+  'LT0708_135C#30305' -log find_path -ram F`; the nodes walked by a
+  scratch script: from node 1 the list runs 289 .. 287, 2, 0, 290 and
+  back to 0, 291 nodes; from node 0 only 0 and 290); the memory at the
+  call's entry (`-break 'find_path#4147' -ram F`); and every write to
+  node 0's +8 (`-until 2140 -watch 45F14`: 4420 writes, the last two 01
+  by 0C17:0EEC at t=2132.182679, find_path's own start, and 22h, the
+  low byte of 290, by 0C17:1316 at t=2132.216875, in the stretch that
+  puts a node in; the write before them is 00 by 1C7B:1CCF, T1C04 as
+  loaded, at t=2131.58). The keys: space at the title's 200th pass
+  (LT1727_031E) and by the menu's passes (LT1090_058B, each key down at
+  N and up at N + 3) down 30, enter 40, enter 60, n e v e r at 70 to
+  110, enter 120, down 130, 140, enter 150, enter 170, down 190, 200,
+  enter 210, down 230, 240, 250, enter 260, enter 280; a run to 2200 s
+  takes 4 minutes here. The scratch stall.py and cvcmap.py were not
+  used: this machine has no build/scratch.
+  So the stall needs three things at once: the aim not reached, bytes
+  in node 2 that name a place with the aim (or any square whose key is
+  below node 0's leftover +4) marked beside it, and 0 in node 0's +6.
+  The port was not changed: its find_path still counts that search's
+  steps and gives no path beyond 316h. Not looked into: who leaves
+  1 and 0 in node 0's +4 and +6 and the words in node 2 (the buffer is
+  the computer's plan's too: T1C04 wrote node 0's +8 just before),
+  whether the instruction at 0C17:1316 is the listing's `MOV
+  ES:[BX+8],SI` (the address was not matched to the line; the runner
+  may name the instruction after), why the aim is not reached over the
+  marks, whether a person against the computer comes to it, the same
+  in DESERT or MOON (MOON's find_path does not take node 2 for a
+  square). Not run again: the port, any comparison.
+  Also seen: `tools/datfiles.py --codes game/ISLE/CODES.DAT` failed on
+  macOS ("CODES.DAT\UNIT.DAT ... Not a directory"); fixed since on
+  branch dropin-team/datfiles-codes-path (paths joined by the system).
 
 - MOON's other maps (2026-10-04): a game of two computers on each of
   the 34 maps compared at pass 1000 (`build/scratch/mcvall.sh PASS
@@ -2445,8 +2509,8 @@ For the port (behaviour):
    no path, which is the usual case. The user wants it mended: the
    port's find_path counts the steps of that search and gives no path
    beyond 316h (port/README.md, Checked). Not known: whether a human
-   against the computer comes to it; how the list got round (which
-   node's +8 led back) was not followed.
+   against the computer comes to it; how the list got round is found since
+   (2026-10-06, Start here: node 0's own +8, through its +6 of 0).
    The scratch stall.py MAP LO HI finds such a last pass by halving.
    A map of two computers ends in the wait for a key (key_wait) after
    its last pass, not at after_map: `cvcmap.py N key_wait` gives the
