@@ -23,6 +23,16 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- Removing what the port copied (2026-10-06, branch
+  dropin-team/uninstall-script): a proposal for the kit in
+  docs/uninstall-proposal.md, not in doskit yet. The data folder holds
+  game/ (the copied game files), save/, save-desert/, save-moon/,
+  battle-isle.cfg and update.h's update.cfg, latest.json, latest.part,
+  update-package.part (read in sys.c, main.c, update.c). The script
+  is a dry run by default, --yes removes game/ only, --all --yes the
+  whole folder; tried on Linux in a made-up folder and as a dry run on
+  the real one, not on macOS or Windows (no .cmd written yet).
+
 - Played through and won (2026-10-06, the user on Windows): ISLE's
   first map (CONRA) in the window build, won by taking the
   headquarters; the film, the statistics and the high scores came as
