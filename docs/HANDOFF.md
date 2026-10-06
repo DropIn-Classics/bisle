@@ -338,10 +338,7 @@ menu's entry (port/README.md; "The port" below).
   in node 2 that name a place with the aim (or any square whose key is
   below node 0's leftover +4) marked beside it, and 0 in node 0's +6.
   The port was not changed: its find_path still counts that search's
-  steps and gives no path beyond 316h. Not looked into: who leaves
-  1 and 0 in node 0's +4 and +6 and the words in node 2 (the buffer is
-  the computer's plan's too: T1C04 wrote node 0's +8 just before),
-  whether the instruction at 0C17:1316 is the listing's `MOV
+  steps and gives no path beyond 316h. Not looked into: whether the instruction at 0C17:1316 is the listing's `MOV
   ES:[BX+8],SI` (the address was not matched to the line; the runner
   may name the instruction after), why the aim is not reached over the
   marks, whether a person against the computer comes to it, the same
@@ -378,6 +375,39 @@ menu's entry (port/README.md; "The port" below).
   lines read one by one, `DOSKIT_GAME` naming another folder, the
   change on Windows or Linux, the other tools of tools/ for the same
   backslash (not looked for).
+  Who leaves node 0's +4, +6 and node 2's words (2026-10-06, branch
+  dropin-team/map30-buffer): computer_plan (T1C04), half a second
+  before the call, in the buffer it shares with find_path's list.
+  Byte watches of the same run (as above, `-until 2133 -watch A` for
+  A = 45F10, 45F11, 45F12, 45F13, 45F20, 45F21, 45F22, one run each):
+  - node 0's +4 (45F10/11): last 00 00 by 1C7B:1CCF at t=2131.465384,
+    then 01 00 by 1C7B:23BD at t=2131.577432;
+  - node 0's +6 (45F12/13): last 00 00 by 1C7B:1CCF at t=2131.466427,
+    nothing more until find_path writes 0122h (290) there by 0C17:1327
+    inside the call;
+  - node 2's first words (45F20..23): C2 03 and F4 03 by 1C7B:1CC0 at
+    t=2131.463296 and 2131.464340;
+  - before them, at t=2131.24, find_path's own writes (0C17:0A38,
+    0C17:0B2D) from an earlier call.
+  1C7B is T1C04 as loaded; no RETF lies between computer_plan's start
+  and 23BD in the listing, so all three are in computer_plan. The
+  listing near 1CC0/1CCF (LT1C04_1CB4) stores a neighbour's square at
+  [BP-18h] + 2i and the word 0 at [BP-14h] + 2i; tools/computer.py has
+  that as the paths block P (the player record's far pointer at +0Dh):
+  P + 2i the six neighbours' states (FFFFh none, 0 free, 1 taken), P +
+  14h + 2i their squares, P + 28h + i the units. So, presumably, P is
+  45F0C, find_path's node 0: node 0's +4 and +6 are neighbours 2 and 3
+  (taken, free), node 2 is P + 14h, the squares 03C2h, 03F4h, 0424h ..
+  A break at find_path#4147 (`-dump 45F0C 30`) gave t=2132.078770 and
+  the same bytes as the earlier entry dump (node 0: 0, 1, 1, 0, 0;
+  45F20: C2 03 F4 03 24 04 22 04 20 04). The call's time differs from
+  the 2132.18 above with other options; not looked into. Not
+  verified: the pointer at the player record's +0Dh was not read (P =
+  45F0C is inferred from the addresses), the "by" addresses were not
+  matched to listing lines (the runner may name the instruction after),
+  which of computer_plan's sub-stages wrote 23BD (computer.py's take,
+  sub-stage 7 or 8, presumably), why find_path does not set up node 0's
+  +4/+6 itself. Not run: the port, DESERT, MOON.
 
 - MOON's other maps (2026-10-04): a game of two computers on each of
   the 34 maps compared at pass 1000 (`build/scratch/mcvall.sh PASS
