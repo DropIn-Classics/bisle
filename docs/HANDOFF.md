@@ -140,9 +140,34 @@ menu's entry (port/README.md; "The port" below).
   phase 120 passes apart, then game_flags poked to DDh at map pass
   3100, compared at the statistics' wait, key_wait's 100th pass): maps
   24..31 and 33 all the same in far data and all video memory (DATA
-  151..152 bytes, the music's and timers' as in mend.sh's runs). A real
-  end of a people's game (a headquarters taken by keys) was not
-  scripted; whether a fight happened in these games was not looked at.
+  151..152 bytes, the music's and timers' as in mend.sh's runs);
+  whether a fight happened in these games was not looked at. A real end
+  by keys (2026-10-06, branch dropin-team/moon-real-end): map 0 as the
+  menu starts it (space at the title's 200th pass, enter at the menu's
+  30th: player 0 a person, player 1 the computer); player 0 only asks
+  for the change, every 120 map passes from 60 (space+, +3 left+, +6
+  space-, +8 left-, +12 F1, +14 F1 let go; the runner's -keysat at
+  LT070B_13DD, the port's BI_KEYSAT map_pass). The computer took
+  player 0's headquarters: four fights (fight_reckon T22D3:0002 four
+  times), YOU LOST YOUR HQ at map pass 1632, round 3. That message waits
+  for a key with a person in the game (key_wait from its 1st pass on;
+  space at key_wait's 150th pass, let go at 152nd); the statistics'
+  wait starts at its 152nd pass (MISSION NOT COMPLETED, ROUNDS 3), so
+  the comparison is at key_wait's 251st pass. There and at the
+  message's first pass: video memory the same, all far data but F2902's
+  415E..4160 (factories_made, depots_made, cargo_made in the hints;
+  01 02 00 against the port's 00 01 02 at map pass 1504, then other
+  values) and the timers. From map pass 1503 on the port is a pass late
+  with player 0's request (the cursor's +7 and +0Bh, its pass 1504 the
+  original's 1503), and those three bytes, which seem to turn round
+  each pass in MOON (presumably not the counts the names say; not
+  read), follow that pass; the counters timers_period_high differ
+  already at pass 1502 (the clock's phase, as in the runs above),
+  presumably the cause (not shown). By the message (pass 1632, round
+  3, game_flags 44CFh in both) the rest is the same again. With the
+  keys from pass 61 or 65 instead of 60 the two games went apart (other
+  video memory at the statistics, the original's statistics at another
+  key_wait pass), not looked into.
 - MOON's films at a map's end (2026-10-03): MOON.EXE does not call
   play_anim there but two routines of its own, T070B:4703 (HQ.ANI or
   TOT.ANI with .PAL and .SND, by game_flags 2000h) and T070B:49ED
