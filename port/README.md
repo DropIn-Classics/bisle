@@ -705,12 +705,43 @@ stopped by the host). The setup screen's item "Title" was looked
   and MOON at their 200th pass are as before the change (DATA 111, 112
   and 149 bytes, video memory the same); with the driver on DESERT and
   MOON are the original's there with 17 bytes fewer in DATA (95, 132).
-  Not checked: the right button and the ten passes after it, both
-  buttons, the menus with the mouse and their MOUSE item, the mouse
-  for player 1, F7 to switch it on again, mouse_rates' effect (the
-  runner's driver and the port's keep the rates and do nothing with
-  them), a move or a fight by the mouse, DESERT and MOON with events,
-  Windows and Linux builds (build.bat got the file, not run).
+  More of the mouse (2026-10-06, the same way, `BI_MOUSE=1`, stopped at
+  the map loop's 400th pass; each: video memory, the game's code
+  segments and all far data segments the same, no byte of the mouse's
+  variables other):
+  - both buttons with the place 100 to the right for 2 s (passes 132
+    to 168): nothing moves and no fire; the same, DATA 94;
+  - the right button alone with that place for 1.5 s (passes 132 to
+    159): the cursor runs right, from 00B0 to 00BC (the place is not
+    set back while a button is down); the same with the port's events
+    at 132 and 158;
+  - the left button, the right one with it, the left let go with the
+    place to the right, all let go (t=25, 25.5, 26, 27 s; passes 132,
+    141, 150, 168), which by the code sets mouse_input's count of ten
+    passes (the count itself was not watched): the cursor at 00BC, the same with the port's events at 132, 141, 150,
+    167;
+  - the menus' MOUSE item by keys (DISK, MOUSE, Enter on SIDE ONE and on
+    SLOW, OK, OK, START; keys by the menu's passes): SIDE TWO and MEDIUM,
+    then the map with mouse_player 1, mouse_speed 1 and player 1's
+    events record as mouse_record: the same, DATA 85; and with a place
+    to the right and one down on that map (passes 197, 233): player 1's
+    cursor from 019A to 01BC, player 0's where it was; the same;
+  - F7 off and on again by passes (150, 200), then a place to the right
+    (pass 223): here the port is NOT the original's. The original's
+    cursor is at 00B4, the port's at 00B2: switching on resets the
+    driver, the runner's place is then 319, 99 and the game takes one
+    "right" from it on the map; the port's driver starts at the middle
+    (above) and gives none. With 319, 99 scripted into the port at pass
+    202 (`BI_MOUSEAT="map_pass 202:319,99,0 222:260,100,0"`) the two
+    are the same, so that is all of the difference. Left as decided
+    (the middle); what a real driver's reset place gives was not
+    looked up.
+  Not checked: the menus steered by the mouse (only by keys with the
+  mouse on), mouse_rates' effect (the runner's driver and the port's
+  keep the rates and do nothing with them), a move or a fight by the
+  mouse, DESERT and MOON with events, Windows and Linux builds
+  (build.bat got the file, not run), the ten passes' count read step
+  by step in a run (only the result compared).
 
 - macOS (2026-10-06; macOS 15.7.3 on x86_64, Apple clang 17.0.0 of the
   Command Line Tools, SDL2 2.32.10 as a framework in

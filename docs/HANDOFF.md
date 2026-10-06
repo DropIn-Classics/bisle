@@ -52,6 +52,39 @@ menu's entry (port/README.md; "The port" below).
   Linux (2026-10-06, branch dropin-team/port-linux-build): built with
   gcc 14 and SDL2 2.32.4 (10 -Wrestrict warnings, presumably harmless),
   the same comparison: video memory the same (port/README.md).
+- The mouse's leftovers (2026-10-06, branch dropin-team/mouse-leftovers,
+  on top of dropin-team/mouse-port): both buttons, the right button and
+  the count of ten passes, the menus' MOUSE item (SIDE TWO, MEDIUM), the
+  mouse for player 1 and F7 off and on again, each one run of the
+  original against the port (port/README.md, Checked). Four are the
+  original's. The fifth shows what the driver's reset place costs: F7
+  on again resets the driver on the map, the runner's place is then
+  319, 99 and the original's cursor goes one column right; the port's
+  driver starts at the game's middle and its cursor does not. With that
+  place scripted into the port the two are the same. Nothing changed in
+  the port's sources for this step. Whether a real driver leaves the
+  place off the game's middle after a reset decides which of the two a
+  player of the original saw: not looked up (it is a driver's matter,
+  not the game's).
+  How it was run (a scratch script, not in the repository): the
+  original once with `-mouse T X,Y,B`, the keys by passes (`-keysat` for
+  the title, the menu and the map loop) and `-log LT0708_135C`; the pass
+  of each mouse event is the last one begun at or before its time; then
+  the port with `BI_MOUSE=1`, `BI_KEYSAT` and `BI_MOUSEAT="map_pass
+  N:X,Y,B ..."` at those passes, and at one pass less or more for each
+  event in turn until memcmp.py shows no far data, no game code and no
+  video memory differing (1 to 5 tries a test). The grey keys in
+  BI_KEYSAT are two bytes at one pass (`30:E0 30:50 33:E0 33:D0` for
+  down). The menu's keys for the MOUSE item, by the menu loop's passes
+  (down at N, up at N + 3): down 30, 40, enter 50 (DISK), down 70, enter
+  80 (MOUSE), enter 100 (SIDE TWO), down 110, enter 120 (MEDIUM), down
+  130, enter 140 (OK, back in DISK on LOAD), down 160, 170, 180, enter
+  190 (OK), enter 220 (START); the map's first pass is then at 23.22 s
+  of the runner.
+  Still open for the mouse: the window (the kit proposal in the entry
+  below, text only), the menus steered by the mouse, mouse_rates' effect, DESERT and
+  MOON with events.
+
 - The mouse in the port (2026-10-06, branch dropin-team/mouse-port, on
   top of dropin-team/mouse-read for its names): port/src/mouse.c has the
   six routines (mouse_start, mouse_read, mouse_stop, mouse_rates,
