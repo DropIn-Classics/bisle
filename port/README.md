@@ -676,5 +676,21 @@ stopped by the host). The setup screen's item "Title" was looked
   this list, a build for arm64, a package as doskit/docs/RELEASE.md
   wants it (the binary finds SDL2 by an rpath into this machine's
   framework folder).
+  DESERT and MOON on macOS (2026-10-06, the same machine and build, the
+  headless program with `-title desert` and `-title moon`, each run
+  once): the first map at the map loop's 200th pass against the
+  original in the runner, the same keys by passes (DESERT.EX2 at
+  BATTLE's places; MOON.EXE's title LT1800_0331, menu LT1151_058E, map
+  loop LT070B_13DD, memcmp.py with `--load 76`). In both all 256 KB of
+  video memory the same, the game's own code segments and all far data
+  segments the same. What differs is the kinds above: DESERT CODE 13
+  bytes, the library's segments T2354..T26D2 74, DATA 112, STACK 8
+  (DESERT.hints has no ZEROS, so the bytes behind the stack were not
+  compared); MOON CODE 11, the library's segments T249A..T27A6 82, DATA
+  149 in 89 runs (the number the entry on MOON's first map above has),
+  STACK 8. The differing bytes were counted by segment, not read one by
+  one again here. Not checked on macOS: any other pass or map of
+  either, a key on the map, a fight, a save, a map's end, the title
+  chosen on the setup screen, the window.
 
 Not built: Linux.

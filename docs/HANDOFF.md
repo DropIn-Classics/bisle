@@ -38,6 +38,17 @@ menu's entry (port/README.md; "The port" below).
   and `BI_VRAM`, then `memcmp.py src/BATTLE.hints O.ram P.ram --vram
   O.vram P.vram`. Left: the window looked at and listened to by a
   person, DESERT and MOON, arm64, Linux, the packages.
+  Then (branch dropin-team/port-macos-desert-moon) DESERT's and MOON's
+  first map the same way, once each, `-title desert` and `-title moon`:
+  video memory, the game's code segments and the far data segments the
+  original's at the 200th pass, the rest the known kinds, counted by
+  segment only (port/README.md). DESERT: `run.py ... DESERT/DESERT.EX2`
+  with BATTLE's three labels and `memcmp.py src/DESERT.hints`. MOON:
+  `-keysat LT1800_0331 F1 -keysat LT1151_058E F2 -break
+  'LT070B_13DD#200' ... MOON/MOON.EXE` and `memcmp.py src/MOON.hints
+  ... --load 76`; the port's `BI_BREAK` and `BI_KEYSAT` are the same
+  for all three titles. Not done on macOS: any later pass, keys on the
+  map, fights, saves, a map's end, the window.
 
 - MOON's other maps (2026-10-04): a game of two computers on each of
   the 34 maps compared at pass 1000 (`build/scratch/mcvall.sh PASS
