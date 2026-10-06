@@ -678,7 +678,10 @@ stopped by the host). The setup screen's item "Title" was looked
   eye and ear, not beside the original): full screen works, the keys
   seem as the original's, the speed is that of a fast 386, the music
   seems right at first hearing; the percussion may be too quiet (not
-  sure, to be heard against the original: HANDOFF.md's Next, point 5).
+  sure, to be heard against the original: HANDOFF.md's Next, point 5;
+  measured since on the kit's synthesizer alone, no reference: the
+  cymbal, snare, hi-hat and bass drum come out 23 to 32 dB below the
+  tom, the cymbal as a 44 Hz tone; HANDOFF.md, "The AdLib's drums").
   Not tried: a controller.
 - The mouse (2026-10-06, macOS, the headless build; mouse.c): the
   original in the runner with its mouse driver against the port with

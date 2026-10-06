@@ -58,6 +58,89 @@ menu's entry (port/README.md; "The port" below).
   Linux (2026-10-06, branch dropin-team/port-linux-build): built with
   gcc 14 and SDL2 2.32.4 (10 -Wrestrict warnings, presumably harmless),
   the same comparison: video memory the same (port/README.md).
+- The AdLib's drums (2026-10-06, branch dropin-team/opl-drums, on top
+  of dropin-team/palette-levels; Next, point 5). NOT done: the
+  comparison with DOSBox. This machine (macOS) has no DOSBox and no
+  package manager, GOG's folder has only DOSBox's configuration, and
+  nothing was installed; so there is no reference here and nothing
+  below says how the original sounds. Done instead: what GAME.SND
+  writes to the drums' registers in a run, and what doskit's
+  runtime/opl.c makes of exactly those writes, each drum alone.
+  - The port has no -oplwav; the runner has. Run: the original to the
+    first map, `-until 80 -oplwav`, with `-log CODE:14BD -log
+    CODE:14C8` (the instructions after opl_write's two outputs, the
+    register and the value in AL): 6980 writes, 1633 of them to BDh.
+    The rhythm bit is set from 17.85 s (the map's song) and never
+    cleared after; the title's song does not set it. All five drums
+    are keyed (bits 10h, 08h, 04h, 02h, 01h), always through BDh, the
+    channels' own key bits off. Key-ons from 17.85 to 80 s: tom 154,
+    bass drum 110, snare 45, hi-hat 45 (from 57.99 s), cymbal 34.
+  - As written by the game: the tom's level is 0 (full) at 4 times
+    32.7 or 43.7 Hz; the bass drum's carrier is 24 dB down at 174.7
+    Hz, its modulator with the strongest feedback; the snare 17.25 dB
+    down, multiple 12 of 49.0 or 65.4 Hz; the hi-hat 21 dB down,
+    multiple 1 of the same; the cymbal 27 to 36 dB down, multiple 1 of
+    32.7 or 43.7 Hz. The song's melodic carriers are 5.25 to 17.25 dB
+    down for nearly all notes. So by the registers alone the tom is
+    the loudest voice of the song and the other four drums are quiet.
+  - What opl.c makes of it (a scratch harness, not in the repository:
+    the logged writes replayed through runtime/opl.c at their times,
+    with the melody's keys or all but one drum's bit masked; the whole
+    replay is the runner's -oplwav but for at most 1181 of 32768 in a
+    sample, the writes' times rounded otherwise). Levels over 18 to 79
+    s, RMS and peak in dB below full scale: everything -25.1 / -10.0;
+    the melody alone -29.4 / -20.4; tom -26.7 / -12.3; bass drum -49.6
+    / -36.1; snare -54.1 / -29.4; hi-hat -58.1 / -36.2; cymbal -58.9 /
+    -39.3. Where each drum's energy lies (a spectrum of the loud
+    stretches): tom 97% in 100-300 Hz (peak 130 Hz); bass drum 79% in
+    100-300 Hz (peak 174 Hz); snare 90% in 300-1000 Hz (peak 786 Hz),
+    8% above 4 kHz; hi-hat 83% above 4 kHz; cymbal 100% below 100 Hz,
+    peak 44 Hz.
+  - What that fixes on in opl.c's drums() (read there):
+    1. The cymbal is `fabs(op_out) * (phase < 0.5 ? 1 : -1)` of its own
+       operator: the absolute sine times the sign of the same phase is
+       the sine again. With the game's values that is a 44 Hz sine 27
+       dB or more down: nothing a cymbal is, and next to nothing to
+       hear. This is certain from the code and the measurement.
+    2. The snare takes its tone from its own operator's phase (here
+       multiple 12, 588 or 785 Hz) with the noise only choosing between
+       full and half level: mostly a pitched tone, little noise.
+    3. Hi-hat, snare and cymbal are all scaled by the absolute sine of
+       the operator's wave, so their level swings to zero twice a
+       period of a 33 to 65 Hz tone instead of following the envelope
+       only.
+    4. The bass drum and the tom come out at the level the registers
+       give, doubled as opl.c's comment says; nothing found to fix on
+       without a reference.
+  - Kit proposal (text only; nothing changed in doskit, to be decided
+    there and to go in with a test): in runtime/opl.c's drums() give
+    the hi-hat, snare and cymbal the envelope's and the level's
+    amplitude without the wave's absolute sine; take the cymbal's and
+    the hi-hat's sign from a pattern of several lower bits of the
+    phases of the hi-hat's and the cymbal's operators (so the sound
+    lies in the kHz, whatever the operators' low frequencies), the
+    hi-hat's mixed with the noise; take the snare's tone from the
+    hi-hat's operator's phase and mix the noise in at equal weight.
+    That is how the chip's rhythm section is described where it is
+    described at all (the three share the phases of two operators and
+    the noise): written here from memory, NOT checked against the data
+    sheet, a chip or DOSBox, and which bits exactly is to be looked up
+    for the kit by whoever changes it. A test for the kit: a keyed
+    cymbal with a low F-number has most of its energy above 1 kHz
+    (now: none), and a snare's noise share.
+  - The modulation depth and the attack curve (the other two choices
+    Next 5 names): not looked at; without a reference there is nothing
+    to hold them against.
+  Not verified: anything against DOSBox or a chip (see the top); that
+  the percussion is too quiet in the port to the ear (the user's
+  impression, Windows; nobody listened here); whether the loud tom is
+  what the original sounds like; DESERT and MOON (not run); songs other
+  than the title's and the first map's; the effects (.FXX) in rhythm
+  mode; the harness is the runner's sound, not the port's device
+  (audio.c mixes the effects in, not looked at). Next for this: one
+  recording of the first map's music from GOG's DOSBox (a machine that
+  has it), the same 60 s as the runner's -oplwav, then drum by drum.
+
 - The palette's levels (2026-10-06, branch dropin-team/palette-levels,
   on top of dropin-team/anim-formats for the films' names; open
   question 4): every caller of fade_in, fade_out and set_palette in
@@ -2729,6 +2812,8 @@ compared):
    DOSBox; what differs goes into doskit's runtime/opl.c, whose
    modulation depth, attack curve and drums are choices). The music
    uses the rhythm mode (GAME.SND; above), so the drums matter.
+   Begun without a reference (Start here, "The AdLib's drums"): the
+   kit's cymbal is a 44 Hz sine here; a proposal for drums() as text.
    MOON.EXE's and the intros' last library gaps only if a run reaches
    them.
 
