@@ -23,6 +23,38 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- The mouse in DESERT and MOON (2026-10-06, branch
+  dropin-team/mouse-desert-moon, on top of dropin-team/mouse-leftovers:
+  origin/master has no mouse in the port yet): four runs with mouse
+  events on each title's first map, the original against the port
+  (macOS, the headless build), all eight the same at the map's 400th
+  pass: video memory, the far data segments and the game's code
+  segments (port/README.md, Checked, has the passes and the numbers).
+  Nothing changed in the port's sources.
+  How it was run (a scratch script, not in the repository), as for
+  ISLE: the original once with `-mouse T X,Y,B`, space at the title's
+  200th pass, Enter at the menu's 30th, `-break` at the map loop's 400th
+  pass and `-log` of the map loop (DESERT.EX2 with BATTLE.EXE's labels
+  LT1727_031E, LT1090_058B, LT0708_135C; MOON.EXE with LT1800_0331,
+  LT1151_058E, LT070B_13DD); the pass of an event is the last one begun
+  at or before its time; then the port (`-title desert` or `-title
+  moon`) with `BI_MOUSE=1`, the same keys in `BI_KEYSAT` and
+  `BI_MOUSEAT="map_pass N:X,Y,B ..."` at those passes, or at one pass
+  less or more for each event in turn; memcmp.py with the title's
+  hints, MOON's with `--load 76`. Seven of the eight were the same at
+  the first try, MOON's right button at the third (its second event one
+  pass earlier, 209 for 210).
+  Each run of the original was also compared with the original without
+  events, to see that the events did something: places and the left
+  button change far data and video memory; both buttons at once change
+  nothing at all, so that case only says the port ignores them too.
+  Not verified: what the events did in the game's terms (the cursors'
+  places were not decoded for these titles, only the dumps compared);
+  DESERT's and MOON's menus with the mouse, their MOUSE item, player 1,
+  F7 and F8; maps other than the first; anything past the 400th pass;
+  the window's mouse (still the kit proposal as text, below); Windows
+  and Linux.
+
 - The mouse's leftovers (2026-10-06, branch dropin-team/mouse-leftovers,
   on top of dropin-team/mouse-port): both buttons, the right button and
   the count of ten passes, the menus' MOUSE item (SIDE TWO, MEDIUM), the
@@ -53,8 +85,8 @@ menu's entry (port/README.md; "The port" below).
   190 (OK), enter 220 (START); the map's first pass is then at 23.22 s
   of the runner.
   Still open for the mouse: the window (the kit proposal in the entry
-  below, text only), the menus steered by the mouse, mouse_rates' effect, DESERT and
-  MOON with events.
+  below, text only), the menus steered by the mouse, mouse_rates' effect. (DESERT and
+  MOON with events: the entry above.)
 
 - The mouse in the port (2026-10-06, branch dropin-team/mouse-port, on
   top of dropin-team/mouse-read for its names): port/src/mouse.c has the
