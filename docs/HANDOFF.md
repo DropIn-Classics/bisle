@@ -23,6 +23,66 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- The macOS package, built and started by hand (2026-10-06, branch
+  dropin-team/rc1-macos-pkg, from origin/master 518020b with doskit at
+  the recorded b051e8f; macOS 15.7.3 on x86_64, the Command Line
+  Tools' clang 17, no Xcode, no cmake, no gh login). Nothing built is
+  in the repository.
+  - Built as the workflow's macos job does, with one difference: SDL2
+    2.32.10's release source is built with its `configure` (no cmake
+    here), once for x86_64 and once for arm64 (`--disable-shared
+    --enable-static --disable-video-x11`, MACOSX_DEPLOYMENT_TARGET
+    10.13), the libraries joined with lipo, sdl2-config's prefix set
+    to the joined folder. Then `CC="cc -arch x86_64 -arch arm64"
+    SDL2_STATIC=1 sh port/build.sh` (two warnings of a doubled -lm,
+    nothing else), `doskit/tools/macapp.py`, README.txt and the two
+    licences beside the app, `ditto -c -k --keepParent`:
+    battle-isle-macos.zip, 2038486 bytes. PORT_VERSION was set to
+    v1.0-rc1 and PORT_UPDATE_URL to DropIn-Classics/bisle's
+    latest.json for this build: both are this test's values, no tag
+    exists.
+  - The workflow's checks, by hand: the program has x86_64 and arm64,
+    links only the system's libraries and frameworks (no SDL2 among
+    them), `codesign --verify --deep --strict` says valid (ad hoc);
+    Info.plist has the identifier
+    io.github.dropin-classics.battle-isle, the version 1.0-rc1 and
+    LSMinimumSystemVersion 10.13; the x86_64 half's minimum is 10.13.
+  - "From a download", as far as this machine allows: there is no
+    release page and gh is not logged in, so the zip built here was
+    copied to an empty folder and given the quarantine attribute a
+    browser gives (set by hand, as Safari's), then unpacked with
+    Archive Utility: the folder battle-isle-macos with the app,
+    README.txt, LICENCE-micromod.txt and LICENCE-SDL2.txt, every file
+    quarantined. `spctl --assess` on the app: rejected, as README.txt
+    says the first start is. The app was not opened in that state (the
+    refusal and "Open Anyway" need a person at the screen).
+  - Started after README.txt's third way, `xattr -cr battle-isle.app`,
+    with `open -n battle-isle.app --env DK_DATA_DIR=<an empty folder>
+    --args -gog <the repository's game folder>` (the player's own data
+    folder not touched; no GOG installation is on this machine for the
+    program to find by itself): the system lists it as a foreground
+    application with the bundle's identifier and version 1.0-rc1, the
+    game's 632 files (39 MB) were copied into the data folder's `game`
+    within 12 s, the menu bar showed battle-isle in front, the process
+    ran for 1 min 48 s at about 20% of a core and at SIGTERM left
+    after writing battle-isle.cfg into the data folder; nothing was
+    written into the package's folder.
+  Not verified: what the window showed. No picture of it could be
+  taken (the screen capture gave the desktop without the window: no
+  screen recording right for this session) and no key could be sent
+  (System Events did not answer), so the setup screen, the menu and a
+  map in the packaged window build are NOT seen; that needs a person
+  at this Mac, or those rights. Also not: a double click in Finder;
+  Gatekeeper's refusal and "Open Anyway"; a download with a browser
+  from a release page; the package the workflow builds on GitHub's
+  runner (this one is built here, SDL2 by configure and not cmake);
+  the arm64 half (built, never run: an Intel Mac); macOS older than
+  15; the game found by itself (GOG's app or installer); the copy
+  dialog (with -gog it is not asked); the update check; sound.
+  Found for the release: port/dist/README.txt's Keys section still
+  has the template's "(the game's own keys)"; RELEASE.md's point 6
+  wants the keys. Not changed here.
+
 - Played through and won (2026-10-06, the user on Windows): ISLE's
   first map (CONRA) in the window build, won by taking the
   headquarters; the film, the statistics and the high scores came as
