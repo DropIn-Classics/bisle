@@ -461,7 +461,6 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   the memory and the video memory after it the same. Loaded again from
   the menus (DISK, LOAD, 0, a key at PLEASE INSERT DISK, a key at the
   message box): at the map's 10th pass the same.
-<<<<<<< HEAD
   The same with the digit 3 (2026-10-06, keys by passes: title_pass 200
   space; menu_pass 30 enter; map_pass 50, 60 left, 70 space and 75 left,
   100, 110 x, 120 lctrl and 125 x, 150 d; key_wait 200 p; save_key 100
@@ -490,9 +489,8 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   the memory the same but for the kinds of differences above (DATA up
   to 1A3Eh, the timers' and interrupts' code segments, the stack).
   DESERT's memory was compared with DESERT's hints, its keys at the same
-  labels (its code there reads as BATTLE's). Not run:
-  the digits 1, 2, 4, 6, 7, 8, MOON, a digit without a save at LOAD.
-=======
+  labels (its code there reads as BATTLE's). The digits 1, 2, 4, 6,
+  7 and 8 not run (the next entry runs MOON and no save).
 - A save's digit in MOON and a digit with no save at LOAD (2026-10-06,
   branch dropin-team/save-leftovers). MOON, map 0 as the menu has it:
   both cursors' state (+17h, linear 2D9DA and 2DA0B) poked to 5 at
@@ -512,7 +510,6 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   for the kinds above. Not run: MOON's load by passes in the original
   (box_key's place LT26FE_0116 did not end the box with n or p at its
   passes; not looked into), MOON with a digit and no save.
->>>>>>> origin/dropin-team/save-leftovers
 - A map's end, on map 03 with a unit poked beside player 1's
   headquarters and moved onto it: the change of phase with the film of
   the building taken (ANIM\br; the 2nd and 25th frame), the message and
