@@ -1521,7 +1521,9 @@ name T1090:0F82 edit_text
 ; 0Fh or 11h, never with two computers (menu_flags 4); else T15AC:04E6
 ; sets it to 0. A run of two computers, map 16 won by side 2: game_flags
 ; 04CDh, F27EE:2597 0 at load_scores, MAP\16.HI read, no name asked,
-; nothing written; 2026-10-06.)
+; nothing written; 2026-10-06. Map 00 of two people won by keys: the
+; score 1AEh, MAP\00.HI created and 28h bytes written after the name;
+; HANDOFF.md, open question 5.)
 ; With a score (the long F27EE:2597 above 0) it loads the .HI file numbered
 ; F27EE:251B and, when the score is above the lowest of its four, shows
 ; the texts F2740:005B, 0065, 006F ("TYPE NAME FOR TOP FOUR"), takes a name
