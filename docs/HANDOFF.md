@@ -205,6 +205,31 @@ menu's entry (port/README.md; "The port" below).
   to a quarantined one; the changed workflow on GitHub's runners; the
   real data folders (only made-up ones through DK_DATA_DIR); read-only
   files in a game folder; names with quotes or percent signs.
+- Map ends (2026-10-06, branch dropin-team/map-end-leftovers; ISLE,
+  keys by passes, BATTLE.hints at the end of a map and at after_map):
+  - "YOU LOST YOUR HQ" (and VICTORY) wait in T0D36:0C85: any key ends
+    it. With player 0's HQ end poked (`-poke 'LT0708_135C#30' 2AD1B 07`
+    and `2AD26 0F00`) space, p, Enter or left Ctrl at key_wait's 50th
+    pass reached after_map; without a key the wait went on to 60 s.
+    The same with player 1 the computer (2AAA5 02 and 2AB5E 31 poked at
+    pass 29, as the menu sets them). The earlier note that a tap of
+    space at 530 s did not end it was not looked at again.
+  - An end by units, not poked: player 1's six units given 8000h in
+    +4 at map pass 40 (two people; both ask for the change, F1 at pass
+    160): T0408:23A7 wrote 11h to player 0's result at 27.5 s, then
+    ANIM\hs.a00 and the statistics. The count is T0408's loop at
+    LT0408_22AC.
+  - The last map: code RIVER (map 31, the only record with +8 bit 0;
+    the menu keys of map 30 with r i v e r, then down 130, 140, 150,
+    enter 160, 180: player 1 the computer). Poking only the HQ's end
+    gives qa and no es: after_map does nothing while round
+    (F27EE:251D) is 0. With round poked to 1 as well (2AB6D 0100):
+    the statistics with WINNER.SND and "CONGRATULATIONS ! YOU WON THE
+    LAST BATTLE !", T15AC:0447 set game_flags bit 20h (DD to FD at
+    36.9 s), and after a key ANIM\es.a00 opened at 53.1 s. Not run:
+    the last map won by play; the round counted by play (requests and
+    F1 at the map's passes 60, 180 .. 540, the end poked at 700: MAP\04.HI
+    was written again, so round stayed 0, presumably; not checked).
 
 - Played through and won (2026-10-06, the user on Windows): ISLE's
   first map (CONRA) in the window build, won by taking the
@@ -3204,10 +3229,11 @@ For the port (behaviour):
    flags"; BATTLE.hints at game_flags). Left: 1000h, menu_flags 80h
    and a game against the computer in a run, the menu's EXIT (100h).
 2. A map's end: a headquarters taken is run and read, the statistics
-   are drawn (above); left: an end by units, the last map (CODES.DAT's
-   +8 bit 0) without a poke, statistics of 32 points and more, what the
-   map's loop does with F27EE:250E's bits at the end against the
-   computer, and which key ends "YOU LOST YOUR HQ" there.
+   are drawn (above); an end by units, the last map and the key of
+   "YOU LOST YOUR HQ" are seen since (2026-10-06, Start here). Left:
+   statistics of 32 points and more, what the map's loop does with
+   F27EE:250E's bits at the end against the computer, an end by units
+   of player 0 or of both, a last map won by play.
 3. The clock: the map's loop runs every 4 ticks of timer_keys, 18.2
    times a second (above); timer_add's period is the PIT's count (read,
    and the song's steps timed in runs). Left: the loops of the menus and
