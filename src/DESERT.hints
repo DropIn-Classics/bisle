@@ -1049,6 +1049,20 @@ name T1479:11B4 list_makeable
 ; BATTLE.EXE starts the same with /v, /e or no argument (mode 13h, the
 ; same files; runs of 6 s): it reads no switch there, as far as seen.
 name T164D:04C7 check_vga_disk
+; The end by units (T0408, the loop at LT0408_22AC over the 241 unit
+; records at F27EE:2898): a unit counts when its +4 has no 8000h and its
+; +6 neither 20h nor 4; with +4 bit 1 for player 1, with neither bit 1
+; nor 2 for player 0. No units of player 1: both cursor records get
+; state 7 (F27EE:26CB, 26FC), player 0's result 11h, player 1's 12h; no
+; units of player 0 the other way round; neither: 15h for both. Seen in
+; a run of ISLE's first map (two people, player 1's six units given
+; 8000h in +4 at the map's 40th pass, both asking for the change, F1):
+; 11h written to F27EE:26D6 by T0408:23A7, then ANIM\hs and the
+; statistics. Not run: no units of player 0, or of both.
+; The message's wait (T0D36:0C85: until fire is let go, then until a key
+; is there or fire): any key ends it, also against the computer (runs
+; with space, p, Enter and left Ctrl at its 50th pass; without one it
+; waits on).
 ; the end of a map, T0708:4095: when a cursor record (+17h) has state 7,
 ; the players' results at F27EE:26D6 and 2707 (the records' +22h) are
 ; messages of show_message's table: 0Fh VICTORY !!, 10h YOU LOST ALL UNITS,
@@ -1153,15 +1167,18 @@ name T25A6:0655 end_credits
 ; 400h of F27EE:250C when the record's +6 is 2, else sets it: a map
 ; against the computer (the .COM is loaded with that bit).
 ; T15AC:0007: the statistics after a map; nothing at all when no round
-; was played (F27EE:251D 0: the poked ends of map 16 were so, and their
+; was played (round, F27EE:251D, below 1: F27EE:251B is then not set
+; either, so no last map is seen) (F27EE:251D 0: the poked ends of map 16 were so, and their
 ; name went to MAP\04.HI, F27EE:251B still the loop's 4). Else STATS.IFF,
 ; the palette, WINNER.SND with F27EE:250C bit 10h (the map is won), else
 ; LOOSER.SND, STATS.LIB, CODES.DAT; the two players' curves of
 ; history_add (below); F27EE:251B = the map; 500 on
 ; the score with bit 2000h. Won: the map's number + the +7 of its record
 ; in CODES.DAT, and text 12h with the new map's code, or text 18h and
-; bit 20h when the old record's +8 has bit 0 (the last map; not reached
-; without a poke); not won: text 11h and the score 0. Then text 1Ch with
+; bit 20h when the old record's +8 has bit 0 (the last map: seen on map
+; 31, RIVER, with only round 1 and the HQ's end poked, T15AC:0447 set
+; bit 20h and ANIM\es.a00 followed; text 18h CONGRATULATIONS ! YOU WON
+; THE LAST BATTLE !); not won: text 11h and the score 0. Then text 1Ch with
 ; the score, 13h with the round, 14h with text 15h, 16h or 17h by
 ; F27EE:2497 (below 10h, below 20h, more; what T15AC:071F returns), a
 ; key, fade_out. Seen in a run of ISLE's map 03 with the other player's
