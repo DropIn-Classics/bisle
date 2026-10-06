@@ -429,6 +429,10 @@ name CODE:26BB rand
 ; (not mapped) name T1479:11B4 list_makeable
 ; (not mapped) name T164D:04C7 check_vga_disk
 ; (not mapped) name T2248:0F28 play_anim
+name T03FA:0288 film_wait
+; (not mapped) name T2248:008E film_show
+; (not mapped) name T2248:00E3 film_load
+; (not mapped) name T24C5:002E draw_frame
 ; (not mapped) name T25A6:0655 end_credits
 ; (not mapped) name T15AC:0007 after_map
 ; (not mapped) name T15AC:071F history_rows
