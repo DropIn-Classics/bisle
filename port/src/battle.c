@@ -431,11 +431,27 @@ static void loop_keys(unsigned key)
             key_message(0x33 + 2 * side + on, side, 7);
         }
     } else if (pb(ks, 0x12) == key) {
-        /* the mouse on or off: the port has none, so "on" finds none */
-        if (!(GW(game_flags2) & 0x200))
-            key_message(GW(mouse_on) ? 0x38 : 0x37, 0, 7);
+        /* the mouse off, or on for the player the menu gave it to (the
+         * message says ON whether a driver answered or not) */
+        if (!(GW(game_flags2) & 0x200)) {
+            if (GW(mouse_on)) {
+                mouse_stop();
+                key_message(0x38, 0, 7);
+            } else {
+                mouse_start(0, (int8_t)GB(mouse_player) > 0 ? A_input1_events : A_input0_events, 0);
+                mouse_rates(0x0A, 0x0A, 0x0A, 0x0A, 0x0FA0, 0x28, 0x28);
+                key_message(0x37, 0, 7);
+            }
+        }
     } else if (pb(ks, 0x13) == key) {
-        /* the mouse's speed, only with a mouse */
+        /* the mouse's next speed, only with the mouse on */
+        if (!(GW(game_flags2) & 0x200) && GW(mouse_on)) {
+            SB(mouse_speed, GB(mouse_speed) + 1);
+            if ((int8_t)GB(mouse_speed) > 2)
+                SB(mouse_speed, 0);
+            mouse_rates_by_speed();
+            key_message(0x39 + GB(mouse_speed), 0, 7);
+        }
     } else if (pb(ks, 0) == key) {
         if (GW(game_flags2) & 0x200)
             return;
@@ -1505,8 +1521,9 @@ void battle_main(int argc, char **argv)
         SW(one_page, 0);
         t2593_0006();
         flip_page();
-        /* the mouse (T267C:000E, T2683:000A, T268A:0006): the port has
-         * none */
+        mouse_stop();
+        mouse_start(0, A_input0_events, 0);
+        mouse_rates(0x0A, 0x0A, 0x0A, 0x0A, 0x0FA0, 0x28, 0x28);
         bi_at("menu");
         if (menu(work))
             fatal_error(2);
@@ -1575,6 +1592,7 @@ void battle_main(int argc, char **argv)
         copy_page();
         t0d36_000f(0x0A);
     } while (GW(game_flags) & 1);
+    mouse_stop();
     t2354_056f();
     t261e_0008();
     t2354_005e();

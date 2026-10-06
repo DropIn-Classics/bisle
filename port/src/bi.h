@@ -153,6 +153,16 @@ void timer_remove(unsigned handle);
 void timer_period(unsigned handle, uint32_t period);
 void int08(void);
 void int09(unsigned char scancode);
+/* mouse.c: the mouse (T2683, T263D, T267C, T268A, T2354:0397) */
+int mouse_start(int by_timer, unsigned record, int shown);
+int mouse_read(void);
+int mouse_stop(void);
+int mouse_rates(int x, int y, int held_x, int held_y, int doubled, int threshold,
+                int held_threshold);
+void mouse_rates_by_speed(void);
+void mouse_input(unsigned now);
+/* the driver's place and buttons from outside (BI_MOUSEAT) */
+void bi_mouse_place(int x, int y, int buttons);
 void t2354_0530(void);              /* the program's INT 09h on */
 void t2354_056f(void);              /* and off */
 /* a timer's handler that is a C function: timer.c calls `fn` for the far

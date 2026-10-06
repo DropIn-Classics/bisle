@@ -189,6 +189,8 @@ static void input_events(unsigned now, unsigned before, unsigned counts, unsigne
                 for (i = 0; i < 5; i++)
                     wb((uint16_t)(now + i), rb((uint16_t)(now + i)) | rb((uint16_t)(si + 1 + i)));
         }
+        if (bi_prog != BI_INTRO && GW(mouse_on) && GW(mouse_record) == events)
+            mouse_input(now);
         if (rb((uint16_t)now))
             ww((uint16_t)(counts + 4), 0);
         if (rb((uint16_t)(now + 1)))
@@ -307,7 +309,9 @@ static void timer_keys(void)
         SW(key_there, 0xFFFF);
         SB(last_scancode, 0);
     }
-    /* the mouse (T263D:000A) when mouse_on: the port has no INT 33h */
+    /* the mouse; never on in the intro, whose names for it are not checked */
+    if (bi_prog != BI_INTRO && GW(mouse_on) && GW(mouse_by_timer) == 1)
+        mouse_read();
     SW(input_divider, GW(input_divider) + 1);
     if ((int16_t)GW(input_divider) < 4)
         return;
