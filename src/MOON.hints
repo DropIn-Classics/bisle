@@ -1248,6 +1248,20 @@ name T1724:04C5 check_vga_disk
 ; in the order above. bl and br have 36 frames each, es.a02 28, es.a03
 ; 61, es.a04 8 (counted, not compared with a run here; the port's
 ; comparisons ran br, qa and es).
+; The effects against the frames, from runs (effects_start's calls,
+; CODE:16F8, among the passes of film_show's loop LT2248_009C, and the
+; channels' numbers in the table at effects_ptr, 2E01:0010 in the run,
+; by -watch; "after n": after the film's nth frame): qa 0Dh before
+; frame 1, 0Eh after 7, 0Dh after 14, 0Eh and channel 1's 0Fh after 31
+; (the last). hs 0Ch after frame 1, channel 1's 0Bh after each of
+; frames 1..40 and four more after the film's end (the loop's 2Ch).
+; es.a00 0 before frame 1, channel 2's 02h after 1, 4, 7, 10, 13 and
+; with volume 0 after 16; es.a01 02h after 3 and 6, channel 3's 03h
+; with 02h after 9, 04h after 25, 05h after 27, 04h after 29; es.a02
+; channel 3's 07h after 1, channel 2's 06h after 28; es.a03 channels
+; 0 and 1 to 0 before frame 1, 08h after 1..26, 09h after 34, 37 .. 58;
+; es.a04's twelve 0Ah (channel count & 3) not set against its frames.
+; bl and br not run.
 name T238E:0F28 play_anim
 name T238E:005B film_wait
 name T238E:008E film_show
