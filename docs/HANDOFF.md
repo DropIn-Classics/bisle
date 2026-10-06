@@ -23,6 +23,56 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- Uninstall scripts, made in the kit (2026-10-06; doskit branch
+  dropin-team/uninstall, d3bba94 on doskit's master 1b90e5d, NOT
+  merged there
+  and not what this repository's doskit points at; this note on
+  dropin-team/uninstall-note). It carries out the proposal of
+  docs/uninstall-proposal.md (branch dropin-team/uninstall-script)
+  with the user's go.
+  - In the kit's template: `port/dist/uninstall.sh` (Linux and macOS;
+    the Mac package gets it as `uninstall.command`, which a double
+    click opens in Terminal) and `port/dist/uninstall.cmd` (Windows:
+    batch, with one PowerShell line for a folder's size and `choice`
+    for the question). Both ask twice, the default no: whether to
+    remove the copied game files (the data folder's `game`, and a
+    `game` an old version left beside the program), then whether to
+    remove the saves and settings too (the whole data folder). Where
+    they cannot ask they remove nothing. `--yes` answers yes and no,
+    `--yes --all` yes and yes; `--all` alone is refused. The data
+    folder is found as sys_data_dir finds it (DK_DATA_DIR first); a
+    data folder that is empty, the root or the home folder is refused.
+    The program's own folder is never touched. The update's files
+    (update.cfg, latest.json) go with the second question only, as the
+    proposal left it.
+  - Also there: the workflow's three Pack steps copy the script,
+    docs/RELEASE.md has point 8 and the package table's row,
+    README.txt a section "Removing", the template's port/README.md a
+    sentence.
+  - The kit's test (selftest.py, in its step for a new project): the
+    project's uninstall.sh on a made-up package and data folder, their
+    names with spaces: without a terminal nothing removed; `--yes`
+    removes the game files there and the leftover beside the program
+    and keeps the saves; `--yes --all` the folder; unknown options and
+    `--all` alone exit 2 and remove nothing; nothing there says so;
+    and on a terminal of its own the answers n n, Enter Enter, y n, y
+    y, n yes and x maybe. `selftest ok` on macOS.
+  - For this repository, once the kit branch is merged and the pointer
+    moved: battle-isle's own port/dist and .github/workflows/build.yml
+    are copies made from the template, so the two scripts (with
+    battle-isle and Battle Isle filled in), the Pack steps' lines and
+    README.txt's "Removing" have to be brought over by hand. Not done
+    here.
+  Not verified: uninstall.cmd at all (written without a Windows
+  machine: never run, nor its part of the selftest; `choice` without a
+  keyboard is expected to fail and so keep everything, not seen);
+  Linux (the proposal's script was tried there by its author; this
+  version, with the guard, the trimmed size and the last line, only on
+  macOS); a double click on uninstall.command and what Gatekeeper says
+  to a quarantined one; the changed workflow on GitHub's runners; the
+  real data folders (only made-up ones through DK_DATA_DIR); read-only
+  files in a game folder; names with quotes or percent signs.
+
 - Played through and won (2026-10-06, the user on Windows): ISLE's
   first map (CONRA) in the window build, won by taking the
   headquarters; the film, the statistics and the high scores came as
