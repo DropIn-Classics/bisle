@@ -301,7 +301,7 @@ def main():
                 data = unpacked(find(d, name))
                 got = read(data)
             except (OSError, ValueError) as e:
-                print('%s\\%s %s' % (rel, name, e))
+                print('%s %s' % (os.path.join(rel, name), e))
                 bad += 1
                 continue
             same = write(got) == data
@@ -350,7 +350,7 @@ def main():
                             print("'%s'" % title_text(s, table))
                 if tail != bytes((END, 0)):
                     line += ', ends %s' % tail.hex()
-            print('%s\\%s %s; %s' % (rel, name, line,
+            print('%s %s; %s' % (os.path.join(rel, name), line,
                                      'written back identical' if same else 'WRITTEN BACK OTHERWISE'))
     print('%d files, %d not read or not written back' % (total, bad))
     return 1 if bad else 0
