@@ -475,6 +475,9 @@
     X(T2112, frame_right, 0x076B, 0xFFFF, 0x07B0) \
     X(T2190, fight_reckon, 0x000D, 0xFFFF, 0x0002) \
     X(T223C, unit_script, 0x0001, 0xFFFF, 0x0007) \
+    X(T2248, film_wait, 0x005B, 0x0288, 0x005B) \
+    X(T2248, film_show, 0x008E, 0xFFFF, 0x008E) \
+    X(T2248, film_load, 0x00E3, 0xFFFF, 0x00E3) \
     X(T2248, play_anim, 0x0F28, 0xFFFF, 0x0F28) \
     X(T2354, timer_keys, 0x008A, 0x0090, 0x008A) \
     X(T2354, mouse_input, 0x0397, 0xFFFF, 0x0397) \
@@ -498,6 +501,7 @@
     X(T2482, fill_rect, 0x0004, 0x0004, 0x0004) \
     X(T24B5, store_part, 0x000E, 0xFFFF, 0x000E) \
     X(T24BA, draw_row, 0x0008, 0x0006, 0x0008) \
+    X(T24C5, draw_frame, 0x002E, 0xFFFF, 0x002E) \
     X(T24D8, draw_packed, 0x0008, 0xFFFF, 0x0008) \
     X(T24DF, draw_hexagon, 0x0002, 0xFFFF, 0x0002) \
     X(T2503, put_pixel, 0x0006, 0xFFFF, 0x0006) \
@@ -1082,6 +1086,9 @@
     X(T2112, frame_right, BATTLE_T2112, 0xFFFF, MOON_T2250) \
     X(T2190, fight_reckon, BATTLE_T2190, 0xFFFF, MOON_T22D3) \
     X(T223C, unit_script, BATTLE_T223C, 0xFFFF, MOON_T237F) \
+    X(T2248, film_wait, BATTLE_T2248, INTEGA_T03FA, MOON_T238E) \
+    X(T2248, film_show, BATTLE_T2248, 0xFFFF, MOON_T238E) \
+    X(T2248, film_load, BATTLE_T2248, 0xFFFF, MOON_T238E) \
     X(T2248, play_anim, BATTLE_T2248, 0xFFFF, MOON_T238E) \
     X(T2354, timer_keys, BATTLE_T2354, INTEGA_T0559, MOON_T249A) \
     X(T2354, mouse_input, BATTLE_T2354, 0xFFFF, MOON_T249A) \
@@ -1105,6 +1112,7 @@
     X(T2482, fill_rect, BATTLE_T2482, INTEGA_T06E3, MOON_T25C8) \
     X(T24B5, store_part, BATTLE_T24B5, 0xFFFF, MOON_T25FB) \
     X(T24BA, draw_row, BATTLE_T24BA, INTEGA_T06F3, MOON_T2600) \
+    X(T24C5, draw_frame, BATTLE_T24C5, 0xFFFF, MOON_T260B) \
     X(T24D8, draw_packed, BATTLE_T24D8, 0xFFFF, MOON_T261E) \
     X(T24DF, draw_hexagon, BATTLE_T24DF, 0xFFFF, MOON_T2625) \
     X(T2503, put_pixel, BATTLE_T2503, 0xFFFF, MOON_T2649) \

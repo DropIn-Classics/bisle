@@ -52,6 +52,57 @@ menu's entry (port/README.md; "The port" below).
   Linux (2026-10-06, branch dropin-team/port-linux-build): built with
   gcc 14 and SDL2 2.32.4 (10 -Wrestrict warnings, presumably harmless),
   the same comparison: video memory the same (port/README.md).
+- The films' files read and checked (2026-10-06, branch
+  dropin-team/anim-formats, on top of dropin-team/mouse-leftovers; open
+  question 6; BATTLE.hints at play_anim and end_credits has it in full).
+  The port's anim.c and credits.c had the routines already; what was
+  open was the files, and one earlier guess was wrong:
+  - The films' names do not come from anim.fx. They are the program's
+    own (anim_names: bl, br, qa, hs, es.a00 to a04, each with its .pal,
+    and anim.fx last), read from a run's memory. anim.fx is the films'
+    sound effects, a file as FIGHT.FXX (18 records, sndfiles.py reads it
+    and writes it back); ab.fx the credits' two effects; the .PX files
+    are the same bytes as the .FX (cmp).
+  - A film file is TPWM-packed and holds frames, then the letters ENDE:
+    "VDIF" and for each of the four planes runs (FFh and a word: where
+    the next bytes go, 3E80h or more ends the plane; a byte with 80h: a
+    count less 2 and a byte to fill; else a count of bytes as they are).
+    A frame holds what changes against the one before. Frames in ISLE's
+    files (a scratch decoder): bl 36, br 36, qa 31, hs 40, es.a00 17,
+    a01 35, a02 28, a03 61, a04 8. An earlier note's 37 for bl and br is
+    presumably the 36 and the pass of film_show's loop that meets ENDE
+    (qa's 31 frames gave 32 passes here; bl and br not run).
+  - Checked against the original: a map's end poked in on ISLE's first
+    map (keys by passes as in the macOS entry; `-poke 'LT0708_135C#30'
+    2AB5C DD` plays qa, `... 2AB5C FD24` hs, and `-poke LT0708_4551 2AB5C
+    FD24` beside the first poke plays es after qa and then the credits),
+    stopped by `-break 'LT2248_009C#N'` (film_show's loop; the Nth time
+    is before the frame is drawn) with -vram: the decoder's frames drawn
+    over black are the video memory in every pixel of both pages for
+    qa's first 19 and all 31 frames (N 20, 32), hs's first 9 and 29 (N
+    10, 30), es.a00's first 9 (N 42 after qa's 32) and es.a01's first 12
+    (N 61: es.a00 shows 16 of its 17). With -dos the files open in the
+    order anim.fx, the film, its palette; for es five films and
+    palettes, then at 76.1 s end_credits (logged once) opens ANIM\ab.fx;
+    film_show's loop was reached 182 times in all (32 and 150).
+  - DESERT's ANIM folder is ISLE's file for file (cmp). MOON's bl.a00
+    and br.a00 differ from ISLE's (36 frames each as well), its .fx and
+    bl/br palettes are the same; MOON's END.ANI, HQ.ANI and TOT.ANI are
+    the same kind of file (76, 135 and 128 frames by the decoder).
+  Named: film_wait, film_show, film_load (T2248:005B, 008E, 00E3) and
+  draw_frame (T24C5:002E); carried by xfer.py (MOON: T238E:005B, 008E,
+  00E3 and T260B:002E; INTEGA got film_wait at T03FA:0288, the intro's
+  wait; neither looked at). The port's C keeps its own names for them.
+  Not checked here: bl and br and es.a02 to a04 pixel for pixel (the
+  port's earlier comparisons ran br, qa and es), the palettes' values
+  against the DAC in these runs, which effect sounds at which frame
+  (the plan is in the code and in anim.c; the AdLib's writes during a
+  film were not compared), the credits' picture (compared for the port
+  before), MOON's .ANI frames against a run, the speaker's .PX in use.
+  The decoder is a scratch script, not a tool of tools/: a
+  `tools/animfiles.py` (read, write back identical, PNGs, `--match
+  VRAM`) would be the format tool this still lacks.
+
 - The mouse's leftovers (2026-10-06, branch dropin-team/mouse-leftovers,
   on top of dropin-team/mouse-port): both buttons, the right button and
   the count of ten passes, the menus' MOUSE item (SIDE TWO, MEDIUM), the
@@ -2614,8 +2665,9 @@ For the port (behaviour):
    needs a person to win against the computer or one of two people to
    win by keys (moves scripted to a headquarters, not done), the port's
    save names beyond 00.
-6. The animations: play_anim's names from ANIM\anim.fx (presumably),
-   the .Axx/.FX/.PX formats, end_credits (T25A6:0655) and ab.fx.
+6. The animations: answered (2026-10-06, Start here): the names are the
+   program's, anim.fx and ab.fx are effects files, the films are VDIF
+   frames. Left: a format tool for the films, the sounds' frames.
 7. Sound (the AdLib's; the speaker's is left out on purpose): what
    the port does where the original loses the timers' ticks in a fade
    and where a value goes to the wrong register (both are the original's

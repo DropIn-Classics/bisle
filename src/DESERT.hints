@@ -1059,16 +1059,73 @@ name T164D:04C7 check_vga_disk
 ; qa.pal (the HQ blown up); with 1100 (all units) play_anim(3) opens
 ; hs.a00, hs.pal. What 250E's bits mean is not looked into (bit 1 set
 ; against the computer, presumably).
-; T2248:0F28 (n, far ?, 0, 0, 1, path far): plays animation n of ANIM\
-; (seen: 2 qa, 3 hs, 4 es in five parts es.a00..a04 with es0..es4.pal;
-; the names from anim.fx, presumably, not checked).
+; T2248:0F28 (n, buffer far, x, y, load, folder far): plays film n of
+; ANIM\: 0 and 1 a building taken (bl in the left half, br in the right;
+; the game's palette stays, the film's own is loaded and not set), 2 a
+; headquarters blown up (qa), 3 the map won (hs), 4 the last map's end
+; (es.a00..a04 with es0..es4.pal, one after the other). The files' names
+; are the program's own, anim_names (in a run's memory, by their offsets:
+; 00 bl.a00, 07 bl.pal, 0E br.a00, 15 br.pal, 1C qa.a00, 23 qa.pal, 2A
+; hs.a00, 31 hs.pal, 38 es.a00, 3F es0.pal, 47 es.a01, 4E es1.pal, 56
+; es.a02, 5D es2.pal, 65 es.a03, 6C es3.pal, 74 es.a04, 7B es4.pal, 83
+; anim.fx): an earlier note took them to come from anim.fx. anim.fx is
+; the films' sounds, an effects file as FIGHT.FXX is (tools/sndfiles.py:
+; 18 records of 40h bytes; ANIM.PX the same bytes, the name the speaker's
+; mode asks for), loaded 1000h into the buffer by the effects' loader
+; before each film; the palette goes 1800h in, the film 1B20h. A palette
+; holds 6-bit values, shifted left by 2 for set_palette at level FFh.
+; A film file (.A00 .. .A04) is packed as the other files (TPWM) and
+; holds frames one after the other, then the four letters ENDE:
+;   "VDIF", then for each of the four planes its runs: a byte FFh and a
+;   word is where the next bytes go, counted from the frame's place on
+;   the page (y * 50h + x / 4), and a word of 3E80h or more ends the
+;   plane; a byte with bit 80h is a count less 2 (its low 7 bits) and
+;   one byte to fill with; any other byte is the count of bytes that
+;   follow as they are. A frame holds only what changes: it is drawn
+;   over the one before.
+; draw_frame (T24C5:002E: x, y, frame far) draws one on the page drawn to
+; and returns where the next begins, FFFF:FFFF when what is there does
+; not begin VDIF (the ENDE). film_show (T2248:008E: frames, ticks) draws
+; up to that many, each followed by flip_page, copy_page and film_wait
+; (T2248:005B: the tick count from 0 until it is above the number);
+; film_load (T2248:00E3: the offsets of a film's and a palette's name)
+; loads the two when anim_load says so. Each film is a fixed plan of
+; film_show, film_wait and effects asked for (number, volume, how; the
+; effects 0..11h of anim.fx), written out in the code film by film
+; (port/src/anim.c has the five).
+; Checked with a scratch decoder of the frames against runs' video
+; memory (docs/HANDOFF.md has the pokes), stopped at the Nth time of
+; film_show's loop (LT2248_009C): the first 19 and all 31 frames of qa,
+; the first 9 and 29 of hs's 40, the first 9 of es.a00's 17 and, after
+; its 16 shown, the first 12 of es.a01's 35: every pixel of both pages
+; the same. The runs opened anim.fx and then each film with its palette
+; in the order above. bl and br have 36 frames each, es.a02 28, es.a03
+; 61, es.a04 8 (counted, not compared with a run here; the port's
+; comparisons ran br, qa and es).
 name T2248:0F28 play_anim
+name T2248:005B film_wait
+name T2248:008E film_show
+name T2248:00E3 film_load
+name T24C5:002E draw_frame
 ; bit 20h, poked in as well (-poke LT0708_4551 F27EE:250C FD24, the value
 ; there 24DDh in the run with result 11h): check_vga_disk, play_anim(4)
 ; (the ending, "SELF DESTRUCTION SEQUENCE" on a screen in the shots), after
-; 300 ticks check_vga_disk again and T25A6:0655 (far ?, path far), which
-; opens ANIM\ab.fx and types the staff credits on a black screen (shots at
-; 124 s to 240 s); the name is a presumption from the shots.
+; 300 ticks check_vga_disk again and T25A6:0655 (buffer far, folder far),
+; which opens ANIM\ab.fx and types the staff credits on a black screen
+; (shots at 124 s to 240 s). Read since (port/src/credits.c follows it
+; routine by routine): ab.fx (the name is credits_name) is an effects file
+; of two records, effect 0 asked for at each letter and effect 1 when a
+; page goes; ab.px the same bytes. The text is in the program,
+; credits_text: 0Dh ends a line, 0Ch a page, 0 the text; a page is put in
+; the screen's middle by its lines and each line by its letters (6 pixels
+; a letter and a line), typed a letter every 4 ticks in colour 1 (green,
+; set by INT 10h AX=1010h) with a cursor of 5 by 5 pixels that blinks
+; every 7th tick, a page's end waited for 190h ticks and faded out; Esc
+; (read from the BIOS) leaves by longjmp; at the end a white picture
+; closes to a line and a dot. In a run with the last map's end poked in
+; end_credits was entered once, 76 s in, and opened ANIM\ab.fx; what it
+; draws was compared for the port (its 1st and 200th letter), not again
+; here.
 name T25A6:0655 end_credits
 ; CODES.DAT (tools/datfiles.py): records of 10 bytes, a map each. T1090
 ; loads it (the length / 10 the number of maps) and compares the code
