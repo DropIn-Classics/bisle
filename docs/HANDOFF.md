@@ -29,9 +29,12 @@ menu's entry (port/README.md; "The port" below).
   game/ (the copied game files), save/, save-desert/, save-moon/,
   battle-isle.cfg and update.h's update.cfg, latest.json, latest.part,
   update-package.part (read in sys.c, main.c, update.c). The script
-  is a dry run by default, --yes removes game/ only, --all --yes the
-  whole folder; tried on Linux in a made-up folder and as a dry run on
-  the real one, not on macOS or Windows (no .cmd written yet).
+  asks (the user's decision: interactive, no parameters needed): remove
+  the copied game files? then the saves and settings too? (default no;
+  without a terminal nothing goes; --yes for scripts takes game/ only,
+  --yes --all the folder). Tried on Linux in a made-up folder, and on
+  the real one without a terminal (nothing removed); not on macOS or
+  Windows (no .cmd written yet).
 
 - Played through and won (2026-10-06, the user on Windows): ISLE's
   first map (CONRA) in the window build, won by taking the

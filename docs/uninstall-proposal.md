@@ -32,11 +32,16 @@ Nothing is written to the registry or elsewhere.
    and `port/dist/uninstall.cmd` with a PowerShell line (Windows); the
    workflow's Pack steps copy them into each package beside README.txt;
    RELEASE.md's package table lists them.
-2. Default: a dry run that lists what would go and removes nothing.
-   `--yes` removes the copied game files only (`game/` in the data
-   folder and a leftover beside the program); `--all --yes` the whole
-   data folder (saves and settings too). The program's own folder the
-   player deletes by hand, as it was unpacked by hand.
+2. Interactive, no parameters needed (the user's decision, 2026-10-06):
+   started without anything it asks two yes/no questions, each naming
+   the folder and its size: "Remove the copied game files in ...?"
+   (`game/` in the data folder, and a leftover beside the program) and
+   "Also remove the saves and settings in ...?" (the whole data
+   folder). The default is no: only y or yes removes. Without a
+   terminal to ask on nothing is removed and the questions are only
+   listed. For scripts, `--yes` answers the first with yes and the
+   second with no, `--yes --all` both with yes. The program's own
+   folder the player deletes by hand, as it was unpacked by hand.
 3. README.txt gets a section "Removing" that says this, in the
    platform's words.
 
@@ -44,19 +49,22 @@ Nothing is written to the registry or elsewhere.
 
 ```sh
 #!/bin/sh
-# uninstall.sh - removes what SLUG copied and wrote: by default only the
-# copied game files (the data folder's "game"); with --all the whole data
-# folder (saves and settings too).  Nothing is removed without --yes: the
-# default is a dry run that lists what would go.
+# uninstall.sh - removes what SLUG copied and wrote.  Started without
+# anything it asks: first whether to remove the copied game files (the
+# data folder's "game"), then whether to remove the saves and settings
+# too.  Anything but y or yes keeps it.  Without a terminal to ask on it
+# only lists what it would remove.  --yes (for scripts) answers the
+# first question with yes and the second with no; with --all as well
+# the second with yes.
 set -eu
 SLUG=battle-isle
 NAME="Battle Isle"
-all=0 yes=0
+yes=0 all=0
 for a in "$@"; do
     case $a in
-        --all) all=1 ;;
         --yes) yes=1 ;;
-        *) echo "usage: $0 [--all] [--yes]" >&2; exit 2 ;;
+        --all) all=1 ;;
+        *) echo "usage: $0 [--yes [--all]]" >&2; exit 2 ;;
     esac
 done
 # the data folder as sys_data_dir finds it (doskit/runtime/sys.c)
@@ -65,41 +73,44 @@ elif [ "$(uname)" = Darwin ]; then data="$HOME/Library/Application Support/$NAME
 elif [ -n "${XDG_DATA_HOME:-}" ]; then data="$XDG_DATA_HOME/$SLUG"
 else data="$HOME/.local/share/$SLUG"
 fi
-# a game folder beside the program (versions before the data folder)
 here=$(cd "$(dirname "$0")" && pwd)
-targets=""
-add() { [ -e "$1" ] && targets="$targets
-$1" || true; }
-if [ $all = 1 ]; then add "$data"; else add "$data/game"; fi
-add "$here/game"
-targets=$(printf '%s\n' "$targets" | sed '/^$/d')
-if [ -z "$targets" ]; then echo "Nothing to remove (data folder: $data)."; exit 0; fi
-printf '%s\n' "$targets" | while IFS= read -r t; do
-    printf '%s  (%s)\n' "$t" "$(du -sh "$t" 2>/dev/null | cut -f1)"
+size() { du -sh "$1" 2>/dev/null | cut -f1; }
+# ask QUESTION DEFAULT-FOR---yes: 0 for yes
+ask() {
+    if [ $yes = 1 ]; then return $2; fi
+    if [ ! -t 0 ]; then echo "$1 [y/N] (no terminal: not asked, kept)"; return 1; fi
+    printf '%s [y/N] ' "$1"
+    read -r answer || return 1
+    case $answer in y|Y|yes|Yes|YES) return 0 ;; *) return 1 ;; esac
+}
+removed=0
+for g in "$data/game" "$here/game"; do
+    [ -d "$g" ] || continue
+    if ask "Remove the copied game files in $g ($(size "$g"))?" 0; then
+        rm -rf -- "$g" && echo "removed $g"; removed=1
+    else echo "kept $g"; fi
 done
-if [ $yes = 0 ]; then
-    echo "Dry run: nothing removed. Run again with --yes to remove the above."
-    exit 0
+if [ -d "$data" ]; then
+    [ $all = 1 ] && second=0 || second=1
+    if ask "Also remove the saves and settings in $data ($(size "$data"))?" $second; then
+        rm -rf -- "$data" && echo "removed $data"; removed=1
+    else echo "kept $data"; fi
 fi
-printf '%s\n' "$targets" | while IFS= read -r t; do
-    case $t in
-        */game|"$data") rm -rf -- "$t" && echo "removed $t" ;;
-        *) echo "skipped $t (not a folder of $SLUG)" >&2 ;;
-    esac
-done
+[ $removed = 1 ] || echo "Nothing removed."
 ```
 
-Tried (Linux, Debian 13): in a made-up data folder (`XDG_DATA_HOME`
-set; empty files, no game data) the dry run listed `game` and removed
-nothing; `--all` listed the folder and removed nothing; `--yes` removed
-`game` and kept `save/` and `battle-isle.cfg`; `--all --yes` removed
-the folder; a second run said "Nothing to remove"; an unknown option
-gave the usage and exit 2. A dry run against this machine's real
-`~/.local/share/battle-isle` listed `game` (39M) and, with `--all`, the
-folder, and removed nothing.
+Tried (Linux, Debian 13), in a made-up data folder (`XDG_DATA_HOME`
+set; empty files, no game data), the answers typed through `script`
+so that the script has a terminal: n, n kept everything; y, n removed
+`game/` and kept `save/` and `battle-isle.cfg`; n, yes and y, y removed
+the folder; without a terminal nothing was removed; `--yes` removed
+`game/` only, `--yes --all` the folder; a run with nothing there said
+"Nothing removed"; an unknown option gave the usage and exit 2.
+Against this machine's real `~/.local/share/battle-isle` only without a
+terminal: it listed `game` (39M) and the folder and removed nothing.
 
 Not tried: macOS (the path with a space is quoted, not run), Windows
-(the .cmd is not written yet), `DK_DATA_DIR`, a leftover `game` beside
+(the .cmd, with the same two questions, is not written yet), `DK_DATA_DIR`, a leftover `game` beside
 the program, a game folder with read-only files. Open: whether the
 update files belong to "game data" (here they go only with `--all`);
 whether a Mac script must be a `.command` to start by a double click.
