@@ -26,7 +26,8 @@ menu's entry (port/README.md; "The port" below).
 - Played through and won (2026-10-06, the user on Windows): ISLE's
   first map (CONRA) in the window build, won by taking the
   headquarters; the film, the statistics and the high scores came as
-  in the original, nothing off (sound, speed, picture). The first human win of a whole map in the port.
+  in the original, nothing off (sound, speed, picture). The first human win of a whole map in the port. Map 2 (PHASE,
+  against the computer) lost the same way, no problems either.
 
 - The port on macOS (2026-10-06, branch dropin-team/port-macos-build):
   `sh port/build.sh` built the window and the headless program at once,
