@@ -345,6 +345,19 @@ anything the game needs before the first release.
 
 (which packages were started from a download, on which systems)
 
+- macOS (2026-10-06, macOS 15.7.3, x86_64): a package built by hand as
+  the workflow's macos job builds it (SDL2 by its configure, no cmake
+  on that machine), not one from a release page; unpacked with Archive
+  Utility under a quarantine set by hand, Gatekeeper's verdict
+  "rejected" as README.txt says, then started after `xattr -cr` with
+  the game's folder named by -gog and an empty data folder: the app
+  runs, copies the game's files and writes its settings there. NOT
+  seen: the window (setup screen, menu, map), a double click, "Open
+  Anyway", arm64. docs/HANDOFF.md, "The macOS package", has it in full.
+- Open before a release: dist/README.txt's Keys still ends with the
+  template's line "(the game's own keys)"; doskit/docs/RELEASE.md's
+  point 6 wants the keys there.
+
 ## Checked
 
 How: the original stopped in the runner at an address and the port at
