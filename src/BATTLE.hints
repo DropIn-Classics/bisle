@@ -2126,9 +2126,81 @@ name DATA:0DEA pit_period_set
 ; the Blue Byte logo's steps (HANDOFF.md at libfiles.py): 43h records of
 ; x, y and the entry's offset in BB.DAT
 name T2433:01A7 logo_steps
-; the game's flags (HANDOFF.md, open question 1) and the menu's (250E;
-; T1090:0CBE sets 1 one computer, 2 two people, 4 two computers from the
-; PLAYER menu's lines)
+; the game's flags and the menu's (250E). Every instruction of BATTLE.ASM
+; that names one of the two words is in this list (71 and 26); the
+; addresses with "run" were seen writing or reading in runs of ISLE's
+; first map (-watch and -rwatch on the words; HANDOFF.md has the runs),
+; the others are the listing's labels before the instruction.
+; game_flags (the word is 0 from T0708:002D on, the program's start):
+;   1      the game goes on: set at the head of T0708:000E's outer loop
+;          (run: T0708:02A8) and by Y after Esc's question (run: 1DF5);
+;          cleared with bit 2 by the menu's EXIT (after T1090:0904); read
+;          at the outer loop's foot (run: T0708:4662), which goes to the
+;          menu again while it is set.
+;   2      the map's loop goes on: set before the loop (run: T0708:1352),
+;          cleared by Y after Esc (run: 1DE9), at a map's end (after
+;          T0708:41C5) and by EXIT; read at the loop's foot (run: 4494,
+;          once a pass).
+;   4, 8   a text is up in player 0's, player 1's message line: set by
+;          show_message (run: T11FD:00F7, the bit in AX), cleared by
+;          timer_due's kinds 1 and 2 (run: T0D36:0284 for 4, 0.22 to 0.24
+;          s after a key's message), one of them after T0D36:0B90 and
+;          after T0708:2CC8 (the bit in AX), both at once at
+;          the map's start (after T0708:1269), after the computer's wait
+;          (1516) and at change_phase's start (T0408:002A); read where a
+;          unit's line would be drawn over the text (after T0708:16A2 and
+;          2C83). Not cleared when a map is left: after Esc and Y both
+;          were still set in the menu (run).
+;   10h    the map is won (at play_anim, above)
+;   20h    after_map's (at play_anim, above)
+;   40h    the music plays: set at the map's setup (run: T0708:11A3),
+;          cleared and set by F2 (run: 18EE, 190F; stop_song, play_song,
+;          the messages 24h, 23h) when menu_flags has 10h; read for
+;          play_song at the map's start, stop_song on leaving (run:
+;          44A5), in change_phase before and after a fight or a film
+;          (after T0408:00D4, 133D, 23BA) and by save_game; load_game
+;          clears it when the saved menu_flags have no 10h.
+;   80h    the effects sound: set at the map's setup (run: T0708:11AF),
+;          cleared and set by F3 (run: 19A6, 19B9; the messages 26h, 25h)
+;          when menu_flags has 20h; read before each effect asked for
+;          (T0708 after 20FE and 41FD, change_phase after 05A6 and 0C04,
+;          T0E9B:1E0D); load_game clears it when the saved menu_flags
+;          have no 20h.
+;   100h   EXIT was chosen (set by the menu, read at T0708:0362: the
+;          program's way out, presumably; not run)
+;   200h   a saved game is to be loaded (at menu and load_game)
+;   400h   the map is one against the computer (at T1090:110F; run:
+;          T1090:1186 clears it for the first map)
+;   800h   only cleared (after T0708:404B); nothing sets it
+;   1000h  a fight or a film was shown in this change of phase: set
+;          before each (after T0408:02B1 and 1353), read after T0408:1A99,
+;          where the map's libraries, picture and palette are loaded
+;          again (change_phase's set_palette), cleared after T0408:1DA9.
+;          Read, not run.
+;   2000h, 4000h  a headquarters taken (at play_anim, above); the foot of
+;          the outer loop clears 10h, 20h, 2000h and 4000h (run:
+;          T0708:462D).
+; menu_flags (0 from the program's start):
+;   1, 2, 4  one player is the computer, neither, both (the menu, at
+;          menu above); 2 and 1 are read at a map's end for the winner's
+;          film (after T0708:412F, 414B) and 2 after T0708:404B; nothing
+;          reads 4.
+;   8      HIDE SHOP (the menu): read by the cursor's routine (after
+;          T0D36:0E96, 0EF3: a building's or a factory's sign only for
+;          one's own) and by the score (after T0408:2F1A: 64h more).
+;   10h, 20h  the music and the effects may be switched: both set at the
+;          map's setup (after T0708:10C9; the run's value was 32h), read
+;          by F2 and F3 (run: T0708:18B4, 1974), save_game, load_game.
+;   80h    the human asked for the change of phase while the computer
+;          thinks: set after T0708:3FE7, read after 1413, cleared after
+;          1516. Read, not run.
+; The players' first word (players, 17h bytes each): bit 2 that player is
+; the computer (set and cleared by the menu after T1090:0CBE .. 0D18;
+; read at the map's setup for computer_start, after T0708:0F22 and 0F6E,
+; in the loop after 3D01 and at the map's end after 414B, 4191); bits 1
+; and 4 are cleared at the map's setup (AND FFFAh), bit 4 is read after
+; T0708:4319 and 4363 (what sets it is not looked for here). On the first
+; map both words were 0 and menu_flags had bit 2: two people (run).
 name F27EE:250C game_flags
 name F27EE:250E menu_flags
 ; the names of files: CHAR6 (the font), CHAR24's library record (a name
