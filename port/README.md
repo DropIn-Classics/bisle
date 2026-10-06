@@ -340,10 +340,27 @@ command line still takes it. Not compared with the original's own /m run. Its `/
 
 `.github/workflows/build.yml` builds the packages doskit/docs/RELEASE.md
 prescribes; a pushed tag `vX.Y` makes a release of them. `dist/README.txt`
-is the players' README in each package: fill in the game's keys and
-anything the game needs before the first release.
+is the players' README in each package; its keys (2026-10-06) are the
+ones the code reads (BATTLE.hints: the key set, the players' tables,
+the cursor's functions, F7/F8, the quit key), not the manual's.
 
-(which packages were started from a download, on which systems)
+Linux, not from a download (2026-10-06, Debian 13, no display): the
+package made by hand as the workflow's Pack step does, from SDL2
+2.32.10's release source (configure, not cmake; `$ORIGIN` set at the
+link, there was no patchelf), unpacked into a fresh folder: `ldd` finds
+the SDL2 beside the program, RUNPATH `$ORIGIN` only, the newest glibc
+symbol GLIBC_2.38 (this machine's; the workflow builds on Ubuntu
+22.04). Started with SDL's offscreen video and an empty data folder it
+ran 15 s and made its data folder; nothing more could be seen without a
+window. The headless build of the same source, the same empty data
+folder and the GOG installer in ~/Downloads: "The game's files" names
+the installer, Enter copies, then the title, the menu and the first
+map (pictures 90, 4400 and 5900). Not done yet: a package of the
+workflow downloaded with a browser and started with a double click on
+a desktop, Windows, macOS, the update check. The setup's "Look for new
+versions" opens the release page on every platform (main.c:
+update_open); RELEASE.md's point 7 asks for update_install on Windows
+and Linux, which the port does not call.
 
 ## Checked
 

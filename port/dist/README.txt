@@ -77,7 +77,24 @@ Keys
 ----
 
 Alt+Enter: full screen on and off. Print Screen: a screenshot.
-(the game's own keys)
+
+The game's own keys, as the original has them (two players at one
+keyboard; a joystick or the mouse can stand in for one of them):
+
+    Player 1  the arrow keys or the keypad, Space or Enter: fire
+    Player 2  X left, V right, D or F up, C down, Alt or Ctrl: fire
+
+On the map: fire held on an empty square and a direction held while
+fire is let go: left asks for the change of phase (it comes when both
+have asked), right shows the overview, down the status screen.
+When both have asked for the change, D saves the game: a key, then a
+digit 0 to 9 names the save (Esc gives up). The menu's DISK, LOAD and
+the same digit load it again.
+Esc on the map asks QUIT THE GAME; Y or Z answers yes (the setup
+screen's "Quit key Y and Z", on at first; switched off, only the key
+the original takes counts). The letters above are where they are on
+an English (QWERTY) keyboard: on a German one Z and Y change places.
+F7 switches the mouse on and off, F8 changes its speed.
 
 Licences
 --------
