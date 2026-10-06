@@ -23,6 +23,13 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- game/ lost and back (2026-10-06): the whole folder was gone one day
+  (noticed by check.py failing with FileNotFoundError; the port was
+  fine, it reads the data folder). Restored with scp from another
+  machine; from the GOG installer it is inno.py that unpacks it.
+  game/ is ignored, so Git sees neither the loss nor the return:
+  check.py failing on missing files means look at the folder first.
+
 - The macOS package, built and started by hand (2026-10-06, branch
   dropin-team/rc1-macos-pkg, from origin/master 518020b with doskit at
   the recorded b051e8f; macOS 15.7.3 on x86_64, the Command Line
