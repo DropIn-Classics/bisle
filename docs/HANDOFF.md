@@ -2661,10 +2661,57 @@ For the port (behaviour):
    two-computer game above; side 2 won at about 557 s, YOU LOST ALL
    UNITS, keys only to pass the message and the statistics): game_flags
    04CDh, the score 0 at load_scores (T1090:15F3, the 3rd pass), MAP\16.HI
-   read, nothing written. Left: a .HI written after a real end, which
-   needs a person to win against the computer or one of two people to
-   win by keys (moves scripted to a headquarters, not done), the port's
-   save names beyond 00.
+   read, nothing written. A .HI after a real win by keys (2026-10-06,
+   branch dropin-team/hi-real-win): ISLE's map 00 (16x16, the smallest,
+   started without a code: two people, menu_flags 2, so game_flags 10h
+   at any end; the headquarters at (8,4) and (13,11), a square's column
+   and row from a unit's +0Bh as ((v-1)/2) mod 16 and div 16). Only a
+   unit with 1 in its +6 (type 1, the infantry) is let onto a building's
+   ground (reach's ground flags FFFFh): player 0's unit 04 from (14,3)
+   walked in four of its move phases to (13,9); in the fifth unit 03
+   (type 6) made room at (13,10) and 04 went there, in the sixth into
+   (13,11); player 1 moved
+   its unit 06 once and else only asked for the changes. At the next
+   change: VICTORY !! HQ IS YOURS (ANIM\br, then a key, then
+   ANIM\qa), STATS.IFF and WINNER.SND at 440 s; after_map
+   (T15AC:03B0) set F27EE:251B to 0, the score F27EE:2597 was 1AEh
+   (430); the menu read MAP\00.HI (none), asked for the name (edit_text
+   T1090:0F82), created MAP\00.HI (AH=3Ch from T2707:004A) and wrote
+   28h bytes (AH=40h) at 466 s: the score 430 and the name INNR (keys w
+   i n n r from 460 s: the w came before the box, 460.8 s), the other
+   three 0 and EMPTY. Not run in the port.
+   How to run it again (the scratch scripts are in build/scratch, not
+   in the repository; this is all they do): run.py -until 520 -keysat
+   LT1727_031E T -keysat LT1090_058B M -keysat LT0708_135C K -key 400
+   space -key 430 space -key 460 w -key 461 i -key 462 n -key 463 n
+   -key 464 r -key 466 enter -dos ISLE/BATTLE.EXE, with T the lines
+   `200 space+`, `201 space-` (the title), M `30 enter+`, `31 enter-`
+   (START) and K made from the steps below by map passes from 30
+   (hiwin_mk.py): P0 and P1 choose the player (keys up down left right
+   space, or d c x v lctrl); U, D, L, R with a count press a direction
+   that many times (down at t, up at t+1, the next at t+3); Wn waits n
+   passes; S presses fire (t, up t+2, next t+6); M is fire with up
+   (fire t, up t+3, fire let go t+6, up let go t+7; next t+12; on a unit
+   in the move phase: choose it), Q fire with left the same way (ask for
+   the change; on an empty square), X F1 (t, up t+2, next t+6). In a
+   move, M on the unit, the cursor to the aim, then S, W6, S. A
+   direction press does not always move the cursor one square (left and
+   right skip a column at times); the steps were found by trying and
+   reading the cursor's square (F27EE:26B4 +0, (v/2) mod 16, div 16),
+   and they hold the corrections. The steps:
+     R2 U2 R1 L1 W4 M W10 R2 D3 L1 W4 S W6 S W30 L2 W4 Q W10 P1 Q W10 X
+     W40 U2 W4 M W10 L5 W4 S W6 S W40 L1 W4 Q W10 P0 Q W10 X W60 R2 W4
+     M W10 D3 W4 S W6 S W40 U2 W4 Q W10 P1 Q W10 X W60 Q W10 P0 Q W10 X
+     W60 U5 R1 W4 D2 W4 M W10 D1 L1 W4 S W6 S W40 U1 W4 Q W10 P1 Q W10
+     X W60 Q W10 P0 Q W10 X W60 D1 W4 M W10 D2 W4 S W6 S W40 U1 W4 Q
+     W10 P1 Q W10 X W60 Q W10 P0 Q W10 X W60 D1 W4 M W10 D3 R1 W4 U3 W4
+     S W6 S W40 U1 W4 Q W10 P1 Q W10 X W60 Q W10 P0 Q W10 X W60 D1 W4 M
+     W10 L1 W4 S W6 S W40 U1 W4 Q W10 P1 Q W10 X W60 Q W10 P0 Q W10 X
+     W60 D2 W4 M W10 U3 R1 W4 S W6 S W40 D2 L1 W4 M W10 D1 W4 S W6 S
+     W40 U2 W4 Q W10 P1 Q W10 X W60 Q W10 P0 Q W10 X W60 D2 W4 M W10 D1
+     W4 U1 W4 S W6 S W40 U2 W4 Q W10 P1 Q W10 X W60
+   Left: the port's save names beyond 00, the .HI of a map won against
+   the computer.
 6. The animations: answered (2026-10-06, Start here): the names are the
    program's, anim.fx and ab.fx are effects files, the films are VDIF
    frames. Left: a format tool for the films, the sounds' frames.
