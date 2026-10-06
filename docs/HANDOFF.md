@@ -24,8 +24,9 @@ menu's entry (port/README.md; "The port" below).
 ## Start here (next session)
 
 - The AdLib's drums (2026-10-06, branch dropin-team/opl-drums, on top
-  of dropin-team/palette-levels; Next, point 5). NOT done: the
-  comparison with DOSBox. This machine (macOS) has no DOSBox and no
+  of dropin-team/palette-levels; Next, point 5). First without a
+  reference (a recording came later the same day: the last point
+  below). This machine (macOS) has no DOSBox and no
   package manager, GOG's folder has only DOSBox's configuration, and
   nothing was installed; so there is no reference here and nothing
   below says how the original sounds. Done instead: what GAME.SND
@@ -96,7 +97,60 @@ menu's entry (port/README.md; "The port" below).
   - The modulation depth and the attack curve (the other two choices
     Next 5 names): not looked at; without a reference there is nothing
     to hold them against.
-  Not verified: anything against DOSBox or a chip (see the top); that
+  - Later the same day, with a reference: three recordings from GOG's
+    DOSBox made on the lead's machine (bisle_intro.wav, bisle_credits.wav,
+    bisle_battle.wav; outside the repository and to stay there: 16-bit
+    stereo at 44100 Hz, 194.0, 145.8 and 145.9 s; the user's finding by
+    ear: the music recognizable, the percussion wrong). Only
+    bisle_battle.wav was used. It is the first map's song from 0.78 s
+    before its first note: the replay's onsets (the level's rises every
+    10 ms) fit the recording's at a constant 17.07 s (four stretches of
+    15 s from 19 to 75 s of the run, correlation 0.97 to 0.99, the same
+    shift each), so the runner's tempo is DOSBox's, and the song comes
+    again after 87.22 s. Compared: the level in six bands every 10 ms
+    (a scratch program, window 2048), the two channels' mean against
+    the replay of everything, over the run's 18.5 to 79 s. The
+    recording is 7.1 to 7.5 dB louder in each of 100-300, 300-1000 and
+    1000-4000 Hz; taken as its gain (7.3 dB) and taken out below.
+    - The tom and the bass drum are right in level: 100-300 Hz, where
+      the tom is nearly all of the replay, differs by 7.1 dB like the
+      melody's bands, and at the 104 key-ons of bass drum or tom
+      without another drum all three bands from 300 Hz up are within
+      1.2 dB of the recording's at the key-on. So the loud tom is the
+      original's, and nothing is proposed for these two.
+    - The cymbal has no ring: at its 33 key-ons the recording's 4-20
+      kHz stands 4.4 dB above the replay's at the key-on and 7.9, 15.2,
+      10.9 and 16.4 dB above it 50, 100, 150 and 200 ms later (at the
+      bass drum's and tom's key-ons without another drum: -1.1, 0.8,
+      4.8, 2.2, 2.1 dB). What rings in the replay's high band there is
+      the snare and bass drum keyed with it; the cymbal itself is the
+      44 Hz sine of point 1.
+    - The snare is too much tone and too little noise: at the 16
+      key-ons without a cymbal the recording's 4-20 kHz is 5.7, 6.9 and
+      5.8 dB above the replay's at 0, 50 and 100 ms, while 300-1000 Hz
+      (the snare's own multiple) is 3.1 dB below it at the key-on.
+    - The hi-hat is about right: alone (28 key-ons) the replay's 4-20
+      kHz is 4.2 dB above the recording's at the key-on, 0.9 dB at 50
+      ms, 1.6 dB below at 100 ms.
+    - Over all the recording has 2.0 dB more in 4-10 and 1.9 dB more in
+      10-20 kHz than the replay and 2.4 dB less below 100 Hz.
+    So the proposal above stands as it is for the cymbal (first) and
+    the snare, with numbers to meet: a cymbal's ring in 4-20 kHz some
+    8 to 16 dB above what is there now from 50 to 200 ms after the
+    key-on, a snare some 6 dB more above 4 kHz and 3 dB less at its
+    tone; the hi-hat at most 3 dB down at its onset, or left. The
+    kit's test could hold a replay of such a stretch against these
+    band levels.
+  Not verified in the comparison with the recording: the drums one by
+  one (the recording is the whole song: a drum's share is what rises
+  at its key-ons, averaged, and the cymbal is never keyed without
+  another drum); the gain, which is the mid bands' mean difference and
+  not known from DOSBox's settings; DOSBox's own synthesizer against a
+  chip (a recording of an emulator, resampled to 44100 Hz, is the
+  reference); the two other recordings (found and measured for length
+  only); the stretch after 79 s of the run; the tom's and bass drum's
+  sound beyond the three bands at the key-on.
+  Not verified before that: anything against a chip; that
   the percussion is too quiet in the port to the ear (the user's
   impression, Windows; nobody listened here); whether the loud tom is
   what the original sounds like; DESERT and MOON (not run); songs other
