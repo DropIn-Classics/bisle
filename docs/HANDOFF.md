@@ -263,13 +263,33 @@ menu's entry (port/README.md; "The port" below).
       ms, 1.6 dB below at 100 ms.
     - Over all the recording has 2.0 dB more in 4-10 and 1.9 dB more in
       10-20 kHz than the replay and 2.4 dB less below 100 Hz.
-    So the proposal above stands as it is for the cymbal (first) and
-    the snare, with numbers to meet: a cymbal's ring in 4-20 kHz some
-    8 to 16 dB above what is there now from 50 to 200 ms after the
-    key-on, a snare some 6 dB more above 4 kHz and 3 dB less at its
-    tone; the hi-hat at most 3 dB down at its onset, or left. The
-    kit's test could hold a replay of such a stretch against these
-    band levels.
+  - The rule for this (the user's decision, 2026-10-06): the sound is
+    NOT trimmed to DOSBox and NOT tuned by ear; the music is not to be
+    touched. Only what is certainly wrong may go into the kit
+    proposal. Everything else (a level, a drum's character) is touched
+    only where the reference plainly asks for it; in doubt it stays as
+    it is and is written down as open. By that rule the proposal is
+    now:
+    - In: the cymbal. A 44 Hz sine is a cymbal on no chip; that is
+      certain from the code alone, and the recording has the ring the
+      replay lacks. Proposed: the cymbal's amplitude from its envelope
+      and level without the wave's absolute sine, its sign from the
+      phases' lower bits so that the sound lies in the kHz (the bits
+      to be looked up for the kit, as said above). No level is
+      proposed for it beyond what the registers give.
+    - Open, unchanged: the snare. The recording has about 6 dB more
+      above 4 kHz and 3 dB less at the snare's tone at its key-ons,
+      which points the way the proposal above went (its tone, its
+      share of noise); but the snare is never alone in the recording,
+      the numbers are means over 16 key-ons with other drums, and the
+      reference is an emulator. Not plain enough: left as it is.
+    - Unchanged: the hi-hat (within 4.2 dB of the recording, the
+      replay the louder), the bass drum and the tom (they fit), every
+      level, the melody, the modulation depth, the attack curve.
+    The earlier points 2 and 3 and the snare's and hi-hat's part of
+    the "Kit proposal" above are withdrawn by this rule; they stay in
+    the text as what was read. A test for the kit needs only the
+    cymbal: keyed with a low F-number, most of its energy above 1 kHz.
   Not verified in the comparison with the recording: the drums one by
   one (the recording is the whole song: a drum's share is what rises
   at its key-ons, averaged, and the cymbal is never keyed without
