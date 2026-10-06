@@ -78,9 +78,9 @@ menu's entry (port/README.md; "The port" below).
   with a place and buttons from the window in the driver's terms (a
   place that can be set back to the middle, so relative motion scaled by
   the rates), and the three INT 33h settings; nothing of that is begun.
-  Also seen: this file has a NUL byte in the line about MOON's missing
-  .PMP ("After the scene change_phase loaded"), so grep takes the file
-  for binary (`grep -a` reads it); left as it is.
+  Also seen: this file had a NUL byte in the line about MOON's missing
+  .PMP ("After the scene change_phase loaded"), so grep took the file
+  for binary; the byte is taken out, what stood there is not known.
 
 - MOON's other maps (2026-10-04): a game of two computers on each of
   the 34 maps compared at pass 1000 (`build/scratch/mcvall.sh PASS
@@ -265,7 +265,7 @@ menu's entry (port/README.md; "The port" below).
   20h in the unit's +6) was `0FFFFh` for the port, so the search for the FEh
   of place_units never ended; place_units also keeps the script's pointer
   normalized (L1E36), the others count the offset up (the port: `next_byte`).
-  After the scene change_phase loaded `MAP .PMP`, which MOON has not: its
+  After the scene change_phase loaded `MAP.PMP`, which MOON has not: its
   reload is MAPINFO.DAT and MAP02.DAT or MAP04.DAT one behind the other into
   the libraries' buffer, which goes on behind them (the port: phase.c). The
   comparison with mcvc.sh (two computers, MOON's map 0) now reads: all
