@@ -441,6 +441,12 @@ name T0BA0:05C8 fire_reach
 ; routine's end: the same squares in six calls of a battle against the
 ; computer (paths of 2 to 14 squares, all of side 1 and found; none that
 ; failed was seen).
+; The list's memory is not find_path's alone: on ISLE's map 30 (two
+; computers) computer_plan wrote node 0's +4/+6 and node 2's words at
+; 45F10..45F23 (by 1C7B:1CC0, 1CCF, 23BD) half a second before a call;
+; presumably the player's paths block (computer.py's P), not checked.
+; find_path does not write node 0's +4/+6 nor node 2's square
+; (HANDOFF.md, map 30's stall).
 name T0BA0:0E2E find_path
 ; T0BA0:1391 (list far, side, unit): the squares in reach on which
 ; stop_check lets the unit (kept at F27EE:1326) stop, as words into the
