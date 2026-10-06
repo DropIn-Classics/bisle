@@ -736,10 +736,33 @@ stopped by the host). The setup screen's item "Title" was looked
     are the same, so that is all of the difference. Left as decided
     (the middle); what a real driver's reset place gives was not
     looked up.
+  - DESERT and MOON (`-title desert`, `-title moon`; 2026-10-06, macOS,
+    headless): the first map, stopped at the map loop's 400th pass,
+    four cases a title, the places and buttons given to the original by
+    time and to the port at the passes those times fall in (in
+    brackets; DESERT's, then MOON's):
+    - a place to the right, then one down, no button (151, 231; 151,
+      231);
+    - the left button, then a place down with it held, then released
+      (151, 191, 251; 151, 190, 251);
+    - the right button with a place to the right, then released at the
+      middle (151, 211; 151, 209, the original's event at its pass
+      210);
+    - both buttons with a place to the right, then released (151, 231;
+      151, 231): in the original this changes nothing against a run
+      without events, in the port neither.
+    All eight: video memory, the far data segments and the game's code
+    segments the same; DATA differs in 95 bytes for DESERT and 132 for
+    MOON, as with the driver and no events. DESERT's left button case
+    also differs in 6 bytes of draw_chars' segment (T2525:00FC and
+    0100, values the original keeps there and the port does not; ISLE's
+    case with the left button has the same). The library's segments
+    and the stack differ as without a mouse.
   Not checked: the menus steered by the mouse (only by keys with the
   mouse on), mouse_rates' effect (the runner's driver and the port's
   keep the rates and do nothing with them), a move or a fight by the
-  mouse, DESERT and MOON with events, Windows and Linux builds
+  mouse, DESERT's and MOON's menus, F7 and F8 and player 1 with the
+  mouse (their first maps with events are above), Windows and Linux builds
   (build.bat got the file, not run), the ten passes' count read step
   by step in a run (only the result compared).
 
