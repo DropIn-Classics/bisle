@@ -310,6 +310,7 @@ static void timer_keys(void)
         SB(last_scancode, 0);
     }
     /* the mouse; never on in the intro, whose names for it are not checked */
+    mouse_window(bi_prog != BI_INTRO && GW(mouse_on));
     if (bi_prog != BI_INTRO && GW(mouse_on) && GW(mouse_by_timer) == 1)
         mouse_read();
     SW(input_divider, GW(input_divider) + 1);

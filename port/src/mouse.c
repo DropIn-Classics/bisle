@@ -12,13 +12,25 @@
  * place within 0..639 and 0..199, three buttons, the sensitivity 50, 50
  * and 64; after a reset the place is the game's middle, 160, 100, not
  * the runner's half of the limits (drv_reset says why).  It is there only when asked
- * for: BI_MOUSE=1, or places scripted with BI_MOUSEAT (dos.c, bi_at).
- * Without that the port is a PC without a mouse, as before; the window's
- * mouse is not connected (platform.h gives the buttons pressed, not
- * held, and a place on the picture, not a movement).
+ * for: the setup screen's "Mouse" (bi_mouse_window), BI_MOUSE=1, or
+ * places and movements scripted with BI_MOUSEAT and BI_MOUSEMOVE (dos.c,
+ * bi_at).  Without that the port is a PC without a mouse, as before.
+ *
+ * The window's mouse (bi_mouse_window, or BI_MOUSE=window for a scripted
+ * run over plat_null.c's DK_MOUSEMOVE): the platform gives the buttons
+ * held and the movement since the last asking (platform.h's
+ * plat_mouse_motion), the driver adds the movement to its place by its
+ * rates, as INT 33h's AX=0Fh has them: so many counts of the mouse for
+ * 8 pixels.  The game sets the place back to its middle itself
+ * (mouse_centre).  A count of the platform is taken as one of the
+ * driver's: a choice, no original run has a real mouse's counts.
  */
 #include <stdlib.h>
+#include <string.h>
 #include "bi.h"
+#include "platform.h"
+
+int bi_mouse_window;
 
 /* the mouse's variables without a name of their own, by their place
  * after mouse_on (DATA:040A in BATTLE.EXE; MOON.EXE's are the same) */
@@ -41,9 +53,10 @@
 /* ---- the driver (the port's own) ---- */
 
 static struct {
-    int asked, there;
+    int asked, there, window;
     unsigned x, y, buttons;
     unsigned rate_x, rate_y, sens_x, sens_y, threshold;
+    long rest_x, rest_y;        /* movement not yet a pixel, in counts * 8 */
 } drv;
 
 static int drv_there(void)
@@ -52,9 +65,51 @@ static int drv_there(void)
         const char *e = getenv("BI_MOUSE");
 
         drv.asked = 1;
-        drv.there = (e && *e && *e != '0') || getenv("BI_MOUSEAT");
+        drv.window = bi_mouse_window || (e && !strcmp(e, "window"));
+        drv.there = drv.window || (e && *e && *e != '0') || getenv("BI_MOUSEAT")
+                    || getenv("BI_MOUSEMOVE");
     }
     return drv.there;
+}
+
+/* a movement of dx, dy counts along one axis: the place's change, the
+ * rest kept for the next */
+static unsigned drv_moved(unsigned place, int d, unsigned rate, long *rest, unsigned max)
+{
+    long n, to;
+
+    *rest += (long)d * 8;
+    n = *rest / (long)(rate ? rate : 1);
+    *rest -= n * (long)(rate ? rate : 1);
+    to = (long)place + n;
+    return to < 0 ? 0 : to > (long)max ? max : (unsigned)to;
+}
+
+/* a movement and the buttons held from outside (the window's mouse,
+ * BI_MOUSEMOVE) */
+void bi_mouse_move(int dx, int dy, int buttons)
+{
+    if (!drv_there())
+        return;
+    drv.x = drv_moved(drv.x, dx, drv.rate_x, &drv.rest_x, 639);
+    drv.y = drv_moved(drv.y, dy, drv.rate_y, &drv.rest_y, 199);
+    drv.buttons = (unsigned)buttons & 7;
+}
+
+/* the window's mouse into the driver, before its place is read */
+static void drv_poll(void)
+{
+    int dx, dy, buttons;
+
+    if (drv.window && plat_mouse_motion(&dx, &dy, &buttons))
+        bi_mouse_move(dx, dy, buttons);
+}
+
+/* the window keeps the mouse while the game has it (timer.c, each tick) */
+void mouse_window(int game_has_it)
+{
+    if (drv_there() && drv.window)
+        plat_mouse_grab(game_has_it);
 }
 
 /* a place and the buttons from outside (bit 0 left, 1 right, 2 middle) */
@@ -82,6 +137,7 @@ static unsigned drv_reset(unsigned *buttons)
     drv.x = 0xA0;
     drv.y = 0x64;
     drv.buttons = 0;
+    drv.rest_x = drv.rest_y = 0;
     drv.rate_x = 8;
     drv.rate_y = 16;
     drv.sens_x = drv.sens_y = 50;
@@ -93,6 +149,7 @@ static unsigned drv_reset(unsigned *buttons)
 /* AX=4 */
 static void drv_set_place(unsigned x, unsigned y)
 {
+    drv.rest_x = drv.rest_y = 0;
     drv.x = x > 639 ? 639 : x;
     drv.y = y > 199 ? 199 : y;
 }
@@ -113,6 +170,7 @@ int mouse_read(void)
 {
     if (!GW(mouse_on))
         return -1;
+    drv_poll();
     SW(mouse_x, drv.x);
     SW(mouse_y, drv.y);
     SW(mouse_left, (drv.buttons & 1) ? 0xFFFF : 0);
