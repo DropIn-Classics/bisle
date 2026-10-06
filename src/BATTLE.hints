@@ -1115,6 +1115,18 @@ name T2248:0F28 play_anim
 name T2248:005B film_wait
 name T2248:008E film_show
 name T2248:00E3 film_load
+; T2248:104D: draw_colour 0 (through DATA:0092), clear_page, flip_page,
+; copy_page: both pages black. T2248:1077: the 300h bytes at anim_palette
+; shifted left by 2 into picture_palette (through DATA:00CA), then
+; set_palette at level FFh. No fade: the picture before a film is faded
+; out by the caller, the film's first frames come at full level, and the
+; caller's fade_out after play_anim fades the film's palette (FFh .. 3).
+; In a run with qa (a map's end poked in, stopped at film_show's second
+; pass): picture_palette was qa.pal's 768 bytes times 4, and the DAC's
+; first 32 entries (all the runner's -vgastate prints) were (4n * 255) >>
+; 10 for the file's n, one less than n for every n but 0.
+name T2248:104D film_black
+name T2248:1077 film_palette
 name T24C5:002E draw_frame
 ; bit 20h, poked in as well (-poke LT0708_4551 F27EE:250C FD24, the value
 ; there 24DDh in the run with result 11h): check_vga_disk, play_anim(4)
@@ -1221,8 +1233,21 @@ name T26D2:000A save_file
 name T2695:0004 load_file
 ; T251F:000E (level, palette far): all 256 DAC entries from a palette of
 ; 8-bit values, each (value * level) >> 10 (level a byte), waiting for the
-; vertical retrace before each blue. The map's 00.PAL was set at level 252
-; (the DAC in a run matched that level only; tools/palfiles.py).
+; vertical retrace before each blue (so an earlier note; what it waits for
+; is bit 0 of port 3DAh going off and on again, the next blanking, a
+; line's end as a rule, presumably: a call took 8.1 ms in runs, 256 lines'
+; time, not 256 pictures'). The interrupts are off for the whole call.
+; The map's 00.PAL was set at level 252 (the DAC in a run matched that
+; level only; tools/palfiles.py): fade_in's last level.
+; The callers besides fade_in and fade_out, all at level FFh:
+;   T2433:0006 (the logo, twice in its two branches, after load_picture:
+;   the first call of a run, at 0.91 s);
+;   film_palette (T2248:1077, below at play_anim);
+;   change_phase (after T0408:1BA4): a palette file loaded anew, its 300h
+;   bytes copied as they are (8-bit values) to picture_palette (not seen
+;   in a run here).
+; At level FFh a value v comes out as (v * 255) >> 10, never as v >> 2
+; where v is not 0: a film's 6-bit value n, made 4n, is n - 1 in the DAC.
 name T251F:000E set_palette
 ; T253E:000A (index, r, g, b): one DAC entry, the values as they are.
 name T253E:000A set_dac_entry
@@ -1670,8 +1695,25 @@ name T2536:0004 draw_column
 ; it was 4, the loop's value, so MAP\04.HI was written (presumably the
 ; poke's doing; a real end of a map not run).
 name T2479:000A copy_page
-; T247D:0004: set_palette with the palette DATA:04A0 at the levels 0, 4,
-; .. 252; T247D:002B at 255, 251, .. 3 (read, not run).
+; T247D:0004: set_palette with the palette DATA:04A0 (picture_palette) at
+; the levels 0, 4, .. 252; T247D:002B at 255, 251, .. 3: 64 calls each,
+; so after fade_in the picture stands at level 252 and after fade_out at
+; level 3, which is black for every value ((255 * 3) >> 10 = 0). Seen so
+; in runs of ISLE (-log on both and on set_palette, the level in BL): a
+; fade took 0.51 to 0.52 s of the runner, 8.1 ms a call.
+; The callers, all of them (BATTLE.ASM), with no arguments:
+;   fade_in: title (after T1727:025B, the title's picture drawn), menu
+;   (after T1090:026F), the map's routine T0708:000E (after T0708:1269,
+;   before the map's loop), after_map (after T15AC:05DA, the statistics
+;   drawn);
+;   fade_out: title (after the logo, and at T1727:0625 on leaving), menu
+;   (T1090:0E97, on leaving), T0708:000E (T0708:44B3 on leaving the map,
+;   and after each of its two calls of play_anim and a wait of 64h),
+;   after_map (after its key).
+; In the runs: title's fade_out, fade_in and fade_out, menu's fade_in and
+; fade_out, the map's fade_in; with a map's end poked in the map's
+; fade_out, the film, the fade_out after play_anim and the menu's
+; fade_in. after_map's two were not reached in those runs.
 name T247D:0004 fade_in
 name T247D:002B fade_out
 ; the texts (tools/txtfiles.py has the formats). DATA:0092 is a far

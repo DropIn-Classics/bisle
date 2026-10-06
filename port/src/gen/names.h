@@ -479,6 +479,8 @@
     X(T2248, film_show, 0x008E, 0xFFFF, 0x008E) \
     X(T2248, film_load, 0x00E3, 0xFFFF, 0x00E3) \
     X(T2248, play_anim, 0x0F28, 0xFFFF, 0x0F28) \
+    X(T2248, film_black, 0x104D, 0x1337, 0x104D) \
+    X(T2248, film_palette, 0x1077, 0xFFFF, 0x1077) \
     X(T2354, timer_keys, 0x008A, 0x0090, 0x008A) \
     X(T2354, mouse_input, 0x0397, 0xFFFF, 0x0397) \
     X(T2354, mouse_centre, 0x04A0, 0xFFFF, 0x04A0) \
@@ -1090,6 +1092,8 @@
     X(T2248, film_show, BATTLE_T2248, 0xFFFF, MOON_T238E) \
     X(T2248, film_load, BATTLE_T2248, 0xFFFF, MOON_T238E) \
     X(T2248, play_anim, BATTLE_T2248, 0xFFFF, MOON_T238E) \
+    X(T2248, film_black, BATTLE_T2248, INTEGA_T03FA, MOON_T238E) \
+    X(T2248, film_palette, BATTLE_T2248, 0xFFFF, MOON_T238E) \
     X(T2354, timer_keys, BATTLE_T2354, INTEGA_T0559, MOON_T249A) \
     X(T2354, mouse_input, BATTLE_T2354, 0xFFFF, MOON_T249A) \
     X(T2354, mouse_centre, BATTLE_T2354, 0xFFFF, MOON_T249A) \
