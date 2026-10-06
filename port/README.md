@@ -476,7 +476,21 @@ the same place (`bi_at` in the C, `BI_BREAK=NAME#N` with `BI_RAM` and
   before. The port with only `03.DAT` in its folder gave the same
   memory; with no save it did not reach map_pass 10 in 300 s (not
   looked into what it waits at). save.c was not changed: it already
-  took 1..9 and 0 from the scancode. Other digits not run.
+  took 1..9 and 0 from the scancode. The other digits in the next entry.
+- The save's digit names the file, 0 and 9 in ISLE and 5 in DESERT
+  (2026-10-06, keys by passes as in the 03.DAT entry of branch
+  dropin-team/port-save-names; this branch
+  dropin-team/save-digits-rest): save_key 100 the digit, never let go;
+  LOAD's ask_key 100 the digit, let go at 400; each run with only that
+  one save in the runner's and the port's folders. The original wrote
+  00.DAT, 09.DAT (F27EE:249C "00", "09") and DESERT's 05.DAT, the port
+  the same files byte for byte (37815 bytes); after the save (map_pass
+  400) and after the load (map_pass 10) the video memory the same and
+  the memory the same but for the kinds of differences above (DATA up
+  to 1A3Eh, the timers' and interrupts' code segments, the stack).
+  DESERT's memory was compared with DESERT's hints, its keys at the same
+  labels (its code there reads as BATTLE's). Not run:
+  the digits 1, 2, 4, 6, 7, 8, MOON, a digit without a save at LOAD.
 - A map's end, on map 03 with a unit poked beside player 1's
   headquarters and moved onto it: the change of phase with the film of
   the building taken (ANIM\br; the 2nd and 25th frame), the message and
