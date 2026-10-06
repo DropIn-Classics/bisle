@@ -2808,8 +2808,16 @@ compared):
   by time in a scratch script. The runner prints a watch's first and
   last 32 writes only: es.a03's 09h was seen with -until 66. The order
   is the port's anim.c's in every start seen. Not run: bl and br (a
-  building taken); es.a04's starts not set against its frames (its
-  loop passes went on after 8, the count noted above for it).
+  building taken).
+  es.a04 (2026-10-06, branch dropin-team/es-a04-frames): the same run
+  with `-log T2248:00AF` (after film_show's call of draw_frame) and
+  -dos: es.a04 opens at 65.08 s, its passes are film_show's 174..182,
+  and draw_frame returns FFFF:FFFF at the 182nd (as at qa's 32nd and
+  es.a01's 84th): 8 frames, as counted, and one pass that meets the end
+  (nothing drawn, the pages flipped and copied, film_wait). That pass
+  was the "more than 8". The twelve 0Ah: n after frame n for 1..8, the
+  rest after the end's pass (BATTLE.hints at play_anim). es.a00, a02 and
+  a03 were not shown to their ends (no FFFF:FFFF in their passes).
 - A saved game (save_game, read in full): the header's 12h bytes and 23
   parts of the memory as they are, 37815 bytes; the far pointers inside
   (the cursors' records) fit because the port loads the program where
