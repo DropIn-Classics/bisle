@@ -477,6 +477,8 @@
     X(T223C, unit_script, 0x0001, 0xFFFF, 0x0007) \
     X(T2248, play_anim, 0x0F28, 0xFFFF, 0x0F28) \
     X(T2354, timer_keys, 0x008A, 0x0090, 0x008A) \
+    X(T2354, mouse_input, 0x0397, 0xFFFF, 0x0397) \
+    X(T2354, mouse_centre, 0x04A0, 0xFFFF, 0x04A0) \
     X(T2354, int09, 0x04C4, 0x037E, 0x04C4) \
     X(T2354, int24, 0x0520, 0x03DA, 0x0520) \
     X(T2354, old_timer, 0x063C, 0x04F6, 0x063C) \
@@ -514,7 +516,11 @@
     X(T259F, flip_page, 0x0004, 0xFFFF, 0x0004) \
     X(T25A6, end_credits, 0x0655, 0xFFFF, 0xFFFF) \
     X(T2628, file_close, 0x0004, 0x0002, 0x000E) \
+    X(T263D, mouse_read, 0x000A, 0xFFFF, 0x0004) \
     X(T2653, file_size, 0x0000, 0xFFFF, 0x000A) \
+    X(T267C, mouse_stop, 0x000E, 0xFFFF, 0x0008) \
+    X(T2683, mouse_start, 0x000A, 0xFFFF, 0x0004) \
+    X(T268A, mouse_rates, 0x0006, 0xFFFF, 0x0000) \
     X(T2690, file_open, 0x0004, 0x0002, 0x000E) \
     X(T2695, load_file, 0x0004, 0x0002, 0x000E) \
     X(T26D2, save_file, 0x000A, 0xFFFF, 0x0004) \
@@ -535,6 +541,8 @@
     X(F2740, text_four, 0x006F, 0xFFFF, 0x0073) \
     X(F2740, menus, 0x0079, 0xFFFF, 0x007D) \
     X(F2740, menu_items, 0x00A3, 0xFFFF, 0x00A7) \
+    X(F2740, mouse_player, 0x0438, 0xFFFF, 0x043C) \
+    X(F2740, mouse_speed, 0x0466, 0xFFFF, 0x046A) \
     X(F2789, messages, 0x0008, 0xFFFF, 0x000C) \
     X(F27E3, name_stats, 0x0008, 0xFFFF, 0x0002) \
     X(F27E3, name_winner, 0x000E, 0xFFFF, 0x0008) \
@@ -757,6 +765,14 @@
     X(DATA, key_char, 0x0406, 0x0708, 0x0406) \
     X(DATA, key_there, 0x0408, 0x070A, 0x0408) \
     X(DATA, mouse_on, 0x040A, 0x070C, 0x040A) \
+    X(DATA, mouse_by_timer, 0x040C, 0x070E, 0x040C) \
+    X(DATA, mouse_record, 0x040E, 0xFFFF, 0x040E) \
+    X(DATA, mouse_shown, 0x0410, 0xFFFF, 0x0410) \
+    X(DATA, mouse_threshold, 0x0416, 0xFFFF, 0x0416) \
+    X(DATA, mouse_x, 0x041A, 0xFFFF, 0x041A) \
+    X(DATA, mouse_y, 0x041C, 0xFFFF, 0x041C) \
+    X(DATA, mouse_left, 0x043A, 0x0730, 0x043A) \
+    X(DATA, mouse_right, 0x043E, 0x0734, 0x043E) \
     X(DATA, blocks_count, 0x044E, 0x0728, 0x044E) \
     X(DATA, blocks, 0x0450, 0x072A, 0x0450) \
     X(DATA, picture_palette, 0x04A0, 0xFFFF, 0x04A0) \
@@ -1068,6 +1084,8 @@
     X(T223C, unit_script, BATTLE_T223C, 0xFFFF, MOON_T237F) \
     X(T2248, play_anim, BATTLE_T2248, 0xFFFF, MOON_T238E) \
     X(T2354, timer_keys, BATTLE_T2354, INTEGA_T0559, MOON_T249A) \
+    X(T2354, mouse_input, BATTLE_T2354, 0xFFFF, MOON_T249A) \
+    X(T2354, mouse_centre, BATTLE_T2354, 0xFFFF, MOON_T249A) \
     X(T2354, int09, BATTLE_T2354, INTEGA_T0559, MOON_T249A) \
     X(T2354, int24, BATTLE_T2354, INTEGA_T0559, MOON_T249A) \
     X(T2354, old_timer, BATTLE_T2354, INTEGA_T0559, MOON_T249A) \
@@ -1105,7 +1123,11 @@
     X(T259F, flip_page, BATTLE_T259F, 0xFFFF, MOON_T26E5) \
     X(T25A6, end_credits, BATTLE_T25A6, 0xFFFF, 0xFFFF) \
     X(T2628, file_close, BATTLE_T2628, INTEGA_T05CB, MOON_T26FB) \
+    X(T263D, mouse_read, BATTLE_T263D, 0xFFFF, MOON_T2711) \
     X(T2653, file_size, BATTLE_T2653, 0xFFFF, MOON_T2726) \
+    X(T267C, mouse_stop, BATTLE_T267C, 0xFFFF, MOON_T2750) \
+    X(T2683, mouse_start, BATTLE_T2683, 0xFFFF, MOON_T2757) \
+    X(T268A, mouse_rates, BATTLE_T268A, 0xFFFF, MOON_T275E) \
     X(T2690, file_open, BATTLE_T2690, INTEGA_T0608, MOON_T2763) \
     X(T2695, load_file, BATTLE_T2695, INTEGA_T060D, MOON_T2768) \
     X(T26D2, save_file, BATTLE_T26D2, 0xFFFF, MOON_T27A6) \
@@ -1126,6 +1148,8 @@
     X(F2740, text_four, BATTLE_F2740, 0xFFFF, MOON_F2850) \
     X(F2740, menus, BATTLE_F2740, 0xFFFF, MOON_F2850) \
     X(F2740, menu_items, BATTLE_F2740, 0xFFFF, MOON_F2850) \
+    X(F2740, mouse_player, BATTLE_F2740, 0xFFFF, MOON_F2850) \
+    X(F2740, mouse_speed, BATTLE_F2740, 0xFFFF, MOON_F2850) \
     X(F2789, messages, BATTLE_F2789, 0xFFFF, MOON_F2899) \
     X(F27E3, name_stats, BATTLE_F27E3, 0xFFFF, MOON_F28F7) \
     X(F27E3, name_winner, BATTLE_F27E3, 0xFFFF, MOON_F28F7) \
@@ -1348,6 +1372,14 @@
     X(DATA, key_char, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, key_there, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, mouse_on, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
+    X(DATA, mouse_by_timer, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
+    X(DATA, mouse_record, BATTLE_DATA, 0xFFFF, MOON_DATA) \
+    X(DATA, mouse_shown, BATTLE_DATA, 0xFFFF, MOON_DATA) \
+    X(DATA, mouse_threshold, BATTLE_DATA, 0xFFFF, MOON_DATA) \
+    X(DATA, mouse_x, BATTLE_DATA, 0xFFFF, MOON_DATA) \
+    X(DATA, mouse_y, BATTLE_DATA, 0xFFFF, MOON_DATA) \
+    X(DATA, mouse_left, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
+    X(DATA, mouse_right, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, blocks_count, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, blocks, BATTLE_DATA, INTEGA_DATA, MOON_DATA) \
     X(DATA, picture_palette, BATTLE_DATA, 0xFFFF, MOON_DATA) \

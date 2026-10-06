@@ -1897,8 +1897,72 @@ name DATA:03EE input1_counts
 name DATA:0404 key_scan
 name DATA:0406 key_char
 name DATA:0408 key_there
-; the mouse (T2683:000A, T263D:000A; INT 33h)
+; The mouse (INT 33h), read in full; runs of ISLE's first map with the
+; runner's -mouse (docs/HANDOFF.md) showed the directions, the centring,
+; fire with a direction, and the two keys. The mouse is a joystick for one
+; player: how far the driver's position is from 160, 100 gives the
+; directions, the left button is fire.
+; mouse_start (mode, record, shown): 1 when the mouse is on already; INT
+; 33h AX=0, -1 unless it answers FFFFh; the buttons' number to DATA:0438,
+; mouse_on FFFFh, the three arguments kept (mouse_by_timer, mouse_record,
+; mouse_shown: every call passes 0, a player's events record, 0), the
+; driver's sensitivity kept for mouse_stop (AX=1Bh; DATA:0446..044A), then
+; mouse_read.
+; mouse_read: -1 when the mouse is off; INT 33h AX=3: mouse_x and mouse_y,
+; and for each button FFFFh when down (mouse_left, DATA:043C the middle,
+; mouse_right). With mouse_shown and the place another than the last
+; (DATA:041E, 0420) it saves three VGA registers, exchanges the pages
+; twice with nothing between (a pointer drawn there once, presumably),
+; sets DATA:0412 and keeps the place. timer_keys calls it every tick when
+; mouse_by_timer is 1, mouse_input when it is 0.
+; mouse_stop: -1 when off; with DATA:0412 what the pointer covered is put
+; back (T24D3:0000 with DATA:0364 and pointer_store, on the page shown);
+; the sensitivity given back (AX=1Ah), mouse_on and DATA:0412 0.
+; mouse_rates (x, y, x held, y held, double, threshold, threshold held):
+; -1 when off; the mickeys a pixel set (AX=0Fh) and kept (DATA:0422, 0424),
+; the double-speed threshold (AX=13h; 0FA0h in every call), the rates
+; while the left button is held (DATA:0426, 0428), the two thresholds
+; (DATA:042A, 042C) and mouse_threshold the first. The callers pass one
+; number four times, 32h, 0Ah or 3 by mouse_speed (0, 1, 2; the menu's
+; SLOW, MEDIUM and a third), and 28h for both thresholds.
+; mouse_input (SI the five bytes left, right, up, down, fire of the
+; pass): called by the players' input (T2354:02A4) for the player whose
+; events record is mouse_record. The left button going down sets the held
+; rates and threshold (DATA:0414 FFFFh), going up the others and centres;
+; if the right button is down then, DATA:044C counts ten passes of which
+; the eight after the first give no direction (read, not run). Both buttons down:
+; nothing. Else mouse_x - 160 at or above mouse_threshold is right, at or
+; below its negative left, mouse_y - 100 likewise down and up, each with
+; mouse_centre; the left button down is fire.
+; mouse_centre: with neither button down the driver's place is set back
+; to 160, 100 (AX=4), so a direction lasts until the next reading.
+; The callers: T0708 at the start (mouse_stop, mouse_start for player 0,
+; mouse_rates 0Ah) and at the end (mouse_stop); the menu (after T1090:0C1D's
+; flip_page mouse_rates by mouse_speed each pass; before T1090:0E97
+; mouse_stop and mouse_start for the player mouse_player says, above 0
+; player 1); the
+; map's loop: the key at the key set's +12h (scancode 41h, F7, in a run's
+; memory) switches the mouse off (message 38h) or on for mouse_player's
+; player (37h), the key at +13h (42h, F8) takes the next mouse_speed
+; while it is on (messages 39h, 3Ah, 3Bh), both only while game_flags2
+; has no 200h.
+name T2683:000A mouse_start
+name T263D:000A mouse_read
+name T267C:000E mouse_stop
+name T268A:0006 mouse_rates
+name T2354:0397 mouse_input
+name T2354:04A0 mouse_centre
 name DATA:040A mouse_on
+name DATA:040C mouse_by_timer
+name DATA:040E mouse_record
+name DATA:0410 mouse_shown
+name DATA:0416 mouse_threshold
+name DATA:041A mouse_x
+name DATA:041C mouse_y
+name DATA:043A mouse_left
+name DATA:043E mouse_right
+name F2740:0438 mouse_player
+name F2740:0466 mouse_speed
 ; the blocks T2619:0004 got from DOS (INT 21h AH=48h): their number and
 ; their segments
 name DATA:044E blocks_count
