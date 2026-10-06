@@ -352,7 +352,9 @@ menu's entry (port/README.md; "The port" below).
     DOSBox made on the lead's machine (bisle_intro.wav, bisle_credits.wav,
     bisle_battle.wav; outside the repository and to stay there: 16-bit
     stereo at 44100 Hz, 194.0, 145.8 and 145.9 s; the user's finding by
-    ear: the music recognizable, the percussion wrong). Only
+    ear: the music recognizable, the percussion wrong; the new build
+    against the old heard by the user 2026-10-06: the difference is
+    audible, kept as is). Only
     bisle_battle.wav was used. It is the first map's song from 0.78 s
     before its first note: the replay's onsets (the level's rises every
     10 ms) fit the recording's at a constant 17.07 s (four stretches of
