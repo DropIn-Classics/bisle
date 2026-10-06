@@ -2303,9 +2303,21 @@ For the port (behaviour):
    534 s): after_map (T15AC:03B0) set F27EE:251B from 4 to 10h, then
    CODES.DAT was read and the menu opened MAP\16.HI (none there); no
    name was asked and nothing was written, back at the title menu by
-   560 s. Left: a .HI written after a real end (a map won, or a score
-   above the lowest of the file: the score of this loss not looked
-   at), the port's save names beyond 00.
+   560 s. Why no name: after_map keeps the score (F27EE:2597) only
+   with game_flags 10h, which the map's end (T0708:412F) sets always
+   with two people (menu_flags 2), against the computer (menu_flags 1)
+   only when the person won (the cursor's result 0Fh or 11h), never
+   with two computers (menu_flags 4); else T15AC:04E6 makes the score
+   0, and the menu with a score of 0 does not ask for a name
+   (BATTLE.hints at after_map's caller; menu_flags from T1090:0CBE).
+   A real end of two computers (map 16 by the menu's keys of the
+   two-computer game above; side 2 won at about 557 s, YOU LOST ALL
+   UNITS, keys only to pass the message and the statistics): game_flags
+   04CDh, the score 0 at load_scores (T1090:15F3, the 3rd pass), MAP\16.HI
+   read, nothing written. Left: a .HI written after a real end, which
+   needs a person to win against the computer or one of two people to
+   win by keys (moves scripted to a headquarters, not done), the port's
+   save names beyond 00.
 6. The animations: play_anim's names from ANIM\anim.fx (presumably),
    the .Axx/.FX/.PX formats, end_credits (T25A6:0655) and ab.fx.
 7. Sound (the AdLib's; the speaker's is left out on purpose): what

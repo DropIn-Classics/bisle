@@ -1506,6 +1506,13 @@ name T1090:0F82 edit_text
 ; picture's upper left 320 by 200 is the screen), char24, CODES.DAT (its
 ; length / 10 the number of maps) and MENU.FXX (CODE:169E; the sounds,
 ; presumably), calls T1090:110F with the map F27EE:2523 and fades in.
+; (after_map keeps the score only when game_flags has 10h, which the map's
+; end sets at T0708:412F: always with two people (menu_flags 2), against
+; the computer (menu_flags 1) only when the person's cursor has the result
+; 0Fh or 11h, never with two computers (menu_flags 4); else T15AC:04E6
+; sets it to 0. A run of two computers, map 16 won by side 2: game_flags
+; 04CDh, F27EE:2597 0 at load_scores, MAP\16.HI read, no name asked,
+; nothing written; 2026-10-06.)
 ; With a score (the long F27EE:2597 above 0) it loads the .HI file numbered
 ; F27EE:251B and, when the score is above the lowest of its four, shows
 ; the texts F2740:005B, 0065, 006F ("TYPE NAME FOR TOP FOUR"), takes a name
@@ -1930,7 +1937,9 @@ name DATA:0DEA pit_period_set
 ; the Blue Byte logo's steps (HANDOFF.md at libfiles.py): 43h records of
 ; x, y and the entry's offset in BB.DAT
 name T2433:01A7 logo_steps
-; the game's flags (HANDOFF.md, open question 1) and the menu's (250E)
+; the game's flags (HANDOFF.md, open question 1) and the menu's (250E;
+; T1090:0CBE sets 1 one computer, 2 two people, 4 two computers from the
+; PLAYER menu's lines)
 name F27EE:250C game_flags
 name F27EE:250E menu_flags
 ; the names of files: CHAR6 (the font), CHAR24's library record (a name
