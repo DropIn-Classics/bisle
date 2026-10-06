@@ -23,6 +23,35 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- tools/datfiles.py on macOS, checked against the change c1b722f of the
+  branch dropin-team/datfiles-codes-path (2026-10-06, branch
+  dropin-team/datfiles-macos-check; macOS 15.7.3, Python 3.9.6, the GOG
+  files in game/; the tool's file taken from that branch for the runs
+  and put back, nothing of tools/ changed here). What the map 30 entry
+  called a failure was a wrong call: GAMEDIR is a title's folder, not a
+  file. Before the change (origin/master, f945934) the tool already read
+  all three titles here, with or without a folder given (94 lines
+  without --codes, 66 a title with it, every file "written back
+  identical", exit 0); it only printed `ISLE\UNIT.DAT` with a
+  backslash, and for `game/ISLE/CODES.DAT` four lines of "[Errno 20] Not
+  a directory" and exit 1. With the change:
+  - no argument, and `--codes` alone: ISLE, DESERT and MOON, four files
+    each (UNIT, GROUND, CODES, AMOK), all written back identical, the
+    names as `ISLE/UNIT.DAT`, exit 0 (94 and 196 lines);
+  - `--codes game/ISLE`, `game/DESERT`, `game/MOON`, each alone (66
+    lines: 27 types, 34 codes, the four files' lines, the count) and the
+    three in one call (196 lines): the same, exit 0; from inside game/
+    with `ISLE`: "4 files, 0 not read or not written back";
+  - `--codes game/ISLE/CODES.DAT` (a file), `game/NOPE` (not there) and
+    `'game\ISLE'` (another system's path): one line "... not a folder
+    (GAMEDIR is the folder of the .DAT files)", the count, exit 1.
+  The summaries of the three CODES.DAT (maps against the computer ISLE
+  16..31, DESERT 8..32, MOON 0..23 and 32) agree with what this file
+  says elsewhere. Not checked: `--ground` and `--raw`, the codes'
+  lines read one by one, `DOSKIT_GAME` naming another folder, the
+  change on Windows or Linux, the other tools of tools/ for the same
+  backslash (not looked for).
+
 - MOON's other maps (2026-10-04): a game of two computers on each of
   the 34 maps compared at pass 1000 (`build/scratch/mcvall.sh PASS
   MAP...`, one log each; `mbis.sh MAP LO HI` finds the first pass whose
