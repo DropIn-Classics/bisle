@@ -469,22 +469,22 @@ def main():
             m = read_fin(unpacked(os.path.join(d, a.match[1] + '.FIN')))
             vram = open(a.match[0], 'rb').read()
             for side, (n, same, c, k, box) in zip(('left', 'right'), match(draw(m, tiles, sprites), game, vram)):
-                print("%s\\%s %s window: column %d, row %s of the map at the screen's corner; "
+                print("%s %s window: column %d, row %s of the map at the screen's corner; "
                       "%d of %d pixels equal%s" % (
-                          os.path.basename(game), a.match[1], side, c, '%g' % (k / 2), same, n,
+                          os.path.join(os.path.basename(game), a.match[1]), side, c, '%g' % (k / 2), same, n,
                           '' if box is None else ', the others within x %d..%d, y %d..%d' % (
                               box[0], box[2], box[1], box[3])))
             continue
         if a.overview:
             path = find(d, a.overview[1] + '.PMP')
             if path is None:
-                print('%s\\%s no .PMP' % (os.path.basename(game), a.overview[1]))
+                print('%s no .PMP' % os.path.join(os.path.basename(game), a.overview[1]))
                 continue
             m = read_fin(unpacked(find(d, a.overview[1] + '.FIN')))
             pic = overview(m, read_pmp(unpacked(path))[1], game)
             n, same, x, y, box = match_overview(pic, open(a.overview[0], 'rb').read())
-            print('%s\\%s overview at x %d, y %d: %d of %d pixels equal%s' % (
-                os.path.basename(game), a.overview[1], x, y, same, n,
+            print('%s overview at x %d, y %d: %d of %d pixels equal%s' % (
+                os.path.join(os.path.basename(game), a.overview[1]), x, y, same, n,
                 '' if box is None else ', the others within x %d..%d, y %d..%d of it' % (
                     box[0], box[2], box[1], box[3])))
             continue
@@ -508,7 +508,7 @@ def main():
                     '%Xh %s' % (f, '/'.join(str(build.get((k, o), 0)) for o in range(3)))
                     for k, f in enumerate(BUILDING_FLAGS)))
                 if a.grid == nn:
-                    print('%s\\%s.FIN' % (rel, nn))
+                    print(os.path.join(rel, nn + '.FIN'))
                     print(grid(m))
                 if a.png:
                     os.makedirs(a.png, exist_ok=True)
@@ -535,13 +535,13 @@ def main():
                         to_png(os.path.join(a.png, '%s_%s_overview.png' % (os.path.basename(game), nn)),
                                game, overview(m, p[1], game))
             except (ValueError, KeyError) as e:
-                print('%s\\%-8s %s' % (rel, nn, e))
+                print('%-*s %s' % (len(rel) + 9, os.path.join(rel, nn), e))
                 bad += 1
                 continue
             ok = all(same)
             bad += not ok
-            print('%s\\%-8s %s; %s%s' % (
-                rel, nn, ', '.join(parts),
+            print('%-*s %s; %s%s' % (
+                len(rel) + 9, os.path.join(rel, nn), ', '.join(parts),
                 'written back identical' if ok else 'WRITTEN BACK OTHERWISE',
                 ''.join('; ' + q for q in sorted(set(problems)))))
     if not a.match and not a.overview:
