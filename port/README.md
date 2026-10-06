@@ -32,7 +32,9 @@ BATTLE.EXE leads there with the game installed whole; the modes of 360
 pixels left out, the program never asks for them). Not in the port: the game's other
 programs (the starter BI.EXE, INTVGA's intro of 16 colours (not wanted),
 MOON.EXE of the second scenario disk), the PC speaker's sound (not
-wanted), joystick and mouse (the port answers as a PC without them).
+wanted), the joystick (the port answers as a PC without one), the
+window's mouse (the mouse's routines are in, 2026-10-06, with a driver
+that is there only for scripted runs: below).
 The intro of 256 colours, INTEGA/INTRO.EXE, is in (below).
 
 The first scenario disk (2026-10-02): its game program
@@ -217,6 +219,7 @@ comparisons were not run again. The intro itself is not in yet.
 | `intro.c` | INTEGA/INTRO.EXE: T0529, T03FA | the intro of 256 colours: the screen (mode 13h unchained) and the show |
 | `dos.c` | DOS, BIOS, PIT | files, the keyboard, the clock (timer interrupt, retrace) |
 | `timer.c` | T2354 | the timers, the keys, the players' input |
+| `mouse.c` | T2683, T263D, T267C, T268A, T2354:0397 | the mouse as a player's directions and fire; its driver (the port's) |
 | `files.c` | T2619..T2728, T164D | memory blocks, files, TPWM unpacking, paths |
 | `gfx.c` | T23DC..T259F | pages, sprites, pictures, palette, text, lines |
 | `lib.c` | T0CEB | the sprite libraries |
@@ -264,8 +267,15 @@ What the port does otherwise than a PC:
   from a run of the runner for that.
 - The sound is the AdLib's whatever the switches: the PC speaker's
   (`/s`, and what the original does without an AdLib) is not in the port.
-- No joystick and no mouse (INT 33h): the original's code for them is
-  translated as far as it is reached without them.
+- No joystick: the original's code for it is translated as far as it is
+  reached without one. The mouse's routines are translated in full
+  (mouse.c) over a driver of the port's own in place of INT 33h, which
+  answers only when `BI_MOUSE=1` or `BI_MOUSEAT` is set (scripted runs);
+  otherwise, and so in the window, the port is a PC without a mouse as
+  before. The window's mouse is not connected: the kit's `plat_mouse`
+  gives a place on the picture and the buttons pressed since the last
+  call, the original needs movement that can be set back to a middle and
+  buttons held.
 - The original's routines keep scratch values in their code segments;
   the port keeps them in C variables.
 - Before the game the kit's setup screen is shown (doskit/docs/LAUNCHER.md:
@@ -654,6 +664,53 @@ stopped by the host). The setup screen's item "Title" was looked
   seems right at first hearing; the percussion may be too quiet (not
   sure, to be heard against the original: HANDOFF.md's Next, point 5).
   Not tried: a controller.
+- The mouse (2026-10-06, macOS, the headless build; mouse.c): the
+  original in the runner with its mouse driver against the port with
+  its own (`BI_MOUSEAT="PLACE N:X,Y,B ..."`, the driver's place and
+  buttons at a place's Nth pass; the runner's `-mouse T X,Y,B` goes by
+  time, so the pass a time falls in was read from a `-log` of the map
+  loop's start and the passes beside it tried), ISLE's first map, keys
+  by passes as before, both stopped at the map loop's 400th pass. In
+  each the video memory, the game's code segments and all far data
+  segments the same, DATA 94 bytes (the 111 of a run without a mouse
+  less the mouse's 17), the rest the kinds above:
+  - a place 100 to the right at t=25 s (pass 132): the cursor a column
+    on, the place back at 160, 100; the same with the port's event at
+    pass 132 or 134 (at 131 and 133 the cursor's byte +2Ch differs, 1
+    against 0, its animation's count);
+  - the left button at t=25 s, 80 down with it at 25.6 s, let go at
+    26.5 s (passes 132, 143, 159 in the original): the status screen
+    open; the same with the port's events at 132, 143, 160 (with 159
+    the same but for the cursor's +2Ch);
+  - F7 by passes (down 150, up 153) and a place to the right at 30 s
+    (pass 223): the mouse off, nothing moved; the same;
+  - F8 twice by passes (150, 200) and the same place: the speed 2, the
+    rates 3, the cursor a column on; the same with the port's event at
+    222 or 224 (at 223 the cursor's +2Ch).
+  The port's driver is at 160, 100, the game's middle, after a reset,
+  not at half its limits as the runner's (319, 99). The game takes
+  319 for "right" once and sets the place to its middle; in the
+  original that falls into the menu or the loading before a map, in
+  the port, whose clock stands while files load, it fell into the
+  map's first passes and the cursor started a column to the right
+  (seen before the change with `BI_MOUSE=1` alone at the first map's
+  200th pass: cursor 00B2 against 00B0). With the reset at the middle
+  the runs above were made again with nothing but their events
+  (`BI_MOUSEAT="map_pass ..."`; the first time the driver had been put
+  at the middle by a scripted place before the map's setup): the same
+  results, and with `BI_MOUSE=1` alone the first map's 200th pass is
+  the original's (DATA 94). What the original's one "right" does in
+  the menu, if anything, the port does not do; not looked for.
+  Without `BI_MOUSE` and `BI_MOUSEAT` the first maps of ISLE, DESERT
+  and MOON at their 200th pass are as before the change (DATA 111, 112
+  and 149 bytes, video memory the same); with the driver on DESERT and
+  MOON are the original's there with 17 bytes fewer in DATA (95, 132).
+  Not checked: the right button and the ten passes after it, both
+  buttons, the menus with the mouse and their MOUSE item, the mouse
+  for player 1, F7 to switch it on again, mouse_rates' effect (the
+  runner's driver and the port's keep the rates and do nothing with
+  them), a move or a fight by the mouse, DESERT and MOON with events,
+  Windows and Linux builds (build.bat got the file, not run).
 
 - macOS (2026-10-06; macOS 15.7.3 on x86_64, Apple clang 17.0.0 of the
   Command Line Tools, SDL2 2.32.10 as a framework in

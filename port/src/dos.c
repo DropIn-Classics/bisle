@@ -343,13 +343,17 @@ void bi_seen(const char *what, int n)
  * BI_KEYSAT="NAME N:HEX N:HEX ...;NAME N:HEX ...": at the Nth pass of
  * NAME the keyboard sends the byte HEX (a scancode; E0 first for the grey
  * keys), as the runner's -keysat and -keyat do.
+ * BI_MOUSEAT="NAME N:X,Y,B N:X,Y,B ...;NAME ...": at the Nth pass of NAME
+ * the mouse's driver (mouse.c) is at X, Y (decimal, 0..639 and 0..199)
+ * with the buttons B (1 left, 2 right, 4 middle), as the runner's -mouse
+ * puts it at a time; it also makes the port a PC with a mouse.
  * BI_POKE="NAME#N ADDR HEX ADDR HEX ...;NAME#N ...": at the Nth pass of
  * NAME the bytes HEX go to the linear address ADDR (hex), as the
  * runner's -poke does. */
 void bi_at(const char *name)
 {
     static struct { const char *name; long count; } places[32];
-    static const char *brk, *keys, *pokes;
+    static const char *brk, *keys, *pokes, *mice;
     static long brk_pass;
     const char *ram, *vram, *p;
     size_t len = strlen(name);
@@ -368,8 +372,11 @@ void bi_at(const char *name)
         pokes = getenv("BI_POKE");
         if (!pokes)
             pokes = "";
+        mice = getenv("BI_MOUSEAT");
+        if (!mice)
+            mice = "";
     }
-    if (!*brk && !*keys && !*pokes)
+    if (!*brk && !*keys && !*pokes && !*mice)
         return;
     for (i = 0; i < 32 && places[i].name && strcmp(places[i].name, name) != 0; i++)
         ;
@@ -395,6 +402,35 @@ void bi_at(const char *name)
                     key_byte((unsigned char)strtol(q, &e, 16));
                 else
                     strtol(q, &e, 16);
+                q = e;
+            }
+        }
+        p += group;
+        if (*p == ';')
+            p++;
+    }
+    for (p = mice; *p; ) {
+        const char *end = strchr(p, ';');
+        size_t group = end ? (size_t)(end - p) : strlen(p);
+
+        if (group > len && !strncmp(p, name, len) && p[len] == ' ') {
+            const char *q = p + len;
+
+            while (q < p + group) {
+                char *e;
+                long n = strtol(q, &e, 10), x, y, b;
+
+                if (e == q || *e != ':')
+                    break;
+                x = strtol(e + 1, &e, 10);
+                if (*e != ',')
+                    break;
+                y = strtol(e + 1, &e, 10);
+                if (*e != ',')
+                    break;
+                b = strtol(e + 1, &e, 10);
+                if (n == count)
+                    bi_mouse_place((int)x, (int)y, (int)b);
                 q = e;
             }
         }

@@ -52,6 +52,61 @@ menu's entry (port/README.md; "The port" below).
   Linux (2026-10-06, branch dropin-team/port-linux-build): built with
   gcc 14 and SDL2 2.32.4 (10 -Wrestrict warnings, presumably harmless),
   the same comparison: video memory the same (port/README.md).
+- The mouse in the port (2026-10-06, branch dropin-team/mouse-port, on
+  top of dropin-team/mouse-read for its names): port/src/mouse.c has the
+  six routines (mouse_start, mouse_read, mouse_stop, mouse_rates,
+  mouse_input, mouse_centre) and a driver of the port's own in place of
+  INT 33h; timer.c calls mouse_input from the players' input and
+  mouse_read from timer_keys, battle.c and menu.c have the original's
+  calls (the start, F7 and F8 on the map, the menu's pass and exit, the
+  end). The mouse's unnamed variables are reached by their place after
+  mouse_on (M_ in mouse.c; MOON's lie the same). Compared with the
+  runner in four runs with events and found the same (port/README.md,
+  Checked). How: the headless port had no scripted mouse of its own
+  (the kit's DK_MOUSE goes by picture and through plat_mouse), so
+  `BI_MOUSEAT="PLACE N:X,Y,B ..."` joins BI_KEYSAT in bi_at; the
+  runner's `-mouse` goes by time, so its pass is read from `-log
+  LT0708_135C` (the last pass begun at or before T) and the port's
+  event given at that pass or one beside it; one of them gave all of
+  memory the same each time, the others one byte of the cursor's
+  animation (+2Ch). A `-mouseat ADDR#N X,Y,B` in the runner would make
+  that exact; not asked for yet, nothing of the kit changed.
+  The driver is on only with `BI_MOUSE=1` or `BI_MOUSEAT`: players get
+  no mouse yet. For the window the kit would have to give what
+  platform.h's plat_mouse does not: the buttons held (it gives presses
+  since the last call) and movement since the last call (it gives a
+  place on the picture, which stops at the edges and cannot be set
+  back). That is a change of the kit: to be asked for, not made here.
+  Then the driver's place would be the middle plus the movement scaled
+  by the rates mouse_rates sets (the runner's driver ignores them, so
+  that scaling has no original run to compare with yet).
+  The driver's place after a reset is the game's middle, 160, 100 (a
+  fix after the review): the runner's driver puts it at half its limits,
+  319, 99, which the game reads as one "right" and then centres; in the
+  original that falls into the menu or the loading before the map, in
+  the port, whose clock stands while files load, it fell into the map's
+  first passes and moved the cursor. All the comparisons were run again
+  after the fix with no place scripted before the map: the same
+  (README).
+  A proposal for the kit, as text only (doskit has another session's
+  uncommitted work; nothing was changed there, and this is to be asked
+  for, not done from here):
+  - runtime/platform.h: beside plat_mouse, a call that gives the
+    movement since the last call (dx, dy in the window's points or in
+    counts, signed, not clipped at the picture's edges; relative mode
+    while the game has the mouse) and the buttons held now (bit 0 left,
+    1 right, 2 middle), with plat_sdl.c from SDL's relative mouse mode
+    and plat_null.c from a script (DK_MOUSE's lines with a movement and
+    held buttons, or a new variable), and a test in the kit as rule 7
+    wants. plat_mouse stays as it is for the launcher.
+  - tools/run: `-mouseat ADDR[#N] X,Y,B` (and a file form, as -keysat):
+    the mouse at a program's own pass, not at a time, so that a
+    comparison needs no trying of neighbouring passes.
+  With the first, the port's driver would add the movement, scaled by
+  the rates mouse_rates sets, to its place, and the settings would need
+  an item to switch the mouse on (it grabs the pointer); neither is
+  begun.
+
 - The mouse, read and run, not in the port (2026-10-06, branch
   dropin-team/mouse-read; BATTLE.hints at mouse_start has it routine by
   routine). The original uses the mouse as a joystick for one player:
@@ -2423,7 +2478,7 @@ compared):
       Looked at in a window by the user (2026-10-03).
    e. Later: the mouse. The original has it (DISK's item MOUSE, its
       speed, a key on the map that switches it, INT 33h; T2683, T263D,
-      T268A, T267C: read and named since, 2026-10-06, Start here) and the port
+      T268A, T267C: read and named, then translated, 2026-10-06, Start here) and the port
       leaves it out so far ("the port has none" in battle.c, menu.c,
       timer.c). To do: read the four routines, runs of the original
       with a mouse, then the port's. The runner now has a mouse

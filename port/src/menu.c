@@ -524,8 +524,7 @@ int menu(fptr work)
         if (sound != 0xFF)
             ask_effect(sound);
         flip_page();
-        /* the mouse's speed by the item SLOW/MEDIUM (T268A:0006): the
-         * port has no mouse */
+        mouse_rates_by_speed();
         if (mode == 3) {
             mode = 0;
             t0d36_000f(3);
@@ -568,6 +567,8 @@ int menu(fptr work)
         if ((int32_t)pd(scores, 4 * i) > v)
             v = (int32_t)pd(scores, 4 * i);
     SD(score_best, (uint32_t)v);
+    mouse_stop();
+    mouse_start(0, (int8_t)GB(mouse_player) > 0 ? A_input1_events : A_input0_events, 0);
     fade_out();
     restore_sprites();
     SW(draw_colour, 0);
