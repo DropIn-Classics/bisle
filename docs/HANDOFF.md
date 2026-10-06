@@ -23,6 +23,65 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- The mouse, read and run, not in the port (2026-10-06, branch
+  dropin-team/mouse-read; BATTLE.hints at mouse_start has it routine by
+  routine). The original uses the mouse as a joystick for one player:
+  each pass of that player's input it asks the driver for the place
+  (INT 33h AX=3); 160, 100 is the middle, a distance of the threshold
+  (28h) or more to a side is that direction for the pass, and the place
+  is set back to the middle (AX=4) unless a button is down; the left
+  button is fire. No pointer is drawn (the code for one is an empty
+  stretch between two exchanges of the pages). Named: mouse_start
+  (T2683:000A), mouse_read (T263D:000A), mouse_stop (T267C:000E),
+  mouse_rates (T268A:0006: the mickeys a pixel, 32h, 0Ah or 3 by the
+  menu's speed, other rates and threshold while the left button is
+  held), mouse_input (T2354:0397) and mouse_centre (T2354:04A0), and the
+  data they use. The program switches the mouse on by itself at its
+  start when a driver answers, for player 0; on the map the key at the
+  key set's +12h (F7 by the scancode in a run's memory) switches it off
+  and on, the one at +13h (F8) takes the next of the three speeds; the
+  menu's MOUSE item gives it to the player `mouse_player` names.
+  The runner scripts a mouse already, nothing of the kit was changed:
+  `-mouse T X,Y,B` (the place and the buttons at a time, bit 0 left, 1
+  right) and `-mice FILE`. Runs of ISLE's first map (`run.py -until 60
+  -key 14 space -key 33 enter -ram F ISLE/BATTLE.EXE` and the events;
+  the cursor's record is F27EE:26B4, its +0 the square, +17h the state):
+  - none: the cursor at 00B0, the mouse's variables as the comparisons
+    with the port show them (on, the record input0_events, the rates
+    32h, the threshold 28h, the place 160, 100);
+  - `-mouse 50 260,100,0`: the cursor at 00B2, the place 160, 100 again;
+  - `-mouse 50 160,200,0 -mouse 53 160,200,0`: the cursor at 0110;
+  - `-mouse 50 190,100,0` (30, below the threshold): the cursor stays,
+    mouse_x stays BEh;
+  - `-mouse 50 160,100,1 -mouse 50.6 160,180,1 -mouse 51.5 160,180,0`
+    (fire, down, fire let go): the cursor's state 4 and the status
+    screen in player 0's window (a shot at 55 s, looked at);
+  - `-key 50 41` (F7): mouse_on 0, show_message called at 50.04 s, and a
+    `-mouse 54 260,100,0` after it moves nothing;
+  - `-key 50 42 -key 53 42` (F8 twice): mouse_speed 2, the rates 3.
+  The messages' texts (37h..3Bh) were not seen: a shot 0.6 s after the
+  key shows none (not looked into). Not run: the right button and the
+  count of ten passes after the left one is let go with it (DATA:044C),
+  both buttons, the menus with the mouse and their MOUSE item (SIDE,
+  SLOW/MEDIUM), the mouse for player 1, F7 to switch it on again, a
+  machine without a driver beside one with (the port is the first),
+  DESERT and MOON. How many squares one direction moves was not worked
+  out (00B0 to 00B2 for one event to the right; the map's units of the
+  offset not looked up). xfer.py carried the names: DESERT's are
+  BATTLE's addresses; MOON's four routines (T2757:0004, T2711:0004,
+  T2750:0008, T275E:0000) begin as BATTLE's (their first lines looked at
+  in MOON.ASM), its mouse_input, mouse_centre and data names not looked
+  at; INTEGA.hints got mouse_by_timer, mouse_left and mouse_right by
+  votes (the intro's timer module), not looked at. The port built with
+  the new names.h (macOS, no warning); no comparison run again.
+  For the port, when it comes: the players' input would need mouse_input
+  with a place and buttons from the window in the driver's terms (a
+  place that can be set back to the middle, so relative motion scaled by
+  the rates), and the three INT 33h settings; nothing of that is begun.
+  Also seen: this file has a NUL byte in the line about MOON's missing
+  .PMP ("After the scene change_phase loaded"), so grep takes the file
+  for binary (`grep -a` reads it); left as it is.
+
 - MOON's other maps (2026-10-04): a game of two computers on each of
   the 34 maps compared at pass 1000 (`build/scratch/mcvall.sh PASS
   MAP...`, one log each; `mbis.sh MAP LO HI` finds the first pass whose
@@ -2215,7 +2274,7 @@ compared):
       Looked at in a window by the user (2026-10-03).
    e. Later: the mouse. The original has it (DISK's item MOUSE, its
       speed, a key on the map that switches it, INT 33h; T2683, T263D,
-      T268A, T267C: not read, mouse_on is the only name) and the port
+      T268A, T267C: read and named since, 2026-10-06, Start here) and the port
       leaves it out so far ("the port has none" in battle.c, menu.c,
       timer.c). To do: read the four routines, runs of the original
       with a mouse, then the port's. The runner now has a mouse
