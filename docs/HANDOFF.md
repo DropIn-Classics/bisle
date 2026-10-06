@@ -1164,8 +1164,9 @@ games, each its own folder mounted as C: and started there:
   45 s), 48 left, 49 left, 50 space+, 50.6 left+, 51.5 space-, 52 left-,
   53 x, 54 x, 55 lctrl+, 55.6 x+, 56.5 lctrl-, 57 x-, 59 d, 62 0; for
   loading 14 space, 33 down, 34 down, 35 enter, 37 enter, 39 0, 42
-  enter. The save asks for no position; its name is the digit key
-  pressed (point 5 of the open questions). The path was found from the code (the key set,
+  enter. The save asks for no position: its digit key (save_key) is the
+  name, "00" for 0 (2026-10-06: with 3 the original wrote 03.DAT and
+  F27EE:249C held "03"; port/README.md has the comparison). The path was found from the code (the key set,
   the cursor record's state 5, the message table; BATTLE.hints). Esc, Y leaves the map without a
   save question. Neither run reached any of the 4.1 KB of gaps (-cover,
   gaps.py: 0 ran).
