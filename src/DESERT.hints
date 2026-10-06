@@ -1243,8 +1243,14 @@ name T2695:0004 load_file
 ;   the first call of a run, at 0.91 s);
 ;   film_palette (T2248:1077, below at play_anim);
 ;   change_phase (after T0408:1BA4): a palette file loaded anew, its 300h
-;   bytes copied as they are (8-bit values) to picture_palette (not seen
-;   in a run here).
+;   bytes copied as they are (8-bit values) to picture_palette. Seen in
+;   a run with game_flags' 1000h poked in at change_phase's entry (both
+;   cursors' states poked to 5 and F1 on the first map, no fight): after
+;   T0408:1A99 the files MAP\00.PMP and 00.PAL opened, one set_palette at
+;   level FFh, then the libraries and the song. No fade follows, so from
+;   then on the map stands at level FFh and not at fade_in's 252: the
+;   DAC's first 32 entries were the file's at 255 after it and at 252 in
+;   a run without (10 of the 96 values one higher).
 ; At level FFh a value v comes out as (v * 255) >> 10, never as v >> 2
 ; where v is not 0: a film's 6-bit value n, made 4n, is n - 1 in the DAC.
 name T251F:000E set_palette
@@ -1723,7 +1729,11 @@ name T2479:000A copy_page
 ; In the runs: title's fade_out, fade_in and fade_out, menu's fade_in and
 ; fade_out, the map's fade_in; with a map's end poked in the map's
 ; fade_out, the film, the fade_out after play_anim and the menu's
-; fade_in. after_map's two were not reached in those runs.
+; fade_in. after_map's two came in a later run, with the round's count
+; poked to 1 beside the map's end (F27EE:251D; without a round after_map
+; draws nothing): STATS.IFF, 00.PAL, WINNER.SND and STATS.LIB opened,
+; fade_in 7 ms after T15AC:05DA, and at a key (space, given at 40 s)
+; fade_out, both of 64 calls with the levels above; then the menu.
 name T247D:0004 fade_in
 name T247D:002B fade_out
 ; the texts (tools/txtfiles.py has the formats). DATA:0092 is a far
