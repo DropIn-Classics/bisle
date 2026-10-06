@@ -541,9 +541,15 @@ ptr T249A:055E T249A
 name T249A:04C4 int09
 ; int09 keeps one bit per scancode at DATA:0AD8 (16 bytes, a bit set when
 ; the key is up, as read from the code); T2354:0268 tests the keys of the
-; tables DATA:0AE9 / 0AEB point to (per player, presumably: a scancode
-; and five flags each, up, down, left, right and fire as a guess) against
-; it. The title menu runs with the BIOS's INT 09h (seen in a run at 36 s)
+; tables DATA:0AE9 / 0AEB point to (player 1's at DATA:0AED, player 2's
+; at DATA:0B50 in a run's memory at the first map's 30th pass) against
+; it. A record is 7 bytes: the scancode, then FFh or 0 for left, right,
+; up, down, fire, and a 7th byte (39h for space, FFh for Esc, the
+; letters S, P, F for the scancodes 1Fh, 19h, 3Dh; not looked into); a
+; scancode 0 ends the table. Player 1: space and Enter fire, the arrows
+; and the keypad's 1 3 7 9 (diagonals: two flags), then Esc, 1Fh, 19h,
+; 3Dh with no direction. Player 2: Alt and Ctrl fire, C down, D and F
+; up, X left, V right. The title menu runs with the BIOS's INT 09h (seen in a run at 36 s)
 ; and gets its keys from the timer callback below through INT 16h.
 ; INT 21h AH=25h AL=24h with DS = CS, DX = 0520h: the critical error
 ; handler (sets DATA:0AD4 to 2, AL = 0; read from the code, not run)

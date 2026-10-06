@@ -23,6 +23,14 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- The players' key tables (2026-10-06, branch dropin-team/keys1-bytes):
+  read from a run's memory (title_pass 200 space, menu_pass 30 enter,
+  `-break 'LT0708_135C#30' -ram`; DATA at 2E040): keys0_table 0AEDh,
+  keys1_table 0B50h, records of 7 bytes (BATTLE.hints at int09).
+  Player 2's: Alt, Ctrl fire, C down, D up, F up, X left, V right, so
+  dist/README.txt's "D or F up" is right; it is not changed. The 7th
+  byte of a record is not understood.
+
 - Played through and won (2026-10-06, the user on Windows): ISLE's
   first map (CONRA) in the window build, won by taking the
   headquarters; the film, the statistics and the high scores came as
