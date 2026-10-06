@@ -2799,6 +2799,17 @@ compared):
   files of the films hold 6-bit values, shifted left by 2 for
   set_palette; bl and br keep the map's palette. The sounds are ANIM.FX,
   started at fixed frames.
+  Which frames (2026-10-06, branch dropin-team/anim-sounds; BATTLE.hints
+  at play_anim has the list): ISLE's first map, title_pass 200 space,
+  menu_pass 30 enter, `-poke 'LT0708_135C#30' 2AB5C DD` (qa; FD24 hs
+  and es; with `-poke LT0708_4551 2AB5C FD24` qa then es), `-log
+  LT2248_009C -log CODE:16F8 -watch A` for A = 2E020, 2E026, 2E02C,
+  2E032 (channels 0..3's numbers; effects_ptr held 2E01:0010), merged
+  by time in a scratch script. The runner prints a watch's first and
+  last 32 writes only: es.a03's 09h was seen with -until 66. The order
+  is the port's anim.c's in every start seen. Not run: bl and br (a
+  building taken); es.a04's starts not set against its frames (its
+  loop passes went on after 8, the count noted above for it).
 - A saved game (save_game, read in full): the header's 12h bytes and 23
   parts of the memory as they are, 37815 bytes; the far pointers inside
   (the cursors' records) fit because the port loads the program where
@@ -3091,7 +3102,9 @@ For the port (behaviour):
    the computer.
 6. The animations: answered (2026-10-06, Start here): the names are the
    program's, anim.fx and ab.fx are effects files, the films are VDIF
-   frames. Left: a format tool for the films, the sounds' frames.
+   frames. Left: a format tool for the films; the sounds' frames are
+   found for qa, hs and es (2026-10-06, BATTLE.hints at play_anim), not
+   for bl, br and es.a04.
 7. Sound (the AdLib's; the speaker's is left out on purpose): what
    the port does where the original loses the timers' ticks in a fade
    and where a value goes to the wrong register (both are the original's
