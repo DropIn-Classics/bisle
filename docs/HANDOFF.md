@@ -23,6 +23,63 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- The kit's drums, changed on a kit branch (2026-10-06; doskit branch
+  dropin-team/opl-reference, commit 0f8bee2 on doskit's master b051e8f, NOT merged
+  there and not what this repository's doskit points at; this note on
+  dropin-team/opl-reference-note). It follows the entry "The AdLib's
+  drums" below and the rule there (only what is certainly wrong).
+  - The source: Yamaha's YM3812 application manual (read on
+    archive.org), nothing else. It says of the rhythm mode: the bass
+    drum is FM of two slots, the tom-tom is sine waves, and the snare
+    drum, top cymbal and hi-hat are "simulated by composite
+    frequencies": the chip combines "a number of frequencies" and a
+    white noise generator, the envelope applied after; the two
+    channels' frequencies are best set 3 to 1. It does not say which
+    frequencies are combined, nor how, nor at what levels. No
+    emulator's code was read or used, and the bit patterns that such
+    code is known for were deliberately not written from memory.
+  - Changed in runtime/opl.c's drums(): the hi-hat, the snare and the
+    cymbal are a signal of full swing times their operator's amplitude
+    (envelope and level); the operator's own wave, made absolute, no
+    longer scales them (it made them swing to zero twice a period of a
+    low tone, and made the cymbal a sine). The cymbal is a composite:
+    the exclusive or of squares 8 and 32 times the frequencies of the
+    two phase generators the three share. Those four frequencies are
+    a choice and the source says so; the manual gives no more than
+    "composite".
+  - Left as it was, by the rule: the snare's mix (three parts of its
+    own generator's tone, one of noise: the manual does not settle
+    it), the hi-hat as noise, every drum's mean power (a signal of
+    full swing is taken at a sine's mean power), the bass drum, the
+    tom-tom and all of the melodic path.
+  - The melodic path verified: the first map's logged register writes
+    replayed through the old and the new opl.c with the drums' keys
+    masked give the same file byte for byte, and so do the bass drum
+    alone and the tom-tom alone; the whole replay's level is -25.1 dB
+    as before (peak -10.1 for -10.0).
+  - The kit's test (tests/opl/opltest.c, in selftest.py; `selftest
+    ok`): a 440 Hz note's frequency and level with the rhythm mode off
+    and on; the tom-tom a sine at twice an operator's level; the
+    cymbal's sign changing more than 1000 times a second with its
+    channels at 40 and 50 Hz, at one level over every 2 ms; the hi-hat
+    noise at one level; the snare at full or half level with its tone;
+    each silent 10 ms after its key. The old opl.c fails it at the
+    cymbal (80 changes of sign a second).
+  - Against the recording (a measurement, not a target; the entry
+    below has the method): at the cymbal's 33 key-ons the recording's
+    4-20 kHz was 4.4, 7.9, 15.2, 10.9 and 16.4 dB above the replay at
+    0, 50, 100, 150 and 200 ms; with the changed opl.c it is 2.7, 4.4,
+    3.7, 3.3 and 3.8 dB above. The cymbal alone now has 49% of its
+    energy in 1-4 kHz and none below 100 Hz (before: all of it there).
+  Not verified: the chip (no chip, no chip recording: the composite's
+  frequencies are a choice and may be far from the chip's); by ear
+  (nobody listened, and by the rule nobody is to tune it so); gcc,
+  MSVC, Linux and Windows (built and run with Apple clang 17 on macOS
+  x86_64 only); the port built with it (this repository's doskit is
+  unchanged, so the port sounds as before until the kit branch is
+  merged and the pointer moved); DESERT, MOON and other songs; the
+  runner's selftest note is a melodic one and unchanged.
+
 - Played through and won (2026-10-06, the user on Windows): ISLE's
   first map (CONRA) in the window build, won by taking the
   headquarters; the film, the statistics and the high scores came as
