@@ -1120,7 +1120,11 @@ name T164D:04C7 check_vga_disk
 ; with 02h after 9, 04h after 25, 05h after 27, 04h after 29; es.a02
 ; channel 3's 07h after 1, channel 2's 06h after 28; es.a03 channels
 ; 0 and 1 to 0 before frame 1, 08h after 1..26, 09h after 34, 37 .. 58;
-; es.a04's twelve 0Ah (channel count & 3) not set against its frames.
+; es.a04 (8 frames) 0Ah on channel n & 3 for n = 1..12: n after frame
+; n for 1..8, the other four after the pass that meets the film's end
+; (draw_frame at T2248:00AF gives FFFF:FFFF there: the pass draws
+; nothing but flips, copies and waits as any; a film shown to its end so
+; has one pass more than frames).
 ; bl and br not run.
 name T2248:0F28 play_anim
 name T2248:005B film_wait
