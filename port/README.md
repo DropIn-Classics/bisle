@@ -687,14 +687,20 @@ stopped by the host). The setup screen's item "Title" was looked
   - F8 twice by passes (150, 200) and the same place: the speed 2, the
     rates 3, the cursor a column on; the same with the port's event at
     222 or 224 (at 223 the cursor's +2Ch).
-  Without a script the port puts the driver at 160, 100 before the
-  map's setup for these runs (`map_setup 1:160,100,0`): a driver's
-  reset leaves its place at 319, 99, which the game takes for "right"
-  once; the original reads that while the map's files load, the port,
-  whose clock stands while files load, in the map's first passes, and
-  the cursor starts a column to the right (seen with `BI_MOUSE=1`
-  alone, the first map's 200th pass: cursor 00B2 against 00B0). Not
-  mended: it is the port's clock, and only with the driver on.
+  The port's driver is at 160, 100, the game's middle, after a reset,
+  not at half its limits as the runner's (319, 99). The game takes
+  319 for "right" once and sets the place to its middle; in the
+  original that falls into the menu or the loading before a map, in
+  the port, whose clock stands while files load, it fell into the
+  map's first passes and the cursor started a column to the right
+  (seen before the change with `BI_MOUSE=1` alone at the first map's
+  200th pass: cursor 00B2 against 00B0). With the reset at the middle
+  the runs above were made again with nothing but their events
+  (`BI_MOUSEAT="map_pass ..."`; the first time the driver had been put
+  at the middle by a scripted place before the map's setup): the same
+  results, and with `BI_MOUSE=1` alone the first map's 200th pass is
+  the original's (DATA 94). What the original's one "right" does in
+  the menu, if anything, the port does not do; not looked for.
   Without `BI_MOUSE` and `BI_MOUSEAT` the first maps of ISLE, DESERT
   and MOON at their 200th pass are as before the change (DATA 111, 112
   and 149 bytes, video memory the same); with the driver on DESERT and

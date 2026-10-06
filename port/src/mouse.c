@@ -9,8 +9,9 @@
  *
  * The driver here answers as doskit's runner's does (tools/run/mouse.c),
  * so that a run of the port can be compared with one of the original: a
- * place within 0..639 and 0..199, in the middle after a reset, three
- * buttons, the sensitivity 50, 50 and 64.  It is there only when asked
+ * place within 0..639 and 0..199, three buttons, the sensitivity 50, 50
+ * and 64; after a reset the place is the game's middle, 160, 100, not
+ * the runner's half of the limits (drv_reset says why).  It is there only when asked
  * for: BI_MOUSE=1, or places scripted with BI_MOUSEAT (dos.c, bi_at).
  * Without that the port is a PC without a mouse, as before; the window's
  * mouse is not connected (platform.h gives the buttons pressed, not
@@ -71,8 +72,15 @@ static unsigned drv_reset(unsigned *buttons)
 {
     if (!drv_there())
         return 0;
-    drv.x = 639 / 2;
-    drv.y = 199 / 2;
+    /* Not the runner's driver here: that one puts the place at half its
+     * limits (319, 99), which the game reads as "right" once and then
+     * sets to its own middle.  In the original that reading falls into
+     * the menu or the loading before a map and nothing shows; the port's
+     * clock stands while files load, so it would fall into the map's
+     * first passes and move the cursor.  The place starts at the game's
+     * middle instead: from the first reading on both are at 160, 100. */
+    drv.x = 0xA0;
+    drv.y = 0x64;
     drv.buttons = 0;
     drv.rate_x = 8;
     drv.rate_y = 16;

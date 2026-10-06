@@ -51,10 +51,32 @@ menu's entry (port/README.md; "The port" below).
   Then the driver's place would be the middle plus the movement scaled
   by the rates mouse_rates sets (the runner's driver ignores them, so
   that scaling has no original run to compare with yet).
-  Seen on the way: after a driver's reset the place is 319, 99 (the
-  runner's choice, the middle of 640 by 200), which the game reads as
-  one "right"; in the original that falls into the loading before the
-  map, in the port into the map's first passes (README).
+  The driver's place after a reset is the game's middle, 160, 100 (a
+  fix after the review): the runner's driver puts it at half its limits,
+  319, 99, which the game reads as one "right" and then centres; in the
+  original that falls into the menu or the loading before the map, in
+  the port, whose clock stands while files load, it fell into the map's
+  first passes and moved the cursor. All the comparisons were run again
+  after the fix with no place scripted before the map: the same
+  (README).
+  A proposal for the kit, as text only (doskit has another session's
+  uncommitted work; nothing was changed there, and this is to be asked
+  for, not done from here):
+  - runtime/platform.h: beside plat_mouse, a call that gives the
+    movement since the last call (dx, dy in the window's points or in
+    counts, signed, not clipped at the picture's edges; relative mode
+    while the game has the mouse) and the buttons held now (bit 0 left,
+    1 right, 2 middle), with plat_sdl.c from SDL's relative mouse mode
+    and plat_null.c from a script (DK_MOUSE's lines with a movement and
+    held buttons, or a new variable), and a test in the kit as rule 7
+    wants. plat_mouse stays as it is for the launcher.
+  - tools/run: `-mouseat ADDR[#N] X,Y,B` (and a file form, as -keysat):
+    the mouse at a program's own pass, not at a time, so that a
+    comparison needs no trying of neighbouring passes.
+  With the first, the port's driver would add the movement, scaled by
+  the rates mouse_rates sets, to its place, and the settings would need
+  an item to switch the mouse on (it grabs the pointer); neither is
+  begun.
 
 - The mouse, read and run, not in the port (2026-10-06, branch
   dropin-team/mouse-read; BATTLE.hints at mouse_start has it routine by
