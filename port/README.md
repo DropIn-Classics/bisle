@@ -32,9 +32,9 @@ BATTLE.EXE leads there with the game installed whole; the modes of 360
 pixels left out, the program never asks for them). Not in the port: the game's other
 programs (the starter BI.EXE, INTVGA's intro of 16 colours (not wanted),
 MOON.EXE of the second scenario disk), the PC speaker's sound (not
-wanted), the joystick (the port answers as a PC without one), the
-window's mouse (the mouse's routines are in, 2026-10-06, with a driver
-that is there only for scripted runs: below).
+wanted), the joystick (the port answers as a PC without one). The
+window's mouse is connected when the setup screen's "Mouse" is on
+(2026-10-06; below), not tried in a window yet.
 The intro of 256 colours, INTEGA/INTRO.EXE, is in (below).
 
 The first scenario disk (2026-10-02): its game program
@@ -270,12 +270,17 @@ What the port does otherwise than a PC:
 - No joystick: the original's code for it is translated as far as it is
   reached without one. The mouse's routines are translated in full
   (mouse.c) over a driver of the port's own in place of INT 33h, which
-  answers only when `BI_MOUSE=1` or `BI_MOUSEAT` is set (scripted runs);
-  otherwise, and so in the window, the port is a PC without a mouse as
-  before. The window's mouse is not connected: the kit's `plat_mouse`
-  gives a place on the picture and the buttons pressed since the last
-  call, the original needs movement that can be set back to a middle and
-  buttons held.
+  answers only when the setup screen's "Mouse" is on (off by default)
+  or `BI_MOUSE=1`, `BI_MOUSEAT` or `BI_MOUSEMOVE` is set (scripted
+  runs); otherwise the port is a PC without a mouse as before. With
+  "Mouse" on (or `BI_MOUSE=window`) the driver takes the window's mouse
+  from the kit's `plat_mouse_motion`: the buttons held, and the
+  movement added to its place by its rates (INT 33h's counts for 8
+  pixels, which the game sets by its menu's speed); the game sets the
+  place back to its middle as in the original. While the game has the
+  mouse it is kept to the window (`plat_mouse_grab`). One count of the
+  platform is taken as one of the driver's: a choice. The driver's
+  doubling threshold is not applied.
 - The original's routines keep scratch values in their code segments;
   the port keeps them in C variables.
 - Before the game the kit's setup screen is shown (doskit/docs/LAUNCHER.md:
@@ -716,6 +721,31 @@ stopped by the host). The setup screen's item "Title" was looked
   cymbal, snare, hi-hat and bass drum come out 23 to 32 dB below the
   tom, the cymbal as a 44 Hz tone; HANDOFF.md, "The AdLib's drums").
   Not tried: a controller.
+- The window's mouse (2026-10-06, macOS, the headless build; mouse.c's
+  bi_mouse_move): the original in the runner with a place set by
+  `-mouse T X,Y,B` against the port moved to the same place by
+  `BI_MOUSEMOVE="map_pass N:DX,DY,B ..."` (counts, turned into the
+  place by the driver's rates: 8 and 16 on these maps, 50 with the left
+  button held), on the first map of ISLE, DESERT and MOON (`--load 76`),
+  keys by passes, both stopped at the map loop's 400th pass, the pass
+  of each event read from the runner's `-log` as before. Video memory,
+  the game's code segments and all far data the same, DATA as in a run
+  of the port's driver without events (94, 95, 132 bytes), in each of:
+  - 125 counts right at pass 151, 100 down at 231 (the original at 260,
+    100 and 160, 180): the cursor a column on and a row down;
+  - the left button at 151, 500 counts down with it at 191 (190 in
+    MOON), let go at 251 (160, 180 held): the status screen;
+  - the right button with 125 right at 151, back and let go at 211
+    (209 in MOON, the third pass tried);
+  - both buttons with 125 right at 151, back and let go at 231;
+  - 32 counts right and 40 up at 151 (192, 80, under the distance that
+    is a direction): nothing moves, the place stays; with 33 counts
+    DATA differs by one byte more (the place is compared).
+  Through the platform (`BI_MOUSE=window`, plat_null.c's
+  `DK_MOUSEMOVE="P:32,-40,0"`, ISLE): at pictures 1100 and 1300 memory
+  and video memory at the map's 400th pass are byte for byte those of
+  the `BI_MOUSEMOVE` run; at 300 to 900 (before the game has the mouse)
+  those of a run without an event. Not run: a window, a real mouse.
 - The mouse (2026-10-06, macOS, the headless build; mouse.c): the
   original in the runner with its mouse driver against the port with
   its own (`BI_MOUSEAT="PLACE N:X,Y,B ..."`, the driver's place and

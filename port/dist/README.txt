@@ -79,6 +79,11 @@ Keys
 Alt+Enter: full screen on and off. Print Screen: a screenshot.
 (the game's own keys)
 
+The mouse: "Mouse" in the setup screen (off at first) connects it. The
+game uses it like a joystick for one player: its MOUSE item in the main
+menu says for whom and how fast, moving steers, the left button is
+fire. While the game has the mouse it stays in the window.
+
 Licences
 --------
 
