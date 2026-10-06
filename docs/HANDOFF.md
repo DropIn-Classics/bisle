@@ -23,6 +23,55 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- The state flags (2026-10-06, branch dropin-team/state-flags, on top
+  of dropin-team/opl-drums; open question 1): every instruction of
+  BATTLE.ASM that names game_flags (F27EE:250C, 71) or menu_flags
+  (F27EE:250E, 26) is read and listed bit by bit in src/BATTLE.hints at
+  game_flags, with the players' bit 2. In short:
+  - game_flags: 1 the game goes on (the outer loop of T0708:000E: menu,
+    map, menu ..), 2 the map's loop goes on, 4 and 8 a text is up in
+    player 0's and 1's message line, 40h the music plays, 80h the
+    effects sound, 1000h a fight or a film was shown in this change of
+    phase and the map's libraries, picture and palette are to be loaded
+    again. 800h is only ever cleared.
+  - menu_flags: 1, 2, 4 one, no, both players the computer (nothing
+    reads 4), 8 HIDE SHOP, 10h and 20h the music and the effects may be
+    switched (set at every map's setup), 80h the human asked for the
+    change of phase while the computer thinks.
+  - The players' first word, bit 2: that player is the computer; set
+    and cleared by the menu only, read at the map's setup
+    (computer_start), in the loop and at the map's end.
+  - Runs (ISLE's first map, the keys by passes as before, `-watch
+    game_flags -rwatch game_flags 4`: each write to the low byte with
+    its writer, and who read the four bytes):
+    - F2 at the loop's passes 150 and 200, F3 at 250 and 300, Esc at
+      350: the low byte went 00, 01 (the outer loop's head), 41 and C1
+      (the map's setup), C3 (before the loop), 83 and C3 again (F2
+      twice), 43 and C3 (F3 twice), each key's message setting 04
+      through show_message and timer_due clearing it 0.22 to 0.24 s
+      later, then C7 and CF (Esc's question in both lines). The loop's
+      foot read the word once a pass (351 times). At the end the four
+      bytes were CF 00 32 00 and both players' words 0: two people.
+    - Esc at pass 150 and Y at 30 s (`-key 30 y`: the question waits in
+      a loop of its own, a key by the map's passes never comes): CF to
+      CD (bit 2 off, then bit 1 on), the music's bit read and
+      fade_out, after_map, the outer loop's foot (its AND 9FCFh, then
+      bit 1 read) and the menu a second time. The message bits and 40h,
+      80h were still set in the menu.
+  No name added, no port source changed (the port's C has all of these
+  already); the carried hints of DESERT and MOON got the comment.
+  Not verified: 1000h in a run (no fight or film inside a change of
+  phase was run here; the film runs of the entries below poke a map's
+  end, which is another way); menu_flags 80h and 1, 4 and the players'
+  bit 2 set (a game against the computer was not run: the first map
+  starts with two people here); 100h and the menu's EXIT; the high
+  byte's writes (-watch takes one byte; 400h's clear is known by its
+  address only); F2 and F3 with menu_flags' 10h or 20h clear (nothing
+  found that clears them but a loaded game); what sets the players'
+  bit 4 (not looked for); DESERT (the same code) and MOON (carried,
+  not looked at) in runs; the addresses without "run" in the hints are
+  the listing's labels before the instructions, not their own offsets.
+
 - The AdLib's drums (2026-10-06, branch dropin-team/opl-drums, on top
   of dropin-team/palette-levels; Next, point 5). NOT done: the
   comparison with DOSBox. This machine (macOS) has no DOSBox and no
@@ -2611,12 +2660,9 @@ understanding the programs, the third hardly.
 
 For the port (behaviour):
 
-1. The game's state flags: F27EE:250C (bits 1, 2, 4, 8, 40h, 80h,
-   1000h beside the known 10h, 20h, 100h, 200h, 400h, 2000h, 4000h;
-   100h and 200h as the menu sets them, BATTLE.hints at menu: who reads
-   100h is not looked into). F27EE:250E and the players' bit 2 are the
-   menu's (above); what the map does with them is not read.
-   BATTLE.hints at play_anim.
+1. The game's state flags: read in full (Start here, "The state
+   flags"; BATTLE.hints at game_flags). Left: 1000h, menu_flags 80h
+   and a game against the computer in a run, the menu's EXIT (100h).
 2. A map's end: a headquarters taken is run and read, the statistics
    are drawn (above); left: an end by units, the last map (CODES.DAT's
    +8 bit 0) without a poke, statistics of 32 points and more, what the
