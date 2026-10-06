@@ -371,9 +371,9 @@ and Linux, which the port does not call.
   runs, copies the game's files and writes its settings there. NOT
   seen: the window (setup screen, menu, map), a double click, "Open
   Anyway", arm64. docs/HANDOFF.md, "The macOS package", has it in full.
-- Open before a release: dist/README.txt's Keys still ends with the
-  template's line "(the game's own keys)"; doskit/docs/RELEASE.md's
-  point 6 wants the keys there.
+- Done since on branch dropin-team/rc1-readme-linux: dist/README.txt's
+  Keys are the game's keys as the code reads them; doskit/docs/RELEASE.md's
+  point 6 is met.
 
 ## Checked
 
