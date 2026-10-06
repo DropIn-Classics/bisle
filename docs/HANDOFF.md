@@ -154,17 +154,20 @@ menu's entry (port/README.md; "The port" below).
   space at key_wait's 150th pass, let go at 152nd); the statistics'
   wait starts at its 152nd pass (MISSION NOT COMPLETED, ROUNDS 3), so
   the comparison is at key_wait's 251st pass. There and at the
-  message's first pass: video memory the same, all far data but F2902's
-  415E..4160 (factories_made, depots_made, cargo_made in the hints;
-  01 02 00 against the port's 00 01 02 at map pass 1504, then other
-  values) and the timers. From map pass 1503 on the port is a pass late
-  with player 0's request (the cursor's +7 and +0Bh, its pass 1504 the
-  original's 1503), and those three bytes, which seem to turn round
-  each pass in MOON (presumably not the counts the names say; not
-  read), follow that pass; the counters timers_period_high differ
-  already at pass 1502 (the clock's phase, as in the runs above),
-  presumably the cause (not shown). By the message (pass 1632, round
-  3, game_flags 44CFh in both) the rest is the same again. With the
+  message's first pass: video memory the same, all far data but the
+  map loop's timers (F2902's timer_kinds and timer_dues: at the
+  statistics timer_kinds+0 and +2, 01/02 against the port's 02/01).
+  From map pass 1503 on the port is a pass late with player 0's request
+  (the cursor's +17h and +1Bh, its pass 1504 the original's 1503;
+  game_flags, timer_kinds 01 02 00 against 00 01 02 there); the
+  counters timers_period_high differ already at pass 1502 (the clock's
+  phase, as in the runs above), presumably the cause (not shown). By
+  the message (pass 1632, round 3, game_flags 44CFh in both) the rest
+  is the same again. memcmp.py wants `--load 76` for MOON (its image
+  at 0076h; the default 0077h names every place 10h too low): without
+  it these bytes were first reported as factories_made, depots_made and
+  cargo_made (415E..4160), which in the original are written once at
+  the map's setup (0, 1, 1 on map 0; -watch, up to the message). With the
   keys from pass 61 or 65 instead of 60 the two games went apart (other
   video memory at the statistics, the original's statistics at another
   key_wait pass), not looked into.
