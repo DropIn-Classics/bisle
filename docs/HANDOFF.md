@@ -23,6 +23,62 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- The palette's levels (2026-10-06, branch dropin-team/palette-levels,
+  on top of dropin-team/anim-formats for the films' names; open
+  question 4): every caller of fade_in, fade_out and set_palette in
+  BATTLE.EXE is read and listed in src/BATTLE.hints (at fade_in, at
+  set_palette and at film_load), and most are seen in runs.
+  - fade_in is set_palette of picture_palette (DATA:04A0) at the levels
+    0, 4, .. 252, fade_out at 255, 251, .. 3, 64 calls each: a shown
+    picture stands at level 252, a faded one at level 3, which is black
+    for every value. Callers: title (fade_out after the logo, fade_in,
+    fade_out on leaving), menu (fade_in, fade_out on leaving), the
+    map's routine T0708:000E (fade_in before the loop, fade_out on
+    leaving, fade_out after each of its two calls of play_anim),
+    after_map (fade_in, fade_out).
+  - set_palette's other callers, all at level FFh: the logo
+    (T2433:0006), change_phase (a palette file loaded anew, 8-bit
+    values as they are) and the films: T2248:1077, named film_palette,
+    copies the film's 300h bytes shifted left by 2 to picture_palette
+    and sets them; T2248:104D, named film_black, makes both pages
+    black before. A film is not faded in; the caller's fade_out after
+    play_anim fades the film's palette.
+  - Level FFh is not "as it is": a value v becomes (v * 255) >> 10, so
+    a film's 6-bit value n is n - 1 in the DAC for every n but 0.
+    `tools/palfiles.py`'s dac() gives a 6-bit palette back unchanged,
+    one too bright by that; not changed here.
+  - Runs (ISLE, the keys by passes as before, `-log fade_in -log
+    fade_out -log set_palette`, the level read from BL at set_palette's
+    entry): to the first map's 200th pass three fade_outs and three
+    fade_ins of 64 calls with those levels (after the logo, the title,
+    the menu, the map) and one set_palette before them at 0.91 s (the
+    logo's); a fade took 0.51 to 0.52 s, 8.1 ms a call. With a map's
+    end poked in (`-poke 'LT0708_135C#30' 2AB5C DD`, the film qa): the
+    map's fade_out, film_black, film_palette with one set_palette, 8 s
+    later the fade_out after play_anim, then after_map (it returned
+    after 0.26 s without its own fades) and the menu's fade_in. Stopped
+    at film_show's second pass (`-break 'LT2248_009C#2' -ram
+    -vgastate`): picture_palette was qa.pal's 768 bytes times 4, and
+    the DAC's first 32 entries (all that -vgastate prints) were (4n *
+    255) >> 10 for the file's n.
+  - set_palette's wait: it waits at port 3DAh for bit 0 to go off and
+    on before each blue, which is the next blanking and not the
+    vertical retrace an earlier note names, presumably: 8.1 ms a call
+    is 256 lines' time. Read from the code and the time only.
+  Named: film_black, film_palette; carried by xfer.py (MOON:
+  T238E:104D, 1077; INTEGA got film_black at T03FA:1337, not looked
+  at). No port source changed; the port's C already does all of this
+  (anim.c, gfx.c, phase.c).
+  Not verified: after_map's fade_in and fade_out and change_phase's
+  set_palette in a run (not reached); the DAC beyond its first 32
+  entries; the other films' palettes (hs, es0 to es4) against a run; bl
+  and br, which have palette files though an earlier note says they
+  keep the map's palette (not looked at which is right); DESERT (the
+  same code, not run) and MOON (its END, HQ and TOT palettes are 8-bit
+  and the port has its own film routine: not read here); the intro's
+  fades (INTEGA, the port's intro.c); the callers' addresses are the
+  listing's labels before the calls, not the calls' own offsets.
+
 - The films' files read and checked (2026-10-06, branch
   dropin-team/anim-formats, on top of dropin-team/mouse-leftovers; open
   question 6; BATTLE.hints at play_anim and end_credits has it in full).
@@ -2487,9 +2543,11 @@ For the port (behaviour):
    the title, the values
    2 and 0 of F27EE:251B, why the title menu takes keys only from about
    30 s.
-4. The palette level: fade_in and fade_out give set_palette its levels
-   (above; their callers are not read), where the animations' 6-bit
-   palettes are set.
+4. The palette level: answered for BATTLE.EXE (Start here, "The
+   palette's levels"): the callers of fade_in and fade_out are read
+   and the films' 6-bit palettes are set by film_palette (T2248:1077).
+   Left: after_map's fades and change_phase's set_palette in a run,
+   MOON's films, the intro.
 5. Saving and the high scores: where save_game writes (save_file or its
    own), where the name "00" comes from (the position asked for at LOAD
    is F27EE:2512, and T26EA:000F makes the name from it: not read), the
