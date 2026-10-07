@@ -335,6 +335,10 @@ menu's entry (port/README.md; "The port" below).
   the user on Windows). Without a game installed the GOG detection
   says it was not found, as designed (2026-10-07, the user on
   Windows).
+- Played on macOS (2026-10-07, the user on the Mac, the repository's
+  window binary, not the package): ISLE's first map (CONRA) won with
+  the mouse and a controller, the victory film seen, the high score
+  kept.
 
 - The port on macOS (2026-10-06, branch dropin-team/port-macos-build):
   `sh port/build.sh` built the window and the headless program at once,

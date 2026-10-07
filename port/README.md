@@ -906,9 +906,11 @@ stopped by the host). The setup screen's item "Title" was looked
   variables: the runner has a mouse). The first map's picture of a run
   with the setup screen passed by scripted keys was looked at
   (`DK_SHOTS`). The window build was started for 8 s and was still
-  running then. Not checked: anything seen or heard in the window (the
-  setup screen, the picture, the sound, full screen, the keys, a
-  controller), DESERT and MOON, the intro, the other comparisons of
+  running then. Played on it (2026-10-07, the user on macOS, the
+  repository's binary, not the package): ISLE's first map (CONRA) won
+  with the mouse and a controller, the victory film seen, the high
+  score kept. Not checked: anything heard in the window (the sound),
+  full screen, DESERT and MOON, the intro, the other comparisons of
   this list, a build for arm64, a package as doskit/docs/RELEASE.md
   wants it (the binary finds SDL2 by an rpath into this machine's
   framework folder).
