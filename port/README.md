@@ -355,7 +355,10 @@ prescribes; a pushed tag `vX.Y` makes a release of them. The windows
 job is pinned to windows-2022: windows-latest's MSVC 14.51 dropped
 int08's handler loop (timer.c) in v1.0-rc1, which took no keys in the
 game on Windows (docs/HANDOFF.md, "What was learned"); only a build
-started from a download on Windows here proves the next one. `dist/README.txt`
+started from a download on Windows here proves the next one. v1.0-rc2
+(built on windows-2022, linker 14.44) passed it (2026-10-07, the user
+on Windows, the release's zip): the intro runs, the menu takes keys,
+Esc and the jingle are fine. `dist/README.txt`
 is the players' README in each package; its keys (2026-10-06) are the
 ones the code reads (BATTLE.hints: the key set, the players' tables,
 the cursor's functions, F7/F8, the quit key), not the manual's.
