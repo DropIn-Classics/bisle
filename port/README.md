@@ -183,8 +183,8 @@ blocks of memory (a block's header of 16 bytes keeps what its name field
 held in the port, zeros in the runner: no matter): at the 20th, 150th,
 1200th and last (2460th, at 200 s) call of its wait (T03FA:0288, `bi_at
 "intro_wait"`); 0 bytes of video memory differ at each, the data as
-said. Not checked: the window build looked at and listened to by a person
-(the song and its fade, the effects), the OPL's writes against the
+said. Played in the window (2026-10-07, the user on Windows) and fine;
+not checked: the OPL's writes against the
 original's (oplcmp.py is for the game), `/s` (the PC speaker: not
 wanted), the Ctrl-Break handler and the texts before the mode is set
 (left out).
@@ -317,7 +317,7 @@ What the port does otherwise than a PC:
   looked through for keys named: only 0Ch, 0Dh and 20h. Checked:
   the build, map 03 at its 100th pass headless as before (video memory 0
   bytes, the heap the one byte). Not checked: the window's sound, the
-  keys and a controller in play.
+  keys in play. A controller works (2026-10-07, played on Windows).
   The players' keys are chosen on the setup screen (2026-10-07, played
   on Windows: fire from Space to LAlt works).
 
@@ -759,7 +759,7 @@ stopped by the host). The setup screen's item "Title" was looked
   measured since on the kit's synthesizer alone, no reference: the
   cymbal, snare, hi-hat and bass drum come out 23 to 32 dB below the
   tom, the cymbal as a 44 Hz tone; HANDOFF.md, "The AdLib's drums").
-  Not tried: a controller.
+  A controller works (2026-10-07, played on Windows).
 - The window's mouse (2026-10-06, macOS, the headless build; mouse.c's
   bi_mouse_move): the original in the runner with a place set by
   `-mouse T X,Y,B` against the port moved to the same place by
