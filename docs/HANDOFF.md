@@ -311,10 +311,9 @@ menu's entry (port/README.md; "The port" below).
   driver's (no original run has a real mouse's counts, and SDL's
   relative counts on macOS carry the system's acceleration); the
   driver's doubling threshold (AX=13h) is kept but not applied.
-  Not verified: full screen with the mouse.
   Played with a real mouse
   (2026-10-07, the user on Windows): works well, Alt+Tab with a unit
-  held and the window mode too.
+  held, the window mode and full screen too.
   Linux not built; whether the game's menus take the mouse was not looked
   at; the menu's MOUSE item with the window's mouse was not run.
 
