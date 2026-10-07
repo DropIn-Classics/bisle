@@ -41,9 +41,13 @@ menu's entry (port/README.md; "The port" below).
   port's memory is the original's at the entry and at the end (video
   memory and all far data the same, the rest the known kinds), but map
   16 fight 1: two bytes of F27EE:2593, score_best, 0 in the original
-  and 02E4h in the port at both places; the port's data folder on
-  this machine has a score file save/MAP/16.HI and the runner's state
-  none, presumably that; not checked. Seen among them:
+  and 02E4h in the port at both places. That was a score file
+  save/MAP/16.HI in the port's data folder on this machine, written
+  by the scouting runs of the same morning (they ran without
+  `DK_DATA_DIR` past a map's end), which the runner's state has not:
+  run again with `DK_DATA_DIR` naming an empty folder the fight is the
+  same at both places, F27EE too. The file is deleted. A run for a
+  comparison gets a data folder of its own. Seen among them:
   - an air unit attacking (21: 2, 3; 30: 16; 31: 9), attacked (21: 7,
     13), air against air (22: 16; 31: 1, 6);
   - ships, the count in +3: attacking (28: 1), attacked (28: 7, 8; 31:
@@ -72,9 +76,18 @@ menu's entry (port/README.md; "The port" below).
   1024 (message 0Eh). In all nine AX is what the port returned, the
   record F27EE:1326 has the kind in +0Ch, and memcmp.py shows video
   memory and all far data the same.
-  Not seen: the message 5 (in no game of two computers on the maps 16
-  to 31, to pass 9000 or the map's end; it needs a person's cursor on
-  the other side's unit). Not run: a message shown to a person on the
+  The message 5 comes in no game of two computers (the maps 16 to 31,
+  to pass 9000 or the map's end; it needs a person's cursor on the
+  other side's unit), so it was made with a poke: map 17's call 2 (the
+  mover unit 3, unit 0 of its own side on the square 001Ch, message 7)
+  with bit 0 of unit 0's +4 set at the routine's entry (`-poke
+  stop_check#2 2AEEC 05`, the port `BI_POKE="stop_check#2 2AEEC 05"`
+  at the new `bi_at("stop_check")`): the original's AX at LT122D_150F
+  is 5 (7 without the poke), the record the same in both (the kind 3,
+  the square), memcmp.py shows video memory and all far data the same.
+  The port's own result is not in memory: read from a trace line in a
+  scratch build (not in the repository), 5 with the poke and 7
+  without. Not run: a message shown to a person on the
   screen (the numbers above are stop_check's results, the computer's
   callers show nothing), the fight scene's pictures for these fights
   beyond the video memory at fight_reckon's two places, DESERT and

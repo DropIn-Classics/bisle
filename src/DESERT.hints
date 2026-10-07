@@ -465,8 +465,10 @@ name T0BA0:1391 list_reach
 ; +0Ah the square, +0Ch the kind. Read; run in games of two computers
 ; (2026-10-07, stopped at the routine's end, LT122D_150F, AX the
 ; result): the kinds 1 and 2 and the messages 7, 8, 9 and 0Eh came as
-; below, the record as described. Not seen in those runs: the message 5
-; (no computer's unit asks for a square of the other side's unit):
+; below, the record as described. The message 5 does not come up
+; there (no computer's unit asks for a square of the other side's
+; unit); with the unit on the square poked to the other side at the
+; routine's entry (bit 0 of its +4 set) the result is 5 where it was 7:
 ;   a unit u on the square (the first half's record for a second half):
 ;     the mover takes u in, kind 1, when u's +6 has 20h and the mover's
 ;     1000h, or u's 4 and the mover's 2000h: the first free slot of the
