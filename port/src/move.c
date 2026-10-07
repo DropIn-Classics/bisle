@@ -381,8 +381,10 @@ static int stop_check_body(int off, int side, fptr map);
  * 0 and what arriving will be in move_record, or a message's number */
 int stop_check(int off, int side, fptr map)
 {
-    int r = stop_check_body(off, side, map);
+    int r;
 
+    bi_at("stop_check");         /* T122D:0F50 */
+    r = stop_check_body(off, side, map);
     bi_at("stop_check_end");     /* the original's LT122D_150F */
     return r;
 }
