@@ -943,8 +943,8 @@ stopped by the host). The setup screen's item "Title" was looked
   as on macOS (both at the map loop's 200th pass): all 256 KB of video
   memory the same, the segments T0408..T2248 the same; 13 bytes in CODE
   and a few in T2354..T2470 differ, not looked at (presumably the kinds
-  of differences listed for macOS). The window build was started for 8 s without a
-  display (no X or Wayland in this session) and was still running then;
-  nothing seen or heard. Not checked: the window on a desktop, the
-  sound, full screen, a controller, DESERT and MOON, the intro, a
-  package as doskit/docs/RELEASE.md wants it.
+  of differences listed for macOS). Played on a desktop (2026-10-07,
+  the user on Linux): the game runs, full screen and the window, the
+  sound (music included), the intro, the mouse and a controller work.
+  Not checked: DESERT and MOON, a package as doskit/docs/RELEASE.md
+  wants it.

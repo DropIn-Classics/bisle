@@ -340,7 +340,10 @@ menu's entry (port/README.md; "The port" below).
   the mouse and a controller, the victory film seen, the high score
   kept; full screen and the sound (music included) work, and DESERT
   and MOON work; the intro works. A computer-against-computer game on
-  MOON's map 16 (EBTAR) runs (2026-10-07, the user). The map screen's
+  MOON's map 16 (EBTAR) runs (2026-10-07, the user).
+- Played on Linux (2026-10-07, the user on a desktop): the game runs,
+  full screen and the window, the sound (music included), the intro,
+  the mouse and a controller work. The map screen's
   black strip on the right (columns 312-319, beside the side panel) is
   the original's: it shows in GOG's DOSBox too (2026-10-07, the user),
   so the port keeps it.
