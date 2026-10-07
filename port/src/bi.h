@@ -163,6 +163,12 @@ void mouse_rates_by_speed(void);
 void mouse_input(unsigned now);
 /* the driver's place and buttons from outside (BI_MOUSEAT) */
 void bi_mouse_place(int x, int y, int buttons);
+/* a movement in the mouse's counts and the buttons held (BI_MOUSEMOVE) */
+void bi_mouse_move(int dx, int dy, int buttons);
+/* the window's mouse is the driver's (the setup screen's "Mouse") */
+extern int bi_mouse_window;
+/* keeps the mouse to the window while the game has it */
+void mouse_window(int game_has_it);
 void t2354_0530(void);              /* the program's INT 09h on */
 void t2354_056f(void);              /* and off */
 /* a timer's handler that is a C function: timer.c calls `fn` for the far

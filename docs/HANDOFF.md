@@ -282,6 +282,40 @@ menu's entry (port/README.md; "The port" below).
   uninstall.command and Gatekeeper's word on a quarantined one; the
   workflow on GitHub's runners and a package made by it; the port's
   comparisons beyond check.py with the moved kit.
+- The window's mouse (2026-10-06, branch dropin-team/window-mouse, with
+  doskit's branch of the same name, commit 55cab1e, not merged into
+  doskit's master: this branch's `doskit` pointer names it, so it must
+  not be merged here before the kit's branch is). The kit: platform.h
+  has `plat_mouse_motion` (the buttons held, 1 left, 2 right, 4 middle,
+  and the movement since the last call) and `plat_mouse_grab` (SDL's
+  relative mode; on Windows the pointer clipped to the client area and
+  set back to its middle at each asking), plat_null.c scripts it with
+  `DK_MOUSEMOVE`, tests/platmouse checks that. The port: mouse.c's
+  driver takes the movement (`bi_mouse_move`) and adds it to its place
+  by its rates as INT 33h's AX=0Fh has them (counts for 8 pixels; the
+  rest below a pixel is kept, and dropped when the game sets the
+  place); the game sets the place back to the middle itself. The
+  driver asks the platform before each reading of the place
+  (mouse_read), and timer.c's tick keeps the mouse to the window while
+  the game's `mouse_on` is set (`mouse_window`). Switched on by the
+  setup screen's "Mouse" (the menu page, `mouse` in battle-isle.cfg,
+  off by default) or `BI_MOUSE=window` for a scripted run;
+  `BI_MOUSEMOVE="map_pass N:DX,DY,B ..."` gives a movement at a pass.
+  Learned on the way: with the mouse on and nothing set in the game's
+  menu the driver's rates on a map are its reset's, 8 and 16 (x, y),
+  and 50, 50 while the left button is held (the held rates of speed
+  0); read from the port's driver in a run, not from the original.
+  Compared with the original (port/README.md, Checked): five cases on
+  the first map of ISLE, DESERT and MOON, the same.
+  Guesses and choices: one count of the platform is one of the
+  driver's (no original run has a real mouse's counts, and SDL's
+  relative counts on macOS carry the system's acceleration); the
+  driver's doubling threshold (AX=13h) is kept but not applied.
+  Not verified: the window itself on any platform (nobody moved a real
+  mouse: the grab, the feel of the speeds, Alt+Tab while grabbed, full
+  screen); plat_win32.c compiled in the selftest on Windows (lead),
+  Linux not built; whether the game's menus take the mouse was not looked
+  at; the menu's MOUSE item with the window's mouse was not run.
 
 - Played through and won (2026-10-06, the user on Windows): ISLE's
   first map (CONRA) in the window build, won by taking the

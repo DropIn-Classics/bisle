@@ -112,7 +112,7 @@ enum { ACT_START = 1, ACT_PAGE };
 
 static const char *const no_yes[] = { "No", "Yes", NULL };
 
-static int set_fullscreen, set_updates, set_title, set_skip, set_quit = 1;
+static int set_fullscreen, set_updates, set_title, set_skip, set_quit = 1, set_mouse;
 /* the titles whose folders are there, for the setup screen's choice */
 static const char *title_labels[TITLES + 1];
 static int title_of[TITLES];
@@ -250,6 +250,8 @@ static LauncherItem menu_items[] = {
       "Battle Isle or one of the data disks." },
     { LI_CHOICE, "Full screen", "fullscreen", no_yes, &set_fullscreen, 0,
       "Alt+Enter changes it while the game runs." },
+    { LI_CHOICE, "Mouse", "mouse", no_yes, &set_mouse, 0,
+      "The game's MOUSE item gives it to a player; it stays in the window." },
     { LI_HEAD, "", NULL, NULL, NULL, 0, NULL },
     { LI_PAGE, "Sound", NULL, NULL, NULL, PAGE_SOUND, "Volume and headphones." },
     { LI_PAGE, "Keys", NULL, NULL, NULL, PAGE_KEYS, "The players' keys in a map." },
@@ -387,6 +389,7 @@ static int setup(const char *game, int *m, int *title)
     *m = 0;         /* /m is on the command line only: the game's own menu has the palettes */
     bi_skip_intro = set_skip;
     bi_quit_yz = set_quit;
+    bi_mouse_window = set_mouse;
     *title = n ? title_of[set_title] : 0;
     if (r != ACT_START)
         return 0;
