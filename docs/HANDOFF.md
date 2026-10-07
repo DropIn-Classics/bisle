@@ -339,7 +339,8 @@ menu's entry (port/README.md; "The port" below).
   window binary, not the package): ISLE's first map (CONRA) won with
   the mouse and a controller, the victory film seen, the high score
   kept; full screen and the sound (music included) work, and DESERT
-  and MOON work; the intro works.
+  and MOON work; the intro works. A computer-against-computer game on
+  MOON's map 16 (EBTAR) runs (2026-10-07, the user).
 
 - The port on macOS (2026-10-06, branch dropin-team/port-macos-build):
   `sh port/build.sh` built the window and the headless program at once,
