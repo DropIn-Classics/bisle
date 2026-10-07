@@ -462,7 +462,11 @@ name T0BA0:1391 list_reach
 ; message that says why not: what the unit F27EE:1326 would do by
 ; stopping on the square, into the record there: +1 the unit on the
 ; square, +4 a slot, +5 far a cargo or building record, +9 its number,
-; +0Ah the square, +0Ch the kind. Read, not run:
+; +0Ah the square, +0Ch the kind. Read; run in games of two computers
+; (2026-10-07, stopped at the routine's end, LT122D_150F, AX the
+; result): the kinds 1 and 2 and the messages 7, 8, 9 and 0Eh came as
+; below, the record as described. Not seen in those runs: the message 5
+; (no computer's unit asks for a square of the other side's unit):
 ;   a unit u on the square (the first half's record for a second half):
 ;     the mover takes u in, kind 1, when u's +6 has 20h and the mover's
 ;     1000h, or u's 4 and the mover's 2000h: the first free slot of the
@@ -769,9 +773,14 @@ name T15AC:069D history_add
 ; cannot answer are in tools/fight.py, which does the reckoning again
 ; from a run's memory at the routine's entry and compares the counts at
 ; its end: the same in the fights of a battle against the computer
-; (HANDOFF.md says how many). A divisor of 0 (an armour of 0, or the
-; target's of 1 with the attacker's +1 at 6) would end the program with a
-; divide error; not seen.
+; (HANDOFF.md says how many), and in 31 fights of games of two
+; computers on the maps 16 to 22, 26 and 28 to 31 (2026-10-07; HANDOFF.md
+; has the list): an air unit attacking and attacked, air against air, a
+; ship on either side (its count in +3), a unit that holds others on
+; either side, a target that does not answer beside the attacker and
+; over a distance, ground of each scene 1 to 7. A divisor of 0 (an
+; armour of 0, or the target's of 1 with the attacker's +1 at 6) would
+; end the program with a divide error; not seen.
 name T2190:000D fight_reckon
 name T1F3C:000A fight_step
 ; The fight scene (T1F3C, T2112, T1F5A, T223C), read in full:
