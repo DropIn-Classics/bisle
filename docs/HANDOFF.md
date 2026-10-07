@@ -317,7 +317,7 @@ menu's entry (port/README.md; "The port" below).
   Linux not built; whether the game's menus take the mouse was not looked
   at. The menu's MOUSE item works in the window (2026-10-07, the user
   on Windows: No takes the mouse out of the game, Yes gives it to the
-  player, F8 steps its speed).
+  player, F8 steps its speed, SIDE TWO drives the second player too).
 
 - Played through and won (2026-10-06, the user on Windows): ISLE's
   first map (CONRA) in the window build, won by taking the
