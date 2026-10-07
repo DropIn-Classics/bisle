@@ -686,6 +686,11 @@ name T0C0E:0630 fire_reach
 ; find_path does not write node 0's +4/+6 nor node 2's square
 ; (HANDOFF.md, map 30's stall).
 name T0C0E:0ECC find_path
+; ISLE's stall of map 30 (two computers) looked for in DESERT and MOON
+; (2026-10-07, HANDOFF.md): a game of two computers to 4000 s on the
+; largest map of each, DESERT's 04 (64x64) and MOON's 13 (48x64), went
+; on to the end (rounds 6 and 8, the map's passes rising): no stall
+; seen. One map and one game each; not a proof that none can stall.
 ; T0BA0:1391 (list far, side, unit): the squares in reach on which
 ; stop_check lets the unit (kept at F27EE:1326) stop, as words into the
 ; list, their number in F27EE:0B62 (the computer player's callers).
