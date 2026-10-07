@@ -1703,8 +1703,10 @@ games, each its own folder mounted as C: and started there:
   S0107 (addressed through CS) and single bytes at segments' ends.
 - Driving BATTLE.EXE in the runner: the credits after the title run on
   until a key (`-key 14 space`); the title menu (START, OPTIONS, DISK,
-  EXIT) takes keys from about 30 s on (`-key 33 enter` starts the first
-  map; keys before that do nothing, why is not looked into). Down and
+  EXIT) takes keys as soon as it is up (played 2026-10-07, the user:
+  it steers at once; the earlier "from about 30 s on" had the intro
+  counted in). (`-key 33 enter` starts the first
+  map.) Down and
   up move, enter chooses or changes an entry (OPTIONS: FIRST, SETTING,
   PLAYER, OK; its SETTING: ALL SHOPS / HIDE SHOP, NO LIMIT / 4 TURNS /
   8 TURNS, PALETTE; DISK: LOAD, MOUSE, RATING, OK), Esc does nothing
@@ -3340,10 +3342,10 @@ For the port (behaviour):
    of player 0 or of both, a last map won by play.
 3. The clock: the map's loop runs every 4 ticks of timer_keys, 18.2
    times a second (above); timer_add's period is the PIT's count (read,
-   and the song's steps timed in runs). Left: the loops of the menus and
-   the title, the values
-   2 and 0 of F27EE:251B, why the title menu takes keys only from about
-   30 s.
+   and the song's steps timed in runs). The title menu takes keys as
+   soon as it is up (played 2026-10-07, the user; the old "only from
+   about 30 s" had the intro counted in). Left: the loops of the menus
+   and the title, the values 2 and 0 of F27EE:251B.
 4. The palette level: answered for BATTLE.EXE (Start here, "The
    palette's levels"): the callers of fade_in and fade_out are read
    and the films' 6-bit palettes are set by film_palette (T2248:1077).
