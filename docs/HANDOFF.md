@@ -3403,8 +3403,9 @@ For the port (behaviour):
      W60 D2 W4 M W10 U3 R1 W4 S W6 S W40 D2 L1 W4 M W10 D1 W4 S W6 S
      W40 U2 W4 Q W10 P1 Q W10 X W60 Q W10 P0 Q W10 X W60 D2 W4 M W10 D1
      W4 U1 W4 S W6 S W40 U2 W4 Q W10 P1 Q W10 X W60
-   Left: the port's save names beyond 00, the .HI of a map won against
-   the computer.
+   Left: the port's save names beyond 00. The .HI after a win against
+   the computer is confirmed by play (2026-10-07, the user on Windows:
+   the CONRA highscore stayed).
 6. The animations: answered (2026-10-06, Start here): the names are the
    program's, anim.fx and ab.fx are effects files, the films are VDIF
    frames. Left: a format tool for the films; the sounds' frames are
