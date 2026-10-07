@@ -254,14 +254,14 @@ static LauncherItem menu_items[] = {
       "Enables or disables mouse support." },
     { LI_CHOICE, "Look for new versions", NULL, no_yes, &set_updates, 0,
       "One small file from GitHub, at most once a day; nothing is sent." },
-    /* the line of a newer release: counted only when there is one */
-    { LI_ACTION, newer_label, NULL, NULL, NULL, ACT_PAGE, "Opens the release's page in the browser." },
     { LI_HEAD, "", NULL, NULL, NULL, 0, NULL },
     { LI_PAGE, "Sound", NULL, NULL, NULL, PAGE_SOUND, "Volume and headphones." },
     { LI_PAGE, "Keys", NULL, NULL, NULL, PAGE_KEYS, "The players' keys in a map." },
     { LI_PAGE, "Controller", NULL, NULL, NULL, PAGE_PAD, "What a controller's buttons do." },
     { LI_PAGE, "Quality of Life changes", NULL, NULL, NULL, PAGE_QOL,
       "Improvements to the gameplay experience." },
+    /* the line of a newer release: counted only when there is one */
+    { LI_ACTION, newer_label, NULL, NULL, NULL, ACT_PAGE, "Opens the release's page in the browser." },
 };
 
 static LauncherItem qol_items[] = {
