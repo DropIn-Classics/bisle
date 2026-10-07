@@ -318,7 +318,8 @@ What the port does otherwise than a PC:
   the build, map 03 at its 100th pass headless as before (video memory 0
   bytes, the heap the one byte). Not checked: the window's sound, the
   keys and a controller in play.
-  The players' keys cannot be chosen yet.
+  The players' keys are chosen on the setup screen (2026-10-07, played
+  on Windows: fire from Space to LAlt works).
 
 ## Build and run
 
