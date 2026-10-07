@@ -3044,6 +3044,27 @@ games, each its own folder mounted as C: and started there:
   stopped at the Nth fight and fight.py run on it), `paths.py N ..` and
   `fires.py N ..` the same for find_path and fire_reach. A run to 600 s
   takes about 140 s here.
+- The Windows build needs its compiler pinned (2026-10-07,
+  `.github/workflows/build.yml`: the windows job on windows-2022, not
+  windows-latest). v1.0-rc1, built on windows-latest, took no keys in
+  the game on Windows (setup fine, then a black intro or a dead menu;
+  ~2% CPU): its MSVC 14.51 (linker 14.51 in the PE header; the dev
+  build from VS2019 Build Tools has 14.29) drops int08's second loop
+  (port/src/timer.c), the one that calls the due timers' handlers, so
+  timer_keys never runs, tick_count stays 0 and every timed wait
+  (ticks in credits.c, the intro, the menu's keys, the music's timing)
+  hangs; Esc still works (read past the timer) and so do Alt+Enter and
+  closing (the platform's own). Read off the hanging process (Claude
+  on the Windows machine): the main thread in normal frame pace in
+  ticks, the emulated clock running (irqs on, period 0x4000), all
+  timers_due stuck at 0x8000, int08 without a call to call_handler.
+  No undefined behaviour found in the code (byte-wise access through
+  rmem.h, valid loop bounds; clang/UBSan/ASan runs to the map clean),
+  so presumably the optimizer's fault; not checked with a 14.51 of
+  our own (none installed here). The workflow has no game data by
+  design, so no CI step could have caught it: a release's packages
+  are started from a download before it is announced
+  (doskit/docs/RELEASE.md).
 
 ## The port
 
