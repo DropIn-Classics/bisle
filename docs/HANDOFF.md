@@ -415,7 +415,9 @@ menu's entry (port/README.md; "The port" below).
   full screen and the window, the sound (music included), the intro,
   the mouse and a controller work; DESERT and MOON run. The uninstall
   script works, and so do the copy dialog and the GOG installer
-  discovery (not tested: Heroic, GOG Galaxy or whatever else). The map screen's
+  discovery (not tested: Heroic or whatever else). The GOG Galaxy
+  discovery on Windows finds the game and takes its files over
+  (2026-10-07, the user). The map screen's
   black strip on the right (columns 312-319, beside the side panel) is
   the original's: it shows in GOG's DOSBox too (2026-10-07, the user),
   so the port keeps it.

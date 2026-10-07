@@ -252,7 +252,9 @@ files (`launcher.h`), which also shows the copy's progress and says what
 to do when nothing was found; `-gog` copies without asking. The copy's
 flow was started in the window (2026-10-07, the user on Windows) and
 works; the nothing-found path was seen (2026-10-07, the user on
-Windows, no game installed: said as designed). Files the game writes (saved games, scores)
+Windows, no game installed: said as designed). The GOG Galaxy
+discovery on Windows finds the game and takes its files over
+(2026-10-07, the user). Files the game writes (saved games, scores)
 go to the data folder's `save`.
 
 What the port does otherwise than a PC:
@@ -974,6 +976,6 @@ stopped by the host). The setup screen's item "Title" was looked
   sound (music included), the intro, the mouse and a controller work;
   DESERT and MOON run (2026-10-07, the user on Linux). The uninstall
   script works, and so do the copy dialog and the GOG installer
-  discovery. Not tested: Heroic, GOG Galaxy or whatever else there
+  discovery. Not tested: Heroic or whatever else there
   is. Not checked: a
   package as doskit/docs/RELEASE.md wants it.
