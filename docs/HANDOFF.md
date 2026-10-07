@@ -315,7 +315,9 @@ menu's entry (port/README.md; "The port" below).
   (2026-10-07, the user on Windows): works well, Alt+Tab with a unit
   held, the window mode and full screen too.
   Linux not built; whether the game's menus take the mouse was not looked
-  at; the menu's MOUSE item with the window's mouse was not run.
+  at. The menu's MOUSE item works in the window (2026-10-07, the user
+  on Windows: No takes the mouse out of the game, Yes gives it to the
+  player, F8 steps its speed).
 
 - Played through and won (2026-10-06, the user on Windows): ISLE's
   first map (CONRA) in the window build, won by taking the
