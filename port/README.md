@@ -909,8 +909,8 @@ stopped by the host). The setup screen's item "Title" was looked
   running then. Played on it (2026-10-07, the user on macOS, the
   repository's binary, not the package): ISLE's first map (CONRA) won
   with the mouse and a controller, the victory film seen, the high
-  score kept. Not checked: anything heard in the window (the sound),
-  full screen, DESERT and MOON, the intro, the other comparisons of
+  score kept; full screen and the sound (music included) work. Not
+  checked: DESERT and MOON, the intro, the other comparisons of
   this list, a build for arm64, a package as doskit/docs/RELEASE.md
   wants it (the binary finds SDL2 by an rpath into this machine's
   framework folder).
