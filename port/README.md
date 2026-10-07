@@ -389,7 +389,8 @@ its page is opened.
 they are (the Mac package has the first as `uninstall.command`): they
 remove what the port copied and wrote, after asking
 (doskit/docs/RELEASE.md, point 8). Tried on macOS with a made-up data
-folder only; the .cmd not at all here.
+folder and on Linux for real (2026-10-07, the user); the .cmd not at
+all here.
 
 (which packages were started from a download, on which systems)
 
@@ -946,5 +947,8 @@ stopped by the host). The setup screen's item "Title" was looked
   of differences listed for macOS). Played on a desktop (2026-10-07,
   the user on Linux): the game runs, full screen and the window, the
   sound (music included), the intro, the mouse and a controller work;
-  DESERT and MOON run (2026-10-07, the user on Linux). Not checked: a
+  DESERT and MOON run (2026-10-07, the user on Linux). The uninstall
+  script works, and so do the copy dialog and the GOG installer
+  discovery. Not tested: Heroic, GOG Galaxy or whatever else there
+  is. Not checked: a
   package as doskit/docs/RELEASE.md wants it.
