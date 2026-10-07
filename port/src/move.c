@@ -375,9 +375,19 @@ int move_arrive(int side, fptr map)
     return ret;
 }
 
+static int stop_check_body(int off, int side, fptr map);
+
 /* may the unit of move_record stop on the square, in the map of `side`:
  * 0 and what arriving will be in move_record, or a message's number */
 int stop_check(int off, int side, fptr map)
+{
+    int r = stop_check_body(off, side, map);
+
+    bi_at("stop_check_end");     /* the original's LT122D_150F */
+    return r;
+}
+
+static int stop_check_body(int off, int side, fptr map)
 {
     fptr rec = FP(move_record), u = UNIT(pb(rec, 0)), h, r, r2;
     unsigned sq = (uint16_t)off, g;
