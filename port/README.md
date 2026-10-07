@@ -945,6 +945,6 @@ stopped by the host). The setup screen's item "Title" was looked
   and a few in T2354..T2470 differ, not looked at (presumably the kinds
   of differences listed for macOS). Played on a desktop (2026-10-07,
   the user on Linux): the game runs, full screen and the window, the
-  sound (music included), the intro, the mouse and a controller work.
-  Not checked: DESERT and MOON, a package as doskit/docs/RELEASE.md
-  wants it.
+  sound (music included), the intro, the mouse and a controller work;
+  DESERT and MOON run (2026-10-07, the user on Linux). Not checked: a
+  package as doskit/docs/RELEASE.md wants it.

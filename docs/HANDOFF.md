@@ -343,7 +343,7 @@ menu's entry (port/README.md; "The port" below).
   MOON's map 16 (EBTAR) runs (2026-10-07, the user).
 - Played on Linux (2026-10-07, the user on a desktop): the game runs,
   full screen and the window, the sound (music included), the intro,
-  the mouse and a controller work. The map screen's
+  the mouse and a controller work; DESERT and MOON run. The map screen's
   black strip on the right (columns 312-319, beside the side panel) is
   the original's: it shows in GOG's DOSBox too (2026-10-07, the user),
   so the port keeps it.
