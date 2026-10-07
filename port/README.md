@@ -389,8 +389,8 @@ its page is opened.
 they are (the Mac package has the first as `uninstall.command`): they
 remove what the port copied and wrote, after asking
 (doskit/docs/RELEASE.md, point 8). Tried on macOS with a made-up data
-folder and on Linux for real (2026-10-07, the user); the .cmd not at
-all here.
+folder, on Linux for real and the .cmd on Windows (2026-10-07, the
+user); all remove what they should.
 
 (which packages were started from a download, on which systems)
 
@@ -937,7 +937,8 @@ stopped by the host). The setup screen's item "Title" was looked
   score kept; full screen and the sound (music included) work, and
   DESERT and MOON work, and the intro works. Not checked: the other
   comparisons of
-  this list, a build for arm64, a package as doskit/docs/RELEASE.md
+  this list, a build for arm64 (untestable here: no arm64 Mac), a
+  package as doskit/docs/RELEASE.md
   wants it (the binary finds SDL2 by an rpath into this machine's
   framework folder).
   DESERT and MOON on macOS (2026-10-06, the same machine and build, the

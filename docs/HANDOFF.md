@@ -154,7 +154,8 @@ menu's entry (port/README.md; "The port" below).
   Gatekeeper's refusal and "Open Anyway"; a download with a browser
   from a release page; the package the workflow builds on GitHub's
   runner (this one is built here, SDL2 by configure and not cmake);
-  the arm64 half (built, never run: an Intel Mac); macOS older than
+  the arm64 half (built, never run, and untestable here: no arm64
+  Mac); macOS older than
   15; the game found by itself (GOG's app or installer); the copy
   dialog (with -gog it is not asked); the update check; sound.
   Found for the release: port/dist/README.txt's Keys section still
@@ -274,15 +275,13 @@ menu's entry (port/README.md; "The port" below).
     battle-isle and Battle Isle filled in), the Pack steps' lines and
     README.txt's "Removing" have to be brought over by hand. Not done
     here.
-  Not verified: uninstall.cmd at all (written without a Windows
-  machine: never run, nor its part of the selftest; `choice` without a
-  keyboard is expected to fail and so keep everything, not seen);
-  Linux (the proposal's script was tried there by its author; this
-  version, with the guard, the trimmed size and the last line, only on
-  macOS); a double click on uninstall.command and what Gatekeeper says
-  to a quarantined one; the changed workflow on GitHub's runners; the
-  real data folders (only made-up ones through DK_DATA_DIR); read-only
-  files in a game folder; names with quotes or percent signs.
+  Not verified: Linux (the proposal's script was tried there by its
+  author; this version, with the guard, the trimmed size and the last
+  line, only on macOS); a double click on uninstall.command and what
+  Gatekeeper says to a quarantined one; the changed workflow on GitHub's
+  runners; read-only files in a game folder; names with quotes or
+  percent signs. Tried 2026-10-07 by the user: uninstall.cmd on
+  Windows and the script on Linux, both remove what they should.
 - Map ends (2026-10-06, branch dropin-team/map-end-leftovers; ISLE,
   keys by passes, BATTLE.hints at the end of a map and at after_map):
   - "YOU LOST YOUR HQ" (and VICTORY) wait in T0D36:0C85: any key ends
