@@ -242,7 +242,7 @@ static void hud_control(int c)
 }
 
 /* the menu, and a page for each group of settings (doskit/docs/LAUNCHER.md) */
-enum { PAGE_MENU, PAGE_SOUND, PAGE_KEYS, PAGE_PAD, PAGE_QOL, PAGE_PORT };
+enum { PAGE_MENU, PAGE_SOUND, PAGE_KEYS, PAGE_PAD, PAGE_QOL };
 
 static LauncherItem menu_items[] = {
     { LI_ACTION, "Start the game", NULL, NULL, NULL, ACT_START, NULL },
@@ -251,14 +251,17 @@ static LauncherItem menu_items[] = {
     { LI_CHOICE, "Full screen", "fullscreen", no_yes, &set_fullscreen, 0,
       "Alt+Enter changes it while the game runs." },
     { LI_CHOICE, "Mouse", "mouse", no_yes, &set_mouse, 0,
-      "The game's MOUSE item gives it to a player; it stays in the window." },
+      "Enables or disables mouse support." },
+    { LI_CHOICE, "Look for new versions", NULL, no_yes, &set_updates, 0,
+      "One small file from GitHub, at most once a day; nothing is sent." },
+    /* the line of a newer release: counted only when there is one */
+    { LI_ACTION, newer_label, NULL, NULL, NULL, ACT_PAGE, "Opens the release's page in the browser." },
     { LI_HEAD, "", NULL, NULL, NULL, 0, NULL },
     { LI_PAGE, "Sound", NULL, NULL, NULL, PAGE_SOUND, "Volume and headphones." },
     { LI_PAGE, "Keys", NULL, NULL, NULL, PAGE_KEYS, "The players' keys in a map." },
     { LI_PAGE, "Controller", NULL, NULL, NULL, PAGE_PAD, "What a controller's buttons do." },
     { LI_PAGE, "Quality of Life changes", NULL, NULL, NULL, PAGE_QOL,
       "Improvements to the gameplay experience." },
-    { LI_PAGE, "This port", NULL, NULL, NULL, PAGE_PORT, "New versions." },
 };
 
 static LauncherItem qol_items[] = {
@@ -315,22 +318,14 @@ static void pad_names(void)
     }
 }
 
-static LauncherItem port_items[] = {
-    { LI_CHOICE, "Look for new versions", NULL, no_yes, &set_updates, 0,
-      "One small file from GitHub, at most once a day; nothing is sent." },
-    /* the line of a newer release: counted only when there is one */
-    { LI_ACTION, newer_label, NULL, NULL, NULL, ACT_PAGE, "Opens the release's page in the browser." },
-};
-
-#define PORT_ITEMS ((int)(sizeof port_items / sizeof port_items[0]) - 1)
+#define MENU_ITEMS ((int)(sizeof menu_items / sizeof menu_items[0]) - 1)
 
 static LauncherPage pages[] = {
-    { "Setup", menu_items, (int)(sizeof menu_items / sizeof menu_items[0]) },
+    { "Setup", menu_items, MENU_ITEMS },
     { "Sound", sound_items, (int)(sizeof sound_items / sizeof sound_items[0]) },
     { "Keys", key_items, (int)(sizeof key_items / sizeof key_items[0]) },
     { "Controller", pad_items, (int)(sizeof pad_items / sizeof pad_items[0]) },
     { "Quality of Life changes", qol_items, (int)(sizeof qol_items / sizeof qol_items[0]) },
-    { "This port", port_items, PORT_ITEMS },
 };
 
 #define NPAGES ((int)(sizeof pages / sizeof pages[0]))
@@ -374,10 +369,10 @@ static int setup(const char *game, int *m, int *title)
     set_updates = update_consent() > 0;
     for (;;) {
         update_start(PORT_VERSION, PORT_UPDATE_URL);
-        pages[PAGE_PORT].count = PORT_ITEMS;
+        pages[PAGE_MENU].count = MENU_ITEMS;
         if (update_poll(&newer)) {
             snprintf(newer_label, sizeof newer_label, "%.20s is out: its page", newer.version);
-            pages[PAGE_PORT].count = PORT_ITEMS + 1;
+            pages[PAGE_MENU].count = MENU_ITEMS + 1;
         }
         r = launcher_run(&app, NULL, pages, NPAGES, setting_changed);
         if (r != ACT_PAGE)

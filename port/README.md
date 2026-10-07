@@ -285,10 +285,11 @@ What the port does otherwise than a PC:
 - The original's routines keep scratch values in their code segments;
   the port keeps them in C variables.
 - Before the game the kit's setup screen is shown (doskit/docs/LAUNCHER.md:
-  `main.c` gives `launcher_run` a menu and two pages of items and draws
+  `main.c` gives `launcher_run` a menu and pages of items and draws
   nothing; the menu: start, the choices Game (the title: Battle Isle or a
-  data disk whose folder is there) and Full screen, then the pages
-  Quality of Life changes (the two choices below) and This port (whether to look for newer releases, update.h)). The settings are kept in the data folder's
+  data disk whose folder is there), Full screen, Mouse and Look for new
+  versions (whether to look for newer releases, update.h), then the pages
+  Sound, Keys, Controller and Quality of Life changes (the two choices below)). The settings are kept in the data folder's
   `battle-isle.cfg`. Looking for newer releases is not asked about at the
   first start: it is off until the player switches it on there (a
   question of its own would be a dialog the kit does not have). A newer
