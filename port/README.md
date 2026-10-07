@@ -251,7 +251,8 @@ copied only when the player agrees, in the kit's dialog about the game's
 files (`launcher.h`), which also shows the copy's progress and says what
 to do when nothing was found; `-gog` copies without asking. The copy's
 flow was started in the window (2026-10-07, the user on Windows) and
-works; the nothing-found path was not seen. Files the game writes (saved games, scores)
+works; the nothing-found path was seen (2026-10-07, the user on
+Windows, no game installed: said as designed). Files the game writes (saved games, scores)
 go to the data folder's `save`.
 
 What the port does otherwise than a PC:

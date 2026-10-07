@@ -325,7 +325,9 @@ menu's entry (port/README.md; "The port" below).
   in the original, nothing off (sound, speed, picture). The first human win of a whole map in the port. Map 2 (PHASE,
   against the computer) lost the same way, no problems either. DESERT
   and MOON start in the window and play as far as judged (2026-10-07,
-  the user on Windows).
+  the user on Windows). Without a game installed the GOG detection
+  says it was not found, as designed (2026-10-07, the user on
+  Windows).
 
 - The port on macOS (2026-10-06, branch dropin-team/port-macos-build):
   `sh port/build.sh` built the window and the headless program at once,
