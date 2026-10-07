@@ -338,7 +338,8 @@ menu's entry (port/README.md; "The port" below).
 - Played on macOS (2026-10-07, the user on the Mac, the repository's
   window binary, not the package): ISLE's first map (CONRA) won with
   the mouse and a controller, the victory film seen, the high score
-  kept; full screen and the sound (music included) work.
+  kept; full screen and the sound (music included) work, and DESERT
+  and MOON work.
 
 - The port on macOS (2026-10-06, branch dropin-team/port-macos-build):
   `sh port/build.sh` built the window and the headless program at once,
