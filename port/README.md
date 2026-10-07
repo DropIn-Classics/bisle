@@ -249,8 +249,9 @@ comparisons were not run again. The intro itself is not in yet.
 The game's files (doskit's template): a GOG release found by itself is
 copied only when the player agrees, in the kit's dialog about the game's
 files (`launcher.h`), which also shows the copy's progress and says what
-to do when nothing was found; `-gog` copies without asking. The dialog
-itself was not started yet. Files the game writes (saved games, scores)
+to do when nothing was found; `-gog` copies without asking. The copy's
+flow was started in the window (2026-10-07, the user on Windows) and
+works; the nothing-found path was not seen. Files the game writes (saved games, scores)
 go to the data folder's `save`.
 
 What the port does otherwise than a PC:
