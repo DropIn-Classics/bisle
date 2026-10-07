@@ -68,10 +68,12 @@ New versions
 The setup screen has the line "Look for new versions"; it is off until
 you switch it on. With a yes battle-isle fetches one small file from
 GitHub that names this port's newest release, at most once a day, and
-sends nothing. When a newer version is out, the setup screen gets a
-line that says so, and Enter on it opens its page in the browser.
-Download the package there and put its folder in place of this one:
-the settings, saves and the game's files stay in the data folder.
+sends nothing. When a newer version is out, the setup asks before the
+game starts whether to install it; No starts this version, and it asks
+again at the next start. On Windows and Linux Yes replaces this folder
+with the new version and starts it; on macOS it opens the release
+page, where you download the new app and put it in place of this one.
+The settings, saves and the game's files stay in the data folder.
 
 Removing
 --------

@@ -108,7 +108,7 @@ static const struct {
 
 /* ---- the setup screen (launcher.h; doskit/docs/LAUNCHER.md) ---- */
 
-enum { ACT_START = 1, ACT_PAGE };
+enum { ACT_START = 1 };
 
 static const char *const no_yes[] = { "No", "Yes", NULL };
 
@@ -116,8 +116,6 @@ static int set_fullscreen, set_updates, set_title, set_skip, set_quit = 1, set_m
 /* the titles whose folders are there, for the setup screen's choice */
 static const char *title_labels[TITLES + 1];
 static int title_of[TITLES];
-static UpdateInfo newer;
-static char newer_label[64];
 
 /* ---- the sound, the keys and the controller (the port's, not the game's) ---- */
 
@@ -260,8 +258,6 @@ static LauncherItem menu_items[] = {
     { LI_PAGE, "Controller", NULL, NULL, NULL, PAGE_PAD, "What a controller's buttons do." },
     { LI_PAGE, "Quality of Life changes", NULL, NULL, NULL, PAGE_QOL,
       "Improvements to the gameplay experience." },
-    /* the line of a newer release: counted only when there is one */
-    { LI_ACTION, newer_label, NULL, NULL, NULL, ACT_PAGE, "Opens the release's page in the browser." },
 };
 
 static LauncherItem qol_items[] = {
@@ -318,10 +314,8 @@ static void pad_names(void)
     }
 }
 
-#define MENU_ITEMS ((int)(sizeof menu_items / sizeof menu_items[0]) - 1)
-
 static LauncherPage pages[] = {
-    { "Setup", menu_items, MENU_ITEMS },
+    { "Setup", menu_items, (int)(sizeof menu_items / sizeof menu_items[0]) },
     { "Sound", sound_items, (int)(sizeof sound_items / sizeof sound_items[0]) },
     { "Keys", key_items, (int)(sizeof key_items / sizeof key_items[0]) },
     { "Controller", pad_items, (int)(sizeof pad_items / sizeof pad_items[0]) },
@@ -343,12 +337,14 @@ static void setting_changed(const LauncherItem *item)
 /* The setup screen until the game is started: 1, or 0 to quit.  The
  * settings are kept in the data folder's battle-isle.cfg; the answer
  * about new versions is update.h's (not asked: no until the player says
- * yes).  A newer release known at the start (update.h: fetched in the
- * background, so one found by this start's fetch shows at the next) gets
- * a line that opens its page. */
+ * yes).  A newer release known when the game is started (update.h:
+ * fetched in the background, so one found by this start's fetch shows
+ * at the next) is offered first: installed on confirmation (Windows
+ * and Linux), its page opened on macOS. */
 static int setup(const char *game, int *m, int *title)
 {
     char data[SYS_PATH], cfg[SYS_PATH], dir[SYS_PATH];
+    UpdateInfo u;
     int r, i, n = 0;
 
     for (i = 0; i < TITLES; i++)
@@ -367,18 +363,8 @@ static int setup(const char *game, int *m, int *title)
         set_title = 0;
     plat_set_fullscreen(set_fullscreen);
     set_updates = update_consent() > 0;
-    for (;;) {
-        update_start(PORT_VERSION, PORT_UPDATE_URL);
-        pages[PAGE_MENU].count = MENU_ITEMS;
-        if (update_poll(&newer)) {
-            snprintf(newer_label, sizeof newer_label, "%.20s is out: its page", newer.version);
-            pages[PAGE_MENU].count = MENU_ITEMS + 1;
-        }
-        r = launcher_run(&app, NULL, pages, NPAGES, setting_changed);
-        if (r != ACT_PAGE)
-            break;
-        update_open(newer.page);
-    }
+    update_start(PORT_VERSION, PORT_UPDATE_URL);
+    r = launcher_run(&app, NULL, pages, NPAGES, setting_changed);
     set_fullscreen = plat_fullscreen();
     launcher_save(cfg, "battle-isle: the setup screen's settings", pages, NPAGES);
     *m = 0;         /* /m is on the command line only: the game's own menu has the palettes */
@@ -388,6 +374,13 @@ static int setup(const char *game, int *m, int *title)
     *title = n ? title_of[set_title] : 0;
     if (r != ACT_START)
         return 0;
+    if (update_poll(&u) && launcher_offer_update(&app, u.version, u.notes)) {
+        int st = update_install(&u);
+        if (st == 1)
+            return 0;   /* scheduled: the helper replaces us after we exit */
+        if (st == 0)
+            launcher_update_failed(&app);
+    }
     apply_keys();
     frame_set_hud(hud_draw, hud_control);
     return 1;

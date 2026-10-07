@@ -292,9 +292,10 @@ What the port does otherwise than a PC:
   versions (whether to look for newer releases, update.h), then the pages
   Sound, Keys, Controller and Quality of Life changes (the two choices below)). The settings are kept in the data folder's
   `battle-isle.cfg`. Looking for newer releases is not asked about at the
-  first start: it is off until the player switches it on there (a
-  question of its own would be a dialog the kit does not have). A newer
-  release known when the screen opens gets a line that opens its page.
+  first start: it is off until the player switches it on there. A newer
+  release known when the game is started is offered first (the kit's
+  dialog): installed on confirmation on Windows and Linux
+  (`update_install`), its page opened on macOS.
 - The player's settings (2026-10-03; doskit/docs/PLAYER-SETTINGS.md),
   pages Sound, Keys and Controller of the setup screen, applied only after
   it (so never in the headless comparisons): the volume 0..10 and in play
@@ -367,9 +368,10 @@ the installer, Enter copies, then the title, the menu and the first
 map (pictures 90, 4400 and 5900). Not done yet: a package of the
 workflow downloaded with a browser and started with a double click on
 a desktop, Windows, macOS, the update check. The setup's "Look for new
-versions" opens the release page on every platform (main.c:
-update_open); RELEASE.md's point 7 asks for update_install on Windows
-and Linux, which the port does not call.
+versions" is the kit's flow (main.c: `launcher_offer_update` and
+`update_install`): a known newer release is offered before the game
+starts and, on Windows and Linux, installed on confirmation; on macOS
+its page is opened.
 
 - macOS (2026-10-06, macOS 15.7.3, x86_64): a package built by hand as
   the workflow's macos job builds it (SDL2 by its configure, no cmake
@@ -750,8 +752,8 @@ stopped by the host). The setup screen's item "Title" was looked
   in the menu moves to Quit, Enter there ends the program. Earlier, with the earlier screen: `/m`
   chosen and `battle-isle.cfg` written and read back. Not checked since
   the new design: the settings file written and read again by this port,
-  full screen (no window in that build), a release build's line for a
-  newer release, a controller.
+  full screen (no window in that build), a newer release's offer and
+  install, a controller.
 - The window build was started for 8 s and ran (nothing looked at or
   heard: nobody was there). The user then played it (Windows 11, by
   eye and ear, not beside the original): full screen works, the keys

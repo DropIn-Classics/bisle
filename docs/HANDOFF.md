@@ -282,6 +282,13 @@ menu's entry (port/README.md; "The port" below).
   uninstall.command and Gatekeeper's word on a quarantined one; the
   workflow on GitHub's runners and a package made by it; the port's
   comparisons beyond check.py with the moved kit.
+- The setup screen's updates (2026-10-07): the "This port" page is gone;
+  "Look for new versions" is a choice on the menu itself, and a known
+  newer release is no longer a menu line opening the browser page. When
+  the game is started with one known, the kit's dialog offers it first:
+  installed on confirmation on Windows and Linux (`update_install`),
+  its page opened on macOS. port/dist/README.txt's "New versions" says
+  so. Not seen: the offer itself (no newer release exists).
 - The window's mouse (2026-10-06, branch dropin-team/window-mouse, with
   doskit's branch of the same name, commit 55cab1e, not merged into
   doskit's master: this branch's `doskit` pointer names it, so it must
