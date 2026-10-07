@@ -250,7 +250,7 @@ static LauncherItem menu_items[] = {
       "Alt+Enter changes it while the game runs." },
     { LI_CHOICE, "Mouse", "mouse", no_yes, &set_mouse, 0,
       "Enables or disables mouse support." },
-    { LI_CHOICE, "Look for new versions", NULL, no_yes, &set_updates, 0,
+    { LI_CHOICE, "Check for updates", NULL, no_yes, &set_updates, 0,
       "One small file from GitHub, at most once a day; nothing is sent." },
     { LI_HEAD, "", NULL, NULL, NULL, 0, NULL },
     { LI_PAGE, "Sound", NULL, NULL, NULL, PAGE_SOUND, "Volume and headphones." },

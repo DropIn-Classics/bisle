@@ -65,7 +65,7 @@ game.
 New versions
 ------------
 
-The setup screen has the line "Look for new versions"; it is off until
+The setup screen has the line "Check for updates"; it is off until
 you switch it on. With a yes battle-isle fetches one small file from
 GitHub that names this port's newest release, at most once a day, and
 sends nothing. When a newer version is out, the setup asks before the

@@ -288,8 +288,8 @@ What the port does otherwise than a PC:
 - Before the game the kit's setup screen is shown (doskit/docs/LAUNCHER.md:
   `main.c` gives `launcher_run` a menu and pages of items and draws
   nothing; the menu: start, the choices Game (the title: Battle Isle or a
-  data disk whose folder is there), Full screen, Mouse and Look for new
-  versions (whether to look for newer releases, update.h), then the pages
+  data disk whose folder is there), Full screen, Mouse and Check for
+  updates (whether to look for newer releases, update.h), then the pages
   Sound, Keys, Controller and Quality of Life changes (the two choices below)). The settings are kept in the data folder's
   `battle-isle.cfg`. Looking for newer releases is not asked about at the
   first start: it is off until the player switches it on there. A newer
@@ -367,8 +367,8 @@ folder and the GOG installer in ~/Downloads: "The game's files" names
 the installer, Enter copies, then the title, the menu and the first
 map (pictures 90, 4400 and 5900). Not done yet: a package of the
 workflow downloaded with a browser and started with a double click on
-a desktop, Windows, macOS, the update check. The setup's "Look for new
-versions" is the kit's flow (main.c: `launcher_offer_update` and
+a desktop, Windows, macOS, the update check. The setup's "Check for
+updates" is the kit's flow (main.c: `launcher_offer_update` and
 `update_install`): a known newer release is offered before the game
 starts and, on Windows and Linux, installed on confirmation; on macOS
 its page is opened.

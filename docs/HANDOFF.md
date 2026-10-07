@@ -283,7 +283,7 @@ menu's entry (port/README.md; "The port" below).
   workflow on GitHub's runners and a package made by it; the port's
   comparisons beyond check.py with the moved kit.
 - The setup screen's updates (2026-10-07): the "This port" page is gone;
-  "Look for new versions" is a choice on the menu itself, and a known
+  "Check for updates" is a choice on the menu itself, and a known
   newer release is no longer a menu line opening the browser page. When
   the game is started with one known, the kit's dialog offers it first:
   installed on confirmation on Windows and Linux (`update_install`),
