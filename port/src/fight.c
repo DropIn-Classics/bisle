@@ -183,6 +183,7 @@ static void fight_reckon(void)
     int32_t na, nb, ea, eb, arma, armb, hita, hitb, P, Q, R, S, ca, cb, lossa, lossb, r1, r2;
     unsigned sa = pb(pfp(rec, 0x12), 5), sb = pb(pfp(rec, 0x16), 5);
 
+    bi_at("fight_reckon");
     if (pw(tb, 5) & 0x80)
         silent = 1;
     if (!pw(rec, 0x22))
@@ -249,6 +250,7 @@ static void fight_reckon(void)
             spb(ub, 2, 0);
     } else
         spb(ub, 2, (unsigned)(nb - lossb));
+    bi_at("fight_reckon_end");
 }
 
 /* ---- T223C, T1F5A: the units and the shots ---- */

@@ -940,9 +940,14 @@ name T12F0:1525 direction
 ; cannot answer are in tools/fight.py, which does the reckoning again
 ; from a run's memory at the routine's entry and compares the counts at
 ; its end: the same in the fights of a battle against the computer
-; (HANDOFF.md says how many). A divisor of 0 (an armour of 0, or the
-; target's of 1 with the attacker's +1 at 6) would end the program with a
-; divide error; not seen.
+; (HANDOFF.md says how many), and in 31 fights of games of two
+; computers on the maps 16 to 22, 26 and 28 to 31 (2026-10-07; HANDOFF.md
+; has the list): an air unit attacking and attacked, air against air, a
+; ship on either side (its count in +3), a unit that holds others on
+; either side, a target that does not answer beside the attacker and
+; over a distance, ground of each scene 1 to 7. A divisor of 0 (an
+; armour of 0, or the target's of 1 with the attacker's +1 at 6) would
+; end the program with a divide error; not seen.
 name T22D3:0002 fight_reckon
 name T2066:000A fight_step
 ; The fight scene (T1F3C, T2112, T1F5A, T223C), read in full:

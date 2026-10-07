@@ -765,6 +765,30 @@ stopped by the host). The setup screen's item "Title" was looked
   cymbal, snare, hi-hat and bass drum come out 23 to 32 dB below the
   tom, the cymbal as a 44 Hz tone; HANDOFF.md, "The AdLib's drums").
   A controller works (2026-10-07, played on Windows).
+- Fights by kind and stop_check (2026-10-07, macOS, the headless
+  build; fight.c, move.c): games of two computers on ISLE's maps 16 to
+  31 by the menu loop's passes, the original stopped at
+  `fight_reckon#N` and at its end `LT2190_0ABA#N`, the port at the new
+  places `fight_reckon#N` and `fight_reckon_end#N`. 31 fights (the
+  list is in docs/HANDOFF.md): air units attacking and attacked, air
+  against air, ships on either side, units that hold others, targets
+  that do not answer beside the attacker and over a distance, ground
+  of each scene 1 to 7. Video memory and all far data the same at both
+  places in 30; in the one other (map 16, fight 1) two bytes differ at
+  both places, F27EE:2593 (score_best: 0 in the original, 02E4h in the
+  port: a score file for map 16 that earlier runs of the same morning
+  had left in this machine's data folder; with `DK_DATA_DIR` naming an
+  empty folder the fight is the same at both places, F27EE too). tools/fight.py gives both units' counts as the game's
+  in all 31.
+  stop_check at its end (the original's `LT122D_150F#N`, the port's
+  new place `stop_check_end#N`), nine calls on the maps 17, 18, 27 and
+  28: the kinds 1 and 2 and the messages 7, 8, 9 and 0Eh; AX in the
+  original is the port's result, video memory and all far data the
+  same. The message 5 by a poke (map 17's call 2, the unit on the
+  square made the other side's at the routine's entry, the port's new
+  place `stop_check#2` with `BI_POKE`): AX 5 in the original, memory
+  the same; the port's result 5 read from a trace in a scratch build.
+  Not run: DESERT, MOON.
 - The window's mouse (2026-10-06, macOS, the headless build; mouse.c's
   bi_mouse_move): the original in the runner with a place set by
   `-mouse T X,Y,B` against the port moved to the same place by
