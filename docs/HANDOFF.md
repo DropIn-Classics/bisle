@@ -23,6 +23,26 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- Does DESERT's or MOON's find_path stall as ISLE's map 30 did
+  (2026-10-07, branch dropin-team/stall-desert-moon)? Not seen. A game
+  of two computers to 4000 s on the largest map of each, the round and
+  the map's passes dumped every 100 s (`-dumpevery 100`):
+  - DESERT map 04 PEARL (64x64; the code PEARL with the menu keys of
+    map 30; the PLAYER keys did not take in DESERT, so both computer
+    items poked to 1 at the menu's 275th pass, 27CC8 and 27CF6:
+    F27EE:250E 34h): round 6, passes D3A1h at 4000 s, still rising.
+  - MOON map 13 (48x64; map_number 2D8EC 0Dh at the menu's 29th pass,
+    the two PLAYER items 28DBC and 28DEA set to 1 at LT1151_0CC7, the
+    code after the menu's loop): players and F2902:41FB 2,
+    menu_flags 34h; round 8, passes A550h at 4000 s, still rising.
+    The same pokes on map 0 gave rounds 1..8 in 600 s.
+  MOON is loaded at segment 0076 (F2850 is 28C6 in a run), not 0077:
+  pokes of the day before at 28DCC/28DFA missed by 10h and left round
+  at 0. Not done: other maps, other seeds, a person in the game, the
+  port; a stall that needs more than 4000 s. The earlier note that
+  MOON's find_path does not take node 2 for a square was not read
+  again.
+
 - Fights by kind and stop_check's kinds, run (2026-10-07, branch
   dropin-team/fight-types-run; macOS, the headless build). What the
   fight entry below listed as not seen was looked for in games of two
