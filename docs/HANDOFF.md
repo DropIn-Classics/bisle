@@ -23,6 +23,64 @@ menu's entry (port/README.md; "The port" below).
 
 ## Start here (next session)
 
+- Fights by kind and stop_check's kinds, run (2026-10-07, branch
+  dropin-team/fight-types-run; macOS, the headless build). What the
+  fight entry below listed as not seen was looked for in games of two
+  computers (the menu keys of the entry "A game of two computers" with
+  the map's code, by the menu loop's passes), where both sides fight
+  without a key. Found with a trace in a scratch copy of the port (a
+  line a fight: types, flags, scenes; not in the repository), then each
+  chosen fight run in the original, `-break fight_reckon#N -ram` and
+  `-break LT2190_0ABA#N -ram`, tools/fight.py on the two memories, and
+  the port stopped at the same places (new: `bi_at("fight_reckon")`,
+  `bi_at("fight_reckon_end")`), memcmp.py on both pairs. 31 fights:
+  map 16 fight 1; 17: 16; 18: 1, 2, 4, 5, 14, 16, 21; 19: 13; 20: 3;
+  21: 2, 3, 7, 13; 22: 16; 26: 1, 2, 11, 12, 13, 15; 28: 1, 7, 8; 29:
+  3; 30: 16; 31: 1, 6, 9, 25 (the original's times 58 s to 607 s).
+  In all 31 fight.py's counts for both units are the game's, and the
+  port's memory is the original's at the entry and at the end (video
+  memory and all far data the same, the rest the known kinds), but map
+  16 fight 1: two bytes of F27EE:2593, score_best, 0 in the original
+  and 02E4h in the port at both places; the port's data folder on
+  this machine has a score file save/MAP/16.HI and the runner's state
+  none, presumably that; not checked. Seen among them:
+  - an air unit attacking (21: 2, 3; 30: 16; 31: 9), attacked (21: 7,
+    13), air against air (22: 16; 31: 1, 6);
+  - ships, the count in +3: attacking (28: 1), attacked (28: 7, 8; 31:
+    25), ship against ship over a distance (29: 3);
+  - a unit that holds others (1000h in its +4): attacking (17: 16; 18:
+    2), attacked (28: 1; 31: 9), and a ship that holds others (31: 25);
+  - a target that does not answer: beside the attacker (18: 1; 21: 2;
+    30: 16; 31: 25) and over a distance (18: 5; 21: 13; 26: 1; 29: 3);
+    the attacker's count stays;
+  - ground scenes other than 6: 1 (18: 16; 20: 3), 2 (16: 1; 26: 2),
+    3, 4 (26: 11, 12, 13, 15), 5 (the sea fights; 21: 13), 7 (18: 1,
+    14, 21; 22: 16).
+  fight.py's own percentages (its `percentages`, not the game's
+  record, which the port has the same) did not agree with the record
+  in four of the 31 (19: 13 reckoned 0 0 for the record's 0 80; 28: 1
+  and 8, 0 80 and 150 80 for 0 0 and 150 0; 31: 1, 0 150 for 0 0) and
+  were not reckoned in eight (the attacker not found beside the
+  target): presumably the tool takes the wrong player's map when two
+  computers play (it picks the window by F27EE:26CA); not looked into,
+  the tool not changed.
+  stop_check (the port stopped at a new `bi_at("stop_check_end")`, the
+  original at LT122D_150F, AX the result; the calls found by a trace as
+  above): map 17 calls 2 (message 7), 3 (kind 2), 13 (message 8); 18:
+  139 (kind 2); 27: 380 (message 0Eh), 5869 (kind 1, at 584 s: the
+  mover type 14 takes unit 1Fh in); 28: 17 (message 9), 22 (kind 2),
+  1024 (message 0Eh). In all nine AX is what the port returned, the
+  record F27EE:1326 has the kind in +0Ch, and memcmp.py shows video
+  memory and all far data the same.
+  Not seen: the message 5 (in no game of two computers on the maps 16
+  to 31, to pass 9000 or the map's end; it needs a person's cursor on
+  the other side's unit). Not run: a message shown to a person on the
+  screen (the numbers above are stop_check's results, the computer's
+  callers show nothing), the fight scene's pictures for these fights
+  beyond the video memory at fight_reckon's two places, DESERT and
+  MOON, the divisor 0. The maps were chosen by the port's trace, so a
+  kind of fight the port never makes would not have been found.
+
 - game/ lost and back (2026-10-06): the whole folder was gone one day
   (noticed by check.py failing with FileNotFoundError; the port was
   fine, it reads the data folder). Restored with scp from another
@@ -2398,9 +2456,9 @@ games, each its own folder mounted as C: and started there:
   reckons them (losses of 0 to 6, percentages 0, 25, 50, 75 and 80,
   three units destroyed; the units T-3 SCORPION, T-4 GLADIATOR and R-1
   DEMON, all on ground of scene 6, all next to each other and
-  answering). Not seen: a
-  target that does not answer, air or sea units, ships (the count in
-  +3), other ground scenes, a unit that holds others in a fight. ISLE's
+  answering). Seen since (2026-10-07, the entry at the top): a
+  target that does not answer, air and sea units, ships (the count in
+  +3), the other ground scenes, a unit that holds others in a fight. ISLE's
   armours are 20 to 100, so the divisor 0 (armour 0, or 1 against an
   attacker of experience 6: a divide error) does not come up there.
 - Moving and firing (`tools/moves.py`, BATTLE.hints at T0BA0): a type's
